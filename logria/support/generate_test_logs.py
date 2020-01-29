@@ -12,4 +12,5 @@ LOGGER = setup_default_logger(__name__)
 
 while True:
     LOGGER.info('I am a log! %s', random.randint(1, 100))
-    time.sleep(0.01)
+    print('I am standard output', flush=True)
+    time.sleep(0.25)
