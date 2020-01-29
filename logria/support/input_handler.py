@@ -92,8 +92,8 @@ if __name__ == '__main__':
     stream = CommandInputStream(ARGS)
     while 1:
         if not stream.stdout.empty():
-            log = stream.stdout.get()
-            print('stdout:', log, end='')
+            out_log = stream.stdout.get()
+            print('stdout:', out_log, end='')
         if not stream.stderr.empty():
-            log = stream.stderr.get()
-            print('stderr:', log, end='')
+            err_log = stream.stderr.get()
+            print('stderr:', err_log, end='')
