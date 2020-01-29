@@ -4,3 +4,4 @@ venv/*
 
 # Generated Python Files
 *.pyc
+logria.egg-info/*
