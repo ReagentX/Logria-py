@@ -1,3 +1,6 @@
 # Environment config
 venv/*
 .vscode/*
+
+# Generated Python Files
+*.pyc
