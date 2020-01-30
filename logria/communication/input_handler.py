@@ -36,6 +36,10 @@ class InputStream():
         """
         raise NotImplementedError('Input stream class initialized from parent!')
 
+    def exit(self):
+        self.process.join()
+        self.process.close()
+
 
 class CommandInputStream(InputStream):
     """
