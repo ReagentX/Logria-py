@@ -3,7 +3,6 @@ Functions for handling getting input from a file or from stdout/stderr
 """
 
 
-import sys
 from subprocess import Popen, PIPE
 import multiprocessing
 
@@ -36,13 +35,6 @@ class InputStream():
         """
         raise NotImplementedError('Input stream class initialized from parent!')
 
-    def exit(self):
-        """
-        Kill the process
-        """
-        self.process.join()
-        self.process.close()
-
 
 class CommandInputStream(InputStream):
     """
@@ -69,6 +61,7 @@ class CommandInputStream(InputStream):
                 break
             if stderr_output:
                 stderrq.put(stderr_output)
+        LOGGER.info('Subprocess completed!')
 
 
 class FileInputStream(InputStream):
@@ -88,7 +81,7 @@ class FileInputStream(InputStream):
 
 if __name__ == '__main__':
     # get_input_file('README.MD')
-    ARGS = ['python', 'logria/support/generate_test_logs.py']
+    ARGS = ['python', 'logria/communication/generate_test_logs.py']
     stream = CommandInputStream(ARGS)
     while 1:
         if not stream.stdout.empty():
