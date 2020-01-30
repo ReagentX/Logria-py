@@ -3,6 +3,7 @@ Functions for handling getting input from a file or from stdout/stderr
 """
 
 
+import sys
 from subprocess import Popen, PIPE
 import multiprocessing
 
@@ -69,24 +70,37 @@ class FileInputStream(InputStream):
     Read in a file as a stream
     """
 
-    def run(self, args: list, stdoutq: multiprocessing.Queue, _: multiprocessing.Queue) -> None:
+    def run(self, args: list, outputq: multiprocessing.Queue, _: multiprocessing.Queue) -> None:
         """
         Given a filename, open the file and read the contents
         args: a list of folders to be joined ['Docs', 'file.py'] -> 'Docs/file.py'
         """
         with open('/'.join(args), 'r') as f_in:
             for line in f_in.readlines():
-                stdoutq.put(line)
+                outputq.put(line)
 
+def handle_stream(args):
+    stream = CommandInputStream(args)
+    while 1:
+        if not stream.stdout.empty():
+            out_log = stream.stdout.get()
+            print('stdout:', out_log, end='', flush=True)
+        if not stream.stderr.empty():
+            err_log = stream.stderr.get()
+            print('stderr:', err_log, end='', flush=True)
 
 if __name__ == '__main__':
     # get_input_file('README.MD')
     ARGS = ['python', 'logria/communication/generate_test_logs.py']
-    stream = CommandInputStream(ARGS)
-    while 1:
-        if not stream.stdout.empty():
-            out_log = stream.stdout.get()
-            print('stdout:', out_log, end='')
-        if not stream.stderr.empty():
-            err_log = stream.stderr.get()
-            print('stderr:', err_log, end='')
+
+
+    proc = multiprocessing.Process(target=handle_stream, args=(ARGS,))
+    proc.name = 'StreamHandler'
+    proc.start()
+    var = ''
+    while var != 'q':
+        sys.stdout.flush()
+        var = input('> ')
+        sys.stdout.flush()
+        print(var)
+    proc.join()
