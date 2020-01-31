@@ -3,6 +3,7 @@ Main app loop
 """
 
 import curses
+import time
 import re
 from curses.textpad import Textbox, rectangle
 
@@ -81,6 +82,8 @@ def main(stdscr, q):
     curses.curs_set(0)
 
     while True:
+        # Prevent this loop from taking up 100% of the CPU dedicated to the main thread
+        time.sleep(0.001)
 
         # Update from the queue
         while not q.empty():
