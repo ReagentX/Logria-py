@@ -124,7 +124,6 @@ def main(stdscr, q):
             render_text_in_window(outwin, last_row, messages, func=func_handle)
 
 
-
 if __name__ == '__main__':
     args = ['python', 'logria/communication/generate_test_logs.py']
     stream = input_handler.CommandInputStream(args)
