@@ -43,6 +43,7 @@ def write_to_line(window, string, y=0, x=0):
     """
     Used for command line and status line
     """
+    window.move(y, x)
     window.addstr(y, x, string)
 
 
@@ -58,10 +59,6 @@ def main(stdscr, q):
     last_row = output_height - output_start_row - 1
     outwin = curses.newwin(output_height, width - 1, output_start_row, 0)
     outwin.refresh()
-
-    # StatusLine
-    statuswin = curses.newwin(1, width, height - 4, 1)
-    rectangle(stdscr, height - 5, 0, height - 1, width - 2)
 
     # Command line
     # lines, cols, start_height, start_left
@@ -79,7 +76,7 @@ def main(stdscr, q):
     # Constant for the status line
     current_status = 'No filter'
 
-    # Disable cursor
+    # Disable cursor:
     curses.curs_set(0)
 
     while True:
@@ -89,7 +86,7 @@ def main(stdscr, q):
             message = q.get()
             messages.append(message)
 
-        write_to_line(statuswin, current_status, x=2)
+        write_to_line(statuswin, current_status)
 
         try:
             keypress = editwin.getkey()
@@ -108,6 +105,7 @@ def main(stdscr, q):
                         current_status = f'Regex with pattern /{command}/'
                         editwin.move(0, 0)
                         editwin.deleteln()
+                        write_to_line(editwin, current_status)
                         func_handle = regex_test_generator(command)
                         render_text_in_window(
                             outwin, last_row, messages, func=regex_test_generator(command))
@@ -123,7 +121,6 @@ def main(stdscr, q):
         except:
             render_text_in_window(outwin, last_row, messages, func=func_handle)
 
-        # outwin.refresh():
 
 
 if __name__ == '__main__':
