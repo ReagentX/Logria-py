@@ -2,6 +2,7 @@ import curses
 import time
 import re
 from curses.textpad import Textbox, rectangle
+import multiprocessing
 
 from logria.communication import input_handler, keystrokes
 from logria.interface import color_handler
@@ -9,9 +10,13 @@ from logria.interface import color_handler
 
 class Logria():
     def __init__(self, q):
-        self.q = q
-        self.messages = []
-        self.matched_rows = []
+        self.q = q  # Qnput queue
+        self.messages = []  # Message buffer
+
+        # Handle when we are filtering
+        self.matched_rows = []  # int array of matches when filtering is active
+        self.last_index_searched = 0
+
         self.current_status = ''
         # Handle for the processing func to check with when rendering output
         self.func_handle = None
@@ -31,42 +36,104 @@ class Logria():
         self.clear_output_window()
         current_row = 0
 
-        # Handle where the bottom of the stream is
-        if self.stick_to_bottom:
-            end = len(self.messages)
-        elif self.stick_to_top:
-            end = min(self.last_row, len(self.messages))
-        elif self.manually_controlled_line:
-            end = self.current_end
-        else:
-            end = len(self.messages)
+        if self.func_handle is None:
+            # Handle where the bottom of the stream is
+            if self.stick_to_bottom:
+                end = len(self.messages)
+            elif self.stick_to_top:
+                end = min(self.last_row, len(self.messages))
+            elif self.manually_controlled_line:
+                end = max(self.current_end, self.last_row)
+            else:
+                end = len(self.messages)
 
-        """
-        If we are currently filtereing:
-
-        - use `matched_rows`
-        - when we find a match, copy that index to the new list
-        - use the new list to paginate when rendering,
-          accessing those indexes in the main list
-        """
-
-        self.current_end = end
-        start = max(0, end - self.last_row - 1)
-        # raise ValueError(start, end)
-        for i in range(start, end):
-            item = self.messages[i]
-            # Subtract since we increment only if we write the row
-            if current_row >= self.last_row - 2:
-                break
-            if self.func_handle is None:
+            self.current_end = end
+            start = max(0, end - self.last_row - 1)
+            # raise ValueError(start, end)
+            for i in range(start, end):
+                item = self.messages[i]
+                # Subtract since we increment only if we write the row
+                if current_row >= self.last_row - 2:
+                    break
                 current_row += 1
                 # window.addstr(current_row, 2, item + '\n')
                 color_handler.addstr(self.outwin, current_row, 2, item + '\n')
-            elif self.func_handle(item):
+        elif self.matched_rows:
+            # If we are currently filtereing:
+
+            # - use `matched_rows`
+            # - when we find a match, copy that index to the new list
+            # - use the new list to paginate when rendering,
+            # accessing those indexes in the main list
+
+            # Handle where the bottom of the stream is
+            if self.stick_to_bottom:
+                end = len(self.matched_rows)
+            elif self.stick_to_top:
+                end = min(self.last_row, len(self.matched_rows))
+            elif self.manually_controlled_line:
+                if self.current_end <= len(self.matched_rows):
+                    # If we are in bounds, don't change the last line
+                    end = self.current_end
+                elif self.last_row > len(self.matched_rows):
+                    # If there are more available rows than matched rows, we want to always start
+                    #   at the first message
+                    end = len(self.matched_rows)
+                else:
+                    # If we have overscrolled, go back
+                    if self.current_end > len(self.matched_rows):
+                        self.current_end = len(self.matched_rows)
+                    # Since current_end can be zero, we have to use the number of matched rows
+                    end = len(self.matched_rows)
+            else:
+                end = len(self.matched_rows)
+            self.current_end = end
+            start = max(0, end - self.last_row - 1)
+            for i in range(start, end):
+                messages_idx = self.matched_rows[i]
+                item = self.messages[messages_idx]
+                # Subtract since we increment only if we write the row
+                if current_row >= self.last_row - 2:
+                    break
                 current_row += 1
                 # window.addstr(current_row, 2, item + '\n')
                 color_handler.addstr(self.outwin, current_row, 2, item + '\n')
         self.outwin.refresh()
+
+    def process_matches(self) -> None:
+        """
+        Process the matches for filtering, should by async but the commented code here
+        does not work
+
+        # TODO: Fix this method
+         [ ] Spawn a subprocess to find all the matches in the list of messages
+        """
+        # def add_to_list(result: multiprocessing.Queue, messages: list, last_idx_searched: int, func_handle: callable):
+        #     """
+        #     Main loop will create this separate process to find matches while the main loop runs
+        #     """
+        #     for index, message in range(last_idx_searched, len(messages)):
+        #         print(index, message)
+        #         if func_handle(message):
+        #             result.put(index)
+        #         return result
+
+        # result = multiprocessing.Queue()
+        # proc = multiprocessing.Process(target=add_to_list, args=(result, self.messages, self.last_index_searched, self.func_handle))
+        # proc.start()
+        # proc.join()
+        # print('done')
+        # self.last_index_searched = len(self.messages)
+        # while not result.empty:
+        #     idx = result.get()
+        #     print(idx)
+        #     self.matched_rows.append(idx)
+        # self.write_to_prompt('in method')
+        for index in range(self.last_index_searched, len(self.messages)):
+            if self.func_handle(self.messages[index]):
+                self.matched_rows.append(index)
+        self.last_index_searched = len(self.messages)
+
 
     def regex_test_generator(self, pattern):
         return lambda string: bool(re.search(pattern, string))
@@ -75,6 +142,7 @@ class Logria():
         """
         Used for command line and status line
         """
+        self.reset_prompt()
         curses.curs_set(1)
         self.editwin.move(0, 0)
         self.editwin.addstr(0, 0, string)
@@ -94,17 +162,31 @@ class Logria():
 
     def handle_command(self, command):
         self.editing = False
-        self.reset_prompt()
+        # Set to taol
+        self.stick_to_bottom = True
+        # Set to zero in case the old value was > number of matches
+        self.current_end = 0
+        # Reset the current filter
+        self.matched_rows = []
+        # Reset the current last searched log, since we are applying a new filter
+        self.last_index_searched = 0
+        self.func_handle = self.regex_test_generator(command)
+        # Tell the user what is happening since this is synchronous
+        self.current_status = f'Searching buffer for regex /{command}/'
+        self.write_to_prompt(self.current_status)
+        self.process_matches()
         self.current_status = f'Regex with pattern /{command}/'
         self.write_to_prompt(self.current_status)
-        self.func_handle = self.regex_test_generator(command)
         self.render_text_in_output()
         curses.curs_set(0)
 
     def reset_status(self):
-        self.reset_prompt()
         self.current_status = 'No filter applied'
         self.func_handle = None
+        self.matched_rows = []
+        self.last_index_searched = 0
+        self.current_end = 0
+        self.stick_to_bottom = True
         self.write_to_prompt(self.current_status)
 
     def start(self):
@@ -180,4 +262,6 @@ class Logria():
                     self.stick_to_bottom = False
                     self.manually_controlled_line = False
             except:
+                if self.func_handle:
+                    self.process_matches()
                 self.render_text_in_output()
