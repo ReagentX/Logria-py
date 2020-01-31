@@ -10,6 +10,10 @@
 
 ## Todo
 
-[ ] Make window scroll with arrow keys
-[ ] Refactor to class
+[x] Make window scroll
+[x] Move with arrow keys
+[x] Refactor to class
 [ ] Handle editor validation
+[ ] Main app loop starts when we call start, but the listener happens on init
+[x] Make backspace work
+[ ] Highlight match in log
