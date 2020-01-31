@@ -43,7 +43,17 @@ class Logria():
             elif self.stick_to_top:
                 end = min(self.last_row, len(self.messages))
             elif self.manually_controlled_line:
-                end = max(self.current_end, self.last_row)
+                if len(self.messages) < self.last_row:
+                    # If have fewer messages than lines, just render it all
+                    end = len(self.messages)
+                elif self.current_end < len(self.messages):
+                    end = self.current_end
+                else:
+                    # If we have overscrolled, go back
+                    if self.current_end > len(self.messages):
+                        self.current_end = len(self.messages)
+                    # Since current_end can be zero, we have to use the number of messages
+                    end = len(self.messages)
             else:
                 end = len(self.messages)
 
@@ -59,26 +69,18 @@ class Logria():
                 # window.addstr(current_row, 2, item + '\n')
                 color_handler.addstr(self.outwin, current_row, 2, item + '\n')
         elif self.matched_rows:
-            # If we are currently filtereing:
-
-            # - use `matched_rows`
-            # - when we find a match, copy that index to the new list
-            # - use the new list to paginate when rendering,
-            # accessing those indexes in the main list
-
             # Handle where the bottom of the stream is
             if self.stick_to_bottom:
                 end = len(self.matched_rows)
             elif self.stick_to_top:
                 end = min(self.last_row, len(self.matched_rows))
             elif self.manually_controlled_line:
-                if self.current_end <= len(self.matched_rows):
-                    # If we are in bounds, don't change the last line
-                    end = self.current_end
-                elif self.last_row > len(self.matched_rows):
-                    # If there are more available rows than matched rows, we want to always start
-                    #   at the first message
+                if len(self.matched_rows) < self.last_row:
+                    # If have fewer matched rows than lines, just render it all
                     end = len(self.matched_rows)
+                elif self.current_end < len(self.matched_rows):
+                    # If the current end is larger
+                    end = self.current_end
                 else:
                     # If we have overscrolled, go back
                     if self.current_end > len(self.matched_rows):
