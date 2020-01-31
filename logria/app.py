@@ -55,7 +55,7 @@ def main(stdscr, q):
 
     # Output window
     output_start_row = 0  # Leave space for top border
-    output_height = height - 4  # Leave space for command line + status line
+    output_height = height - 2  # Leave space for command line
     last_row = output_height - output_start_row - 1
     outwin = curses.newwin(output_height, width - 1, output_start_row, 0)
     outwin.refresh()
@@ -74,7 +74,8 @@ def main(stdscr, q):
     func_handle = None
 
     # Constant for the status line
-    current_status = 'No filter'
+    NO_FILTER = 'No filter applied'
+    current_status = NO_FILTER
 
     # Disable cursor:
     curses.curs_set(0)
@@ -89,6 +90,9 @@ def main(stdscr, q):
         try:
             keypress = editwin.getkey()
             if keypress == ':':
+                # Reset command prompt
+                editwin.move(0, 0)
+                editwin.deleteln()
                 curses.curs_set(1)
                 # Get resulting contents
                 # write_to_command_line(editwin, height - 3, ':')
@@ -96,7 +100,7 @@ def main(stdscr, q):
                 command = box.gather().strip()
                 if command:
                     if command == ':q':
-                        current_status = f'No filter'
+                        current_status = NO_FILTER
                         func_handle = None
                         curses.curs_set(0)
                     else:
