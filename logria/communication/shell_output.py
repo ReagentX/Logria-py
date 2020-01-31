@@ -40,7 +40,7 @@ class Logria():
             end = self.current_end
         else:
             end = len(self.messages)
-        
+
         """
         If we are currently filtereing:
 
@@ -169,7 +169,8 @@ class Logria():
                     self.manually_controlled_line = True
                     self.stick_to_top = False
                     self.stick_to_bottom = False
-                    self.current_end = min(len(self.messages), self.current_end + 1)
+                    self.current_end = min(
+                        len(self.messages), self.current_end + 1)
                 elif keypress == 'KEY_RIGHT':
                     self.stick_to_top = False
                     self.stick_to_bottom = True
