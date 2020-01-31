@@ -86,8 +86,6 @@ def main(stdscr, q):
             message = q.get()
             messages.append(message)
 
-        write_to_line(statuswin, current_status)
-
         try:
             keypress = editwin.getkey()
             if keypress == ':':
