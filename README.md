@@ -6,3 +6,10 @@
 ## Notes
 
 - Cannot use python-prompt-toolkit as it does not really support multiple input streams/sharing state between Application objects
+
+
+## Todo
+
+[ ] Make window scroll with arrow keys
+[ ] Refactor to class
+[ ] Handle editor validation
