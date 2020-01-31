@@ -11,6 +11,7 @@ class Logria():
     def __init__(self, q):
         self.q = q
         self.messages = []
+        self.matched_rows = []
         self.current_status = ''
         # Handle for the processing func to check with when rendering output
         self.func_handle = None
@@ -29,6 +30,8 @@ class Logria():
     def render_text_in_output(self):
         self.clear_output_window()
         current_row = 0
+
+        # Handle where the bottom of the stream is
         if self.stick_to_bottom:
             end = len(self.messages)
         elif self.stick_to_top:
@@ -37,6 +40,16 @@ class Logria():
             end = self.current_end
         else:
             end = len(self.messages)
+        
+        """
+        If we are currently filtereing:
+
+        - use `matched_rows`
+        - when we find a match, copy that index to the new list
+        - use the new list to paginate when rendering,
+          accessing those indexes in the main list
+        """
+
         self.current_end = end
         start = max(0, end - self.last_row - 1)
         # raise ValueError(start, end)
