@@ -1,16 +1,23 @@
+"""
+Contains the main class that controls the state of the app
+"""
+
+
 import curses
 import time
 import re
 from curses.textpad import Textbox, rectangle
-import multiprocessing
 
-from logria.communication import input_handler, keystrokes
+from logria.communication import keystrokes
 from logria.interface import color_handler
 
 
 class Logria():
+    """
+    Main app class that controls the logical flow of the app
+    """
     def __init__(self, q):
-        self.q = q  # Input queue
+        self.queue = q  # Input queue
         self.messages = []  # Message buffer
 
         # Handle when we are filtering
@@ -271,8 +278,8 @@ class Logria():
         while True:
             # Update messages from the input stream's queue, track time
             t_0 = time.perf_counter()
-            while not self.q.empty():
-                message = self.q.get()
+            while not self.queue.empty():
+                message = self.queue.get()
                 self.messages.append(message)
 
             # Prevent this loop from taking up 100% of the CPU dedicated to the main thread by delaying loops

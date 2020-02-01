@@ -96,15 +96,7 @@ def handle_stream(args):
 if __name__ == '__main__':
     # get_input_file('README.MD')
     ARGS = ['python', 'logria/communication/generate_test_logs.py']
-
-
-    proc = multiprocessing.Process(target=handle_stream, args=(ARGS,))
-    proc.name = 'StreamHandler'
-    proc.start()
-    var = ''
-    while var != 'q':
-        sys.stdout.flush()
-        var = input('> ')
-        sys.stdout.flush()
-        print(var)
-    proc.join()
+    PROC = multiprocessing.Process(target=handle_stream, args=(ARGS,))
+    PROC.name = 'StreamHandler'
+    PROC.start()
+    PROC.join()

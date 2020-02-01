@@ -52,12 +52,12 @@ TERMINAL_COLOR_TO_CURSES = {
 }
 
 
-def _get_color(fg, bg):
-    key = (fg, bg)
+def _get_color(foreground, background):
+    key = (foreground, background)
     if key not in COLOR_PAIRS_CACHE:
         # Use the pairs from 101 and after, so there's less chance they'll be overwritten by the user
         pair_num = len(COLOR_PAIRS_CACHE) + 101
-        curses.init_pair(pair_num, fg, bg)
+        curses.init_pair(pair_num, foreground, background)
         COLOR_PAIRS_CACHE[key] = pair_num
 
     return COLOR_PAIRS_CACHE[key]
@@ -65,13 +65,13 @@ def _get_color(fg, bg):
 
 def _color_str_to_color_pair(color):
     if color == TerminalColors.END:
-        fg = curses.COLOR_WHITE
+        foreground = curses.COLOR_WHITE
     else:
         try:
-            fg = TERMINAL_COLOR_TO_CURSES[color]
+            foreground = TERMINAL_COLOR_TO_CURSES[color]
         except KeyError:
             raise ValueError(f'`{color}` not loaded to colors!')
-    color_pair = _get_color(fg, curses.COLOR_BLACK)
+    color_pair = _get_color(foreground, curses.COLOR_BLACK)
     return color_pair
 
 
