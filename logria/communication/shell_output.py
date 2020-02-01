@@ -136,7 +136,6 @@ class Logria():
                 self.matched_rows.append(index)
         self.last_index_searched = len(self.messages)
 
-
     def regex_test_generator(self, pattern):
         return lambda string: bool(re.search(pattern, string))
 
@@ -163,15 +162,7 @@ class Logria():
         self.box.edit(keystrokes.validator)
 
     def handle_command(self, command):
-        self.editing = False
-        # Set to taol
-        self.stick_to_bottom = True
-        # Set to zero in case the old value was > number of matches
-        self.current_end = 0
-        # Reset the current filter
-        self.matched_rows = []
-        # Reset the current last searched log, since we are applying a new filter
-        self.last_index_searched = 0
+        self.reset_status()
         self.func_handle = self.regex_test_generator(command)
         # Tell the user what is happening since this is synchronous
         self.current_status = f'Searching buffer for regex /{command}/'
