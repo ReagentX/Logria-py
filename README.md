@@ -22,6 +22,8 @@
 
 - [ ] Support optional piping as input stream - https://stackoverflow.com/questions/1450393/how-do-you-read-from-stdin
 - [ ] Main app loop starts when we call start, but the listener happens on init
+- [ ] Add statistics tracking for log messages
+- [ ] Support parsing logs using `Log()` class
 
 ### Todos with Caveats
 
@@ -32,6 +34,7 @@
 
 ### Completed
 
+- [x] Add app entry method to `setup.py`
 - [x] Regex searches through pre-formatted string, not color formatted string - requires rework of regex method
 - [x] Make window scroll
 - [x] Move with arrow keys

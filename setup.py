@@ -7,4 +7,9 @@ setup(
     author='Christopher Sardegna',
     author_email='github@reagentx.net',
     packages=find_packages(),
+    entry_points={
+        'console_scripts': [
+            'logria = logria.__main__:main'
+        ]
+    }
 )
