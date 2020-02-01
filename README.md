@@ -16,4 +16,4 @@
 [ ] Main app loop starts when we call start, but the listener happens on init
 [x] Make backspace work
 [ ] Highlight match in log
-[x] Regex on `33` doesn't work?
+[x] Regex searches through pre-formatted string, not color formatted string
