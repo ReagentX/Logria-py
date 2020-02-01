@@ -17,15 +17,20 @@ class Logria():
     Main app class that controls the logical flow of the app
     """
     def __init__(self, q):
+        # UI Elements initialized to None
+        self.outwin = None
+        self.command_line = None
+        self.box = None
+
+        # Data we use in runtime
         self.queue = q  # Input queue
         self.messages = []  # Message buffer
-
-        # Handle when we are filtering
         self.matched_rows = []  # Int array of matches when filtering is active
         self.last_index_searched = 0  # The last index the filtering function saw
 
+        # Variables to store the current state of the app
         self.current_status = ''  # Current status, aka what is in the command line
-        self.regex_pattern = ''
+        self.regex_pattern = ''  # Current regex pattern
         self.func_handle = None  # Regex func that handles filtering
         self.highlight_match = True  # Determines whether we highlight the match to the user
         self.last_row = None  # The last row we can render, aka number of lines
