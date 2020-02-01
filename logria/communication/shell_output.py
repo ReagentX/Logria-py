@@ -10,34 +10,41 @@ from logria.interface import color_handler
 
 class Logria():
     def __init__(self, q):
-        self.q = q  # Qnput queue
+        self.q = q  # Input queue
         self.messages = []  # Message buffer
 
         # Handle when we are filtering
-        self.matched_rows = []  # int array of matches when filtering is active
-        self.last_index_searched = 0
+        self.matched_rows = []  # Int array of matches when filtering is active
+        self.last_index_searched = 0  # The last index the filtering function saw
 
-        self.current_status = ''
-        # Handle for the processing func to check with when rendering output
-        self.func_handle = None
-        self.last_row = None
-        self.editing = False
-        self.manually_controlled_line = False
-        self.stick_to_top = False
-        self.stick_to_bottom = True
-        self.current_end = 0
+        self.current_status = ''  # Current status, aka what is in the command line
+        self.func_handle = None  # Regex func that handles filtering
+        self.last_row = None  # The last row we can render, aka number of lines
+        self.editing = False  # Whether we are currently editing the command
+        self.stick_to_bottom = True  # Whether we should follow the stream
+        self.stick_to_top = False  # Whether we should stick to the top and not render new lines
+        self.manually_controlled_line = False  # Whether manual scroll is active
+        self.current_end = 0  # Current last row we have rendered
 
     def clear_output_window(self):
-        # clear the window
+        """
+        Clears the text rendered in the output window
+        """
         for i in range(self.last_row):
             self.outwin.addstr(i, 2, '\n')
 
     def render_text_in_output(self):
-        self.clear_output_window()
-        current_row = 0
+        """
+        Renders stream content in the output window
 
+        If filters are inactive, we use `messages`. If they are active, we pull from `matched_rows`
+        """
+        self.clear_output_window()
+        current_row = 0  # The row we are currently rendering
+
+        # If filters are disabled
         if self.func_handle is None:
-            # Handle where the bottom of the stream is
+            # Handle where the bottom of the stream should be
             if self.stick_to_bottom:
                 end = len(self.messages)
             elif self.stick_to_top:
@@ -47,6 +54,7 @@ class Logria():
                     # If have fewer messages than lines, just render it all
                     end = len(self.messages)
                 elif self.current_end < len(self.messages):
+                    # If we are looking at a valid line, render ends there
                     end = self.current_end
                 else:
                     # If we have overscrolled, go back
@@ -57,16 +65,15 @@ class Logria():
             else:
                 end = len(self.messages)
 
-            self.current_end = end
+            self.current_end = end  # Save this row so we know where we are
             start = max(0, end - self.last_row - 1)
-            # raise ValueError(start, end)
             for i in range(start, end):
                 item = self.messages[i]
                 # Subtract since we increment only if we write the row
                 if current_row >= self.last_row - 2:
                     break
                 current_row += 1
-                # window.addstr(current_row, 2, item + '\n')
+                # Instead of window.addstr, handle colors
                 color_handler.addstr(self.outwin, current_row, 2, item + '\n')
         elif self.matched_rows:
             # Handle where the bottom of the stream is
@@ -98,7 +105,7 @@ class Logria():
                 if current_row >= self.last_row - 2:
                     break
                 current_row += 1
-                # window.addstr(current_row, 2, item + '\n')
+                # Instead of window.addstr, handle colors
                 color_handler.addstr(self.outwin, current_row, 2, item + '\n')
         self.outwin.refresh()
 
@@ -131,131 +138,163 @@ class Logria():
         #     print(idx)
         #     self.matched_rows.append(idx)
         # self.write_to_prompt('in method')
+
+        # For each message, add its index to the list of matches; this is more efficient than
+        # Storing a second copy of each match
         for index in range(self.last_index_searched, len(self.messages)):
             if self.func_handle(self.messages[index]):
                 self.matched_rows.append(index)
         self.last_index_searched = len(self.messages)
 
     def regex_test_generator(self, pattern):
+        """
+        Return a function that will test a string against `pattern`
+        """
         return lambda string: bool(re.search(pattern, string))
 
-    def write_to_prompt(self, string):
+    def write_to_command_line(self, string):
         """
-        Used for command line and status line
+        Writes a message to the command line
         """
-        self.reset_prompt()
+        self.reset_command_line()
         curses.curs_set(1)
         self.command_line.move(0, 0)
         self.command_line.addstr(0, 0, string)
         curses.curs_set(0)
 
-    def reset_prompt(self):
-        # Reset command prompt
+    def reset_command_line(self):
+        """
+        Resets the command line
+        """
         self.command_line.move(0, 0)
         self.command_line.deleteln()
         curses.curs_set(0)
 
     def activate_prompt(self):
+        """
+        Activate the prompt so we can edit it
+        """
         self.editing = True
-        self.reset_prompt()
+        self.reset_command_line()
         curses.curs_set(1)
         self.box.edit(keystrokes.validator)
 
-    def handle_command(self, command):
-        self.reset_status()
+    def handle_regex_command(self, command):
+        """
+        Handle a regex command
+        """
+        self.reset_regex_status()
         self.func_handle = self.regex_test_generator(command)
+
         # Tell the user what is happening since this is synchronous
         self.current_status = f'Searching buffer for regex /{command}/'
-        self.write_to_prompt(self.current_status)
+        self.write_to_command_line(self.current_status)
+
+        # Process any new matched messages to render
         self.process_matches()
+
+        # Tell the user we are now filtering
         self.current_status = f'Regex with pattern /{command}/'
-        self.write_to_prompt(self.current_status)
+        self.write_to_command_line(self.current_status)
+
+        # Render the text
         self.render_text_in_output()
         curses.curs_set(0)
 
-    def reset_status(self):
-        self.current_status = 'No filter applied'
-        self.func_handle = None
-        self.matched_rows = []
-        self.last_index_searched = 0
-        self.current_end = 0
-        self.stick_to_bottom = True
-        self.write_to_prompt(self.current_status)
+    def reset_regex_status(self):
+        """
+        Reset current regex/filter status to no filter
+        """
+        self.current_status = 'No filter applied'  # CLI message, renderd after
+        self.func_handle = None  # Disable filter
+        self.matched_rows = []  # Clear out matched rows
+        self.last_index_searched = 0  # Reset the last searched index
+        self.current_end = 0  # We now do not know where to end
+        self.stick_to_bottom = True  # Stay at the bottom for the next render
+        self.write_to_command_line(self.current_status)  # Render status
 
     def start(self):
-        curses.wrapper(self.main, self.q)
+        """
+        Starts the program
+        """
+        curses.wrapper(self.main)
 
-    def main(self, stdscr, q):
-        # self.stdscr = stdscr
-        self.q = q
+    def main(self, stdscr):
         # stdscr.nodelay(True)
         stdscr.keypad(1)
-        height, width = stdscr.getmaxyx()
+        height, width = stdscr.getmaxyx()  # Get screen size
 
         # Setup Output window
         output_start_row = 0  # Leave space for top border
         output_height = height - 2  # Leave space for command line
         self.last_row = output_height - output_start_row - 1  # The last row we can write to
-        # The main output window
+        # Create the window with these sizes
         self.outwin = curses.newwin(
             output_height, width - 1, output_start_row, 0)
         self.outwin.refresh()
 
         # Setup Command line
-        # num_lines, num_cols, start_top, start_left
+        # 1 line, screen width, start 2 from the bottom, 1 char from the side
         self.command_line = curses.newwin(1, width, height - 2, 1)
-        self.command_line.nodelay(True)
-        # upper left:  (height - 2, 0)
-        # lower right: (height, width)
+        self.command_line.nodelay(True)  # Do not block the event loop waiting for input
+        # Draw rectangle around the command line
+        # upper left:  (height - 2, 0), 2 chars up on left edge
+        # lower right: (height, width), bottom right corner of screen
         rectangle(stdscr, height - 3, 0, height - 1, width - 2)
         stdscr.refresh()
-        self.box = Textbox(self.command_line)
+        self.box = Textbox(self.command_line)  # Editable text box element
 
-        # Update the status
-        self.reset_status()
+        # Update the command line status
+        self.reset_regex_status()
 
         # Disable cursor:
         curses.curs_set(0)
-        self.stdscr = stdscr
+        # self.stdscr = stdscr
         while True:
-            # Prevent this loop from taking up 100% of the CPU dedicated to the main thread
+            # Prevent this loop from taking up 100% of the CPU dedicated to the main thread by delaying loops
             time.sleep(0.001)
 
-            # Update from the queue
+            # Update messages from the input stream's queue, track time
             while not self.q.empty():
                 message = self.q.get()
                 self.messages.append(message)
 
             try:
-                keypress = self.command_line.getkey()
+                keypress = self.command_line.getkey()  # Get keypress
                 if keypress == ':':
+                    # Handle getting input from the command line for regex
                     self.activate_prompt()
                     command = self.box.gather().strip()
                     if command:
                         if command == ':q':
-                            self.reset_status()
+                            self.reset_regex_status()
                         else:
-                            self.handle_command(command)
+                            self.handle_regex_command(command)
                 elif keypress == 'KEY_UP':
+                    # Scroll up
                     self.manually_controlled_line = True
                     self.stick_to_top = False
                     self.stick_to_bottom = False
                     self.current_end = max(0, self.current_end - 1)
                 elif keypress == 'KEY_DOWN':
+                    # Scroll down
                     self.manually_controlled_line = True
                     self.stick_to_top = False
                     self.stick_to_bottom = False
                     self.current_end = min(
                         len(self.messages), self.current_end + 1)
                 elif keypress == 'KEY_RIGHT':
+                    # Stick to bottom
                     self.stick_to_top = False
                     self.stick_to_bottom = True
                     self.manually_controlled_line = False
                 elif keypress == 'KEY_LEFT':
+                    # Stick to top
                     self.stick_to_top = True
                     self.stick_to_bottom = False
                     self.manually_controlled_line = False
             except:
+                # If we have an active filter, process it, always render
                 if self.func_handle:
-                    self.process_matches()
+                    self.process_matches()  # This may block if there are a lot of messages
                 self.render_text_in_output()
