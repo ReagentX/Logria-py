@@ -220,7 +220,9 @@ class Logria():
         curses.wrapper(self.main)
 
     def main(self, stdscr):
-        # stdscr.nodelay(True)
+        """
+        Main program loop, handles user control and logical flow
+        """
         stdscr.keypad(1)
         height, width = stdscr.getmaxyx()  # Get screen size
 
@@ -251,13 +253,15 @@ class Logria():
         curses.curs_set(0)
         # self.stdscr = stdscr
         while True:
-            # Prevent this loop from taking up 100% of the CPU dedicated to the main thread by delaying loops
-            time.sleep(0.001)
-
             # Update messages from the input stream's queue, track time
+            t_0 = time.perf_counter()
             while not self.q.empty():
                 message = self.q.get()
                 self.messages.append(message)
+
+            # Prevent this loop from taking up 100% of the CPU dedicated to the main thread by delaying loops
+            t_1 = time.perf_counter() - t_0
+            time.sleep(max(0, 0.001 - t_1))  # Don't delay if the queue processing took too long
 
             try:
                 keypress = self.command_line.getkey()  # Get keypress
