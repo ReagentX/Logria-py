@@ -149,8 +149,12 @@ class Logria():
     def regex_test_generator(self, pattern):
         """
         Return a function that will test a string against `pattern`
+        Ignores charachers in ANSI color escape codes
         """
-        return lambda string: bool(re.search(pattern, string))
+        return lambda string: bool(re.search(pattern,
+                                             re.sub(r'(\x9B|\x1B\[)[0-?]*[ -\/]*[@-~]',
+                                                    '',
+                                                    string)))
 
     def write_to_command_line(self, string):
         """
@@ -229,7 +233,8 @@ class Logria():
         # Setup Output window
         output_start_row = 0  # Leave space for top border
         output_height = height - 2  # Leave space for command line
-        self.last_row = output_height - output_start_row - 1  # The last row we can write to
+        self.last_row = output_height - output_start_row - \
+            1  # The last row we can write to
         # Create the window with these sizes
         self.outwin = curses.newwin(
             output_height, width - 1, output_start_row, 0)
@@ -238,7 +243,8 @@ class Logria():
         # Setup Command line
         # 1 line, screen width, start 2 from the bottom, 1 char from the side
         self.command_line = curses.newwin(1, width, height - 2, 1)
-        self.command_line.nodelay(True)  # Do not block the event loop waiting for input
+        # Do not block the event loop waiting for input
+        self.command_line.nodelay(True)
         # Draw rectangle around the command line
         # upper left:  (height - 2, 0), 2 chars up on left edge
         # lower right: (height, width), bottom right corner of screen
@@ -261,7 +267,8 @@ class Logria():
 
             # Prevent this loop from taking up 100% of the CPU dedicated to the main thread by delaying loops
             t_1 = time.perf_counter() - t_0
-            time.sleep(max(0, 0.001 - t_1))  # Don't delay if the queue processing took too long
+            # Don't delay if the queue processing took too long
+            time.sleep(max(0, 0.001 - t_1))
 
             try:
                 keypress = self.command_line.getkey()  # Get keypress
