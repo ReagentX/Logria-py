@@ -18,7 +18,9 @@ class Logria():
         self.last_index_searched = 0  # The last index the filtering function saw
 
         self.current_status = ''  # Current status, aka what is in the command line
+        self.regex_pattern = ''
         self.func_handle = None  # Regex func that handles filtering
+        self.highlight_match = True  # Determines whether we highlight the match to the user
         self.last_row = None  # The last row we can render, aka number of lines
         self.editing = False  # Whether we are currently editing the command
         self.stick_to_bottom = True  # Whether we should follow the stream
@@ -105,7 +107,11 @@ class Logria():
                 if current_row >= self.last_row - 2:
                     break
                 current_row += 1
-                # Instead of window.addstr, handle colors
+                # Instead of window.addstr, handle colors, also handle regex highlighter
+                if self.highlight_match:
+                    item = re.sub(r'(\x9B|\x1B\[)[0-?]*[ -\/]*[@-~]', '', item)  # Remove all color codes
+                    item = re.sub(self.regex_pattern, f'\u001b[35m{self.regex_pattern}\u001b[0m', item)
+                # Print to current row, 2 chars from right edge
                 color_handler.addstr(self.outwin, current_row, 2, item + '\n')
         self.outwin.refresh()
 
@@ -189,6 +195,8 @@ class Logria():
         """
         self.reset_regex_status()
         self.func_handle = self.regex_test_generator(command)
+        self.highlight_match = True
+        self.regex_pattern = command
 
         # Tell the user what is happening since this is synchronous
         self.current_status = f'Searching buffer for regex /{command}/'
@@ -211,6 +219,8 @@ class Logria():
         """
         self.current_status = 'No filter applied'  # CLI message, renderd after
         self.func_handle = None  # Disable filter
+        self.highlight_match = False # Disable highlighting
+        self.regex_pattern = ''  # Clear the current pattern
         self.matched_rows = []  # Clear out matched rows
         self.last_index_searched = 0  # Reset the last searched index
         self.current_end = 0  # We now do not know where to end
@@ -281,6 +291,13 @@ class Logria():
                             self.reset_regex_status()
                         else:
                             self.handle_regex_command(command)
+                elif keypress == 'h':
+                    if self.func_handle and self.highlight_match:
+                        self.highlight_match = False
+                    elif self.func_handle and not self.highlight_match:
+                        self.highlight_match = True
+                    else:
+                        self.highlight_match = False
                 elif keypress == 'KEY_UP':
                     # Scroll up
                     self.manually_controlled_line = True
