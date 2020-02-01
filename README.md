@@ -1,6 +1,7 @@
 ![Logria Logo](/branding/logria.png)
 
 # Logria
+
 A powerful CLI tool that puts log analytics at your fingertips.
 
 ## Features
@@ -69,9 +70,10 @@ app.start()
 | → | skip to end of buffer |
 | ← | skip to beginning of buffer |
 
-## Notes
+## Notes / Caveats
 
 - Cannot use python-prompt-toolkit as it does not really support multiple input streams/sharing state between Application objects
+- [`textbox.edit()`](https://docs.python.org/3/library/curses.html#curses.textpad.Textbox.edit) is blocking; we will need another solution if we want to not block output rendering
 
 ## Todo
 
@@ -83,8 +85,8 @@ app.start()
 ### Todos with Caveats
 
 - [x] Highlight match in log - requires rework of regex method
-  - Complex, because we cannot use ANSI codes as we might overwrite/alter existing ones
-  - We also cannot just use a reset code after we insert a new code because it may reset what we already have
+  - We cannot just add ANSI codes as we might overwrite/alter existing ones
+  - We also cannot just use a reset code after we insert a new code because it may reset what was already in the message
   - Current workaround is to disable all color codes before inserting a highlighter and toggle
 
 ### Completed
