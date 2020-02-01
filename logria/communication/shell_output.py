@@ -145,14 +145,14 @@ class Logria():
         """
         self.reset_prompt()
         curses.curs_set(1)
-        self.editwin.move(0, 0)
-        self.editwin.addstr(0, 0, string)
+        self.command_line.move(0, 0)
+        self.command_line.addstr(0, 0, string)
         curses.curs_set(0)
 
     def reset_prompt(self):
         # Reset command prompt
-        self.editwin.move(0, 0)
-        self.editwin.deleteln()
+        self.command_line.move(0, 0)
+        self.command_line.deleteln()
         curses.curs_set(0)
 
     def activate_prompt(self):
@@ -195,20 +195,21 @@ class Logria():
         # Setup Output window
         output_start_row = 0  # Leave space for top border
         output_height = height - 2  # Leave space for command line
-        self.last_row = output_height - output_start_row - 1
+        self.last_row = output_height - output_start_row - 1  # The last row we can write to
+        # The main output window
         self.outwin = curses.newwin(
             output_height, width - 1, output_start_row, 0)
         self.outwin.refresh()
 
-        # Seetup Command line
+        # Setup Command line
         # num_lines, num_cols, start_top, start_left
-        self.editwin = curses.newwin(1, width, height - 2, 1)
-        self.editwin.nodelay(True)
+        self.command_line = curses.newwin(1, width, height - 2, 1)
+        self.command_line.nodelay(True)
         # upper left:  (height - 2, 0)
         # lower right: (height, width)
         rectangle(stdscr, height - 3, 0, height - 1, width - 2)
         stdscr.refresh()
-        self.box = Textbox(self.editwin)
+        self.box = Textbox(self.command_line)
 
         # Update the status
         self.reset_status()
@@ -226,7 +227,7 @@ class Logria():
                 self.messages.append(message)
 
             try:
-                keypress = self.editwin.getkey()
+                keypress = self.command_line.getkey()
                 if keypress == ':':
                     self.activate_prompt()
                     command = self.box.gather().strip()
