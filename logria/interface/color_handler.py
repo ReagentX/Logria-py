@@ -70,7 +70,7 @@ def _color_str_to_color_pair(color):
         try:
             fg = TERMINAL_COLOR_TO_CURSES[color]
         except KeyError:
-            raise ValueError(f'{color} not loaded to colors!')
+            raise ValueError(f'`{color}` not loaded to colors!')
     color_pair = _get_color(fg, curses.COLOR_BLACK)
     return color_pair
 
