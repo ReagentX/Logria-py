@@ -59,16 +59,14 @@ class CommandInputStream(InputStream):
             # This will not read python print() calls because print does not flush stdout by default
             # this can be enabled with `print('', flush=True)`
             stdout_output = proc.stdout.readline()
-            if stdout_output == '' and proc.poll() is not None:
-                break
             if stdout_output:
                 stdoutq.put(stdout_output)
             stderr_output = proc.stderr.readline()
-            if stderr_output == '' and proc.poll() is not None:
-                break
             if stderr_output:
                 stderrq.put(stderr_output)
-        LOGGER.info('Subprocess completed!')
+            # Kill condition
+            if stderr_output == '' and stdout_output == '' and proc.poll() is not None:
+                break
 
 
 class FileInputStream(InputStream):
