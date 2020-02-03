@@ -294,7 +294,7 @@ class Logria():
 
             try:
                 keypress = self.command_line.getkey()  # Get keypress
-                if keypress == ':':
+                if keypress == '/':
                     # Handle getting input from the command line for regex
                     self.activate_prompt()
                     command = self.box.gather().strip()

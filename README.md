@@ -63,7 +63,7 @@ app.start()
 
 | Key | Command |
 |--|--|
-| `:` | regex search |
+| `/` | regex search |
 | `h` | if regex active, toggle highlighting of matches |
 | ↑ | scroll buffer up one line |
 | ↓ | scroll buffer down one line |
