@@ -333,7 +333,7 @@ class Logria():
                     self.stick_to_top = True
                     self.stick_to_bottom = False
                     self.manually_controlled_line = False
-            except:
+            except curses.error:
                 # If we have an active filter, process it, always render
                 if self.func_handle:
                     self.process_matches()  # This may block if there are a lot of messages
