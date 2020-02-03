@@ -9,8 +9,8 @@ import re
 from curses.textpad import Textbox, rectangle
 from multiprocessing import Queue
 
-from logria.communication import keystrokes
 from logria.interface import color_handler
+from logria.utilities import keystrokes
 from logria.utilities.regex_generator import regex_test_generator, ANSI_COLOR_PATTERN
 
 
