@@ -40,14 +40,14 @@ class Logria():
         self.manually_controlled_line = False  # Whether manual scroll is active
         self.current_end = 0  # Current last row we have rendered
 
-    def clear_output_window(self):
+    def clear_output_window(self) -> None:
         """
         Clears the text rendered in the output window
         """
         for i in range(self.last_row):
             self.outwin.addstr(i, 2, '\n')
 
-    def render_text_in_output(self):
+    def render_text_in_output(self) -> None:
         """
         Renders stream content in the output window
 
@@ -164,7 +164,7 @@ class Logria():
                 self.matched_rows.append(index)
         self.last_index_searched = len(self.messages)
 
-    def regex_test_generator(self, pattern):
+    def regex_test_generator(self, pattern: str) -> callable:
         """
         Return a function that will test a string against `pattern`
         Ignores charachers in ANSI color escape codes
@@ -174,7 +174,7 @@ class Logria():
                                                     '',
                                                     string)))
 
-    def write_to_command_line(self, string):
+    def write_to_command_line(self, string: str) -> None:
         """
         Writes a message to the command line
         """
@@ -184,7 +184,7 @@ class Logria():
         self.command_line.addstr(0, 0, string)
         curses.curs_set(0)
 
-    def reset_command_line(self):
+    def reset_command_line(self) -> None:
         """
         Resets the command line
         """
@@ -192,7 +192,7 @@ class Logria():
         self.command_line.deleteln()
         curses.curs_set(0)
 
-    def activate_prompt(self):
+    def activate_prompt(self) -> None:
         """
         Activate the prompt so we can edit it
         """
@@ -201,7 +201,7 @@ class Logria():
         curses.curs_set(1)
         self.box.edit(keystrokes.validator)
 
-    def handle_regex_command(self, command):
+    def handle_regex_command(self, command: str) -> None:
         """
         Handle a regex command
         """
@@ -225,7 +225,7 @@ class Logria():
         self.render_text_in_output()
         curses.curs_set(0)
 
-    def reset_regex_status(self):
+    def reset_regex_status(self) -> None:
         """
         Reset current regex/filter status to no filter
         """
@@ -239,13 +239,13 @@ class Logria():
         self.stick_to_bottom = True  # Stay at the bottom for the next render
         self.write_to_command_line(self.current_status)  # Render status
 
-    def start(self):
+    def start(self) -> None:
         """
         Starts the program
         """
         curses.wrapper(self.main)
 
-    def main(self, stdscr):
+    def main(self, stdscr) -> None:
         """
         Main program loop, handles user control and logical flow
         """
