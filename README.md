@@ -85,7 +85,6 @@ app.start()
     - [ ] Support line breaks - requires rework of rendering logic
     - [ ] New "event loop" to handle multiple featuresets, i.e. other than just regex search
     - [ ] Make the command line show what current command is active, ex `/` for regex mode, `:` for command, etc
-    - [ ] Multiprocessing manager dict for `{stdout: [], stdin: []}
 - New features
     - [ ] Add 'status bar' since we have an empty row so the user can see what we are currently doing
     - [ ] Support optional piping as input stream - [SO Link](https://stackoverflow.com/questions/1450393/how-do-you-read-from-stdin)
@@ -110,3 +109,9 @@ app.start()
 - [x] Refactor to class
 - [x] Handle editor validation
 - [x] Make backspace work
+
+### Rejected
+
+- [ ] Multiprocessing manager dict for `{stdout: [], stdin: []}`
+  - This is not possible because to access the data in the array we must wait for the subprocess to complete, which defeats the purpose of this app. See branch `test/cs/multiprocessing-dict` for more info.
+
