@@ -7,6 +7,7 @@ import curses
 import time
 import re
 from curses.textpad import Textbox, rectangle
+from multiprocessing import Queue
 
 from logria.communication import keystrokes
 from logria.interface import color_handler
@@ -16,7 +17,7 @@ class Logria():
     """
     Main app class that controls the logical flow of the app
     """
-    def __init__(self, q):
+    def __init__(self, q: Queue):
         # UI Elements initialized to None
         self.stdscr = None
         self.outwin = None
