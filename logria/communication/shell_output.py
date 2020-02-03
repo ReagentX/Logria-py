@@ -19,10 +19,10 @@ class Logria():
     """
     def __init__(self, q: Queue):
         # UI Elements initialized to None
-        self.stdscr = None
-        self.outwin = None
-        self.command_line = None
-        self.box = None
+        self.stdscr = None  # The entire window
+        self.outwin = None  # The output window
+        self.command_line = None  # The command line
+        self.box = None  # The text box inside the command line
 
         # Data we use in runtime
         self.queue = q  # Input queue
