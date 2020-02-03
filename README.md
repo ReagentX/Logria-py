@@ -86,6 +86,7 @@ app.start()
 - [ ] Class for parsing paths for shell commands, i.e. resolving paths to tools on the `PATH`
 - [ ] New "event loop" to handle multiple featuresets, i.e. other than just regex search
 - [ ] Make the command line show what current command is active, ex `/` for regex mode, `:` for command, etc
+- [ ] Move `regex_test_generator` to a separate class/module
 
 ### Todos with Caveats
 
