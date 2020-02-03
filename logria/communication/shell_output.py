@@ -11,6 +11,7 @@ from multiprocessing import Queue
 
 from logria.communication import keystrokes
 from logria.interface import color_handler
+from logria.utilities.regex_generator import regex_test_generator, ANSI_COLOR_PATTERN
 
 
 class Logria():
@@ -31,7 +32,7 @@ class Logria():
         self.last_index_searched = 0  # The last index the filtering function saw
 
         # Variables to store the current state of the app
-        self.insert_mode = False
+        self.insert_mode = False  # Default to insert mode (like vim) off
         self.current_status = ''  # Current status, aka what is in the command line
         self.regex_pattern = ''  # Current regex pattern
         self.func_handle = None  # Regex func that handles filtering
@@ -143,7 +144,7 @@ class Logria():
                 current_row += 1
                 # Instead of window.addstr, handle colors, also handle regex highlighter
                 if self.highlight_match:
-                    item = re.sub(r'(\x9B|\x1B\[)[0-?]*[ -\/]*[@-~]', '', item)  # Remove all color codes
+                    item = re.sub(ANSI_COLOR_PATTERN, '', item)  # Remove all color codes
                     item = re.sub(self.regex_pattern, f'\u001b[35m{self.regex_pattern}\u001b[0m', item)
                 # Print to current row, 2 chars from right edge
                 color_handler.addstr(self.outwin, current_row, 2, item + '\n')
@@ -155,7 +156,6 @@ class Logria():
         does not work
 
         # TODO: Fix this method
-         [ ] Spawn a subprocess to find all the matches in the list of messages
         """
         # def add_to_list(result: multiprocessing.Queue, messages: list, last_idx_searched: int, func_handle: callable):
         #     """
@@ -185,16 +185,6 @@ class Logria():
             if self.func_handle(self.messages[index]):
                 self.matched_rows.append(index)
         self.last_index_searched = len(self.messages)
-
-    def regex_test_generator(self, pattern: str) -> callable:
-        """
-        Return a function that will test a string against `pattern`
-        Ignores charachers in ANSI color escape codes
-        """
-        return lambda string: bool(re.search(pattern,
-                                             re.sub(r'(\x9B|\x1B\[)[0-?]*[ -\/]*[@-~]',
-                                                    '',
-                                                    string)))
 
     def write_to_command_line(self, string: str) -> None:
         """
@@ -228,7 +218,7 @@ class Logria():
         Handle a regex command
         """
         self.reset_regex_status()
-        self.func_handle = self.regex_test_generator(command)
+        self.func_handle = regex_test_generator(command)
         self.highlight_match = True
         self.regex_pattern = command
 
