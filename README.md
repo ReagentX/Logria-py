@@ -80,11 +80,11 @@ app.start()
 ## Todo
 
 - Enhancements
-    - [ ] Move `regex_test_generator` to a separate class/module
     - [ ] Main app loop starts when we call start, but the listener happens on init
     - [ ] Support line breaks - requires rework of rendering logic
     - [ ] New "event loop" to handle multiple featuresets, i.e. other than just regex search
     - [ ] Make the command line show what current command is active, ex `/` for regex mode, `:` for command, etc
+    - [ ] Spawn a subprocess to find all the matches in the list of messages
 - New features
     - [ ] Add 'status bar' since we have an empty row so the user can see what we are currently doing
     - [ ] Support optional piping as input stream - [SO Link](https://stackoverflow.com/questions/1450393/how-do-you-read-from-stdin)
@@ -101,6 +101,7 @@ app.start()
 
 ### Completed
 
+- [x] Move `regex_test_generator` to a separate class/module
 - [x] Toggle insert mode (default off)
 - [x] Add app entry method to `setup.py`
 - [x] Regex searches through pre-formatted string, not color formatted string - requires rework of regex method
