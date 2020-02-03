@@ -81,6 +81,8 @@ app.start()
 - [ ] Main app loop starts when we call start, but the listener happens on init
 - [ ] Add statistics tracking for log messages
 - [ ] Support parsing logs using `Log()` class
+- [ ] Support line breaks - requires rework of rendering logic
+- [ ] Class for parsing paths for shell commands, i.e. resolving paths to tools on the `PATH`
 
 ### Todos with Caveats
 
