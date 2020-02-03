@@ -66,6 +66,7 @@ app.start()
 | `:` | command mode |
 | `/` | regex search |
 | `h` | if regex active, toggle highlighting of matches |
+| `i` | toggle insert mode (default off) |
 | ↑ | scroll buffer up one line |
 | ↓ | scroll buffer down one line |
 | → | skip to end of buffer |
@@ -78,15 +79,18 @@ app.start()
 
 ## Todo
 
-- [ ] Support optional piping as input stream - [SO Link](https://stackoverflow.com/questions/1450393/how-do-you-read-from-stdin)
-- [ ] Main app loop starts when we call start, but the listener happens on init
-- [ ] Add statistics tracking for log messages
-- [ ] Support parsing logs using `Log()` class
-- [ ] Support line breaks - requires rework of rendering logic
-- [ ] Class for parsing paths for shell commands, i.e. resolving paths to tools on the `PATH`
-- [ ] New "event loop" to handle multiple featuresets, i.e. other than just regex search
-- [ ] Make the command line show what current command is active, ex `/` for regex mode, `:` for command, etc
-- [ ] Move `regex_test_generator` to a separate class/module
+- Enhancements
+    - [ ] Move `regex_test_generator` to a separate class/module
+    - [ ] Main app loop starts when we call start, but the listener happens on init
+    - [ ] Support line breaks - requires rework of rendering logic
+    - [ ] New "event loop" to handle multiple featuresets, i.e. other than just regex search
+    - [ ] Make the command line show what current command is active, ex `/` for regex mode, `:` for command, etc
+- New features
+    - [ ] Add 'status bar' since we have an empty row so the user can see what we are currently doing
+    - [ ] Support optional piping as input stream - [SO Link](https://stackoverflow.com/questions/1450393/how-do-you-read-from-stdin)
+    - [ ] Add statistics tracking for log messages
+    - [ ] Support parsing logs using `Log()` class
+    - [ ] Class for parsing paths for shell commands, i.e. resolving paths to tools on the `PATH`
 
 ### Todos with Caveats
 
@@ -97,6 +101,7 @@ app.start()
 
 ### Completed
 
+- [x] Toggle insert mode (default off)
 - [x] Add app entry method to `setup.py`
 - [x] Regex searches through pre-formatted string, not color formatted string - requires rework of regex method
 - [x] Make window scroll
