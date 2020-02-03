@@ -18,6 +18,7 @@ class Logria():
     """
     def __init__(self, q):
         # UI Elements initialized to None
+        self.stdscr = None
         self.outwin = None
         self.command_line = None
         self.box = None
@@ -29,6 +30,7 @@ class Logria():
         self.last_index_searched = 0  # The last index the filtering function saw
 
         # Variables to store the current state of the app
+        self.insert_mode = False
         self.current_status = ''  # Current status, aka what is in the command line
         self.regex_pattern = ''  # Current regex pattern
         self.func_handle = None  # Regex func that handles filtering
@@ -39,6 +41,25 @@ class Logria():
         self.stick_to_top = False  # Whether we should stick to the top and not render new lines
         self.manually_controlled_line = False  # Whether manual scroll is active
         self.current_end = 0  # Current last row we have rendered
+
+    def build_command_line(self) -> None:
+        """
+        Creates a textbox object that has insert mode set to the passed value
+        """
+        if self.command_line:
+            del self.command_line
+        height, width = self.stdscr.getmaxyx()
+        # 1 line, screen width, start 2 from the bottom, 1 char from the side
+        self.command_line = curses.newwin(1, width, height - 2, 1)
+        # Do not block the event loop waiting for input
+        self.command_line.nodelay(True)
+        # Draw rectangle around the command line
+        # upper left:  (height - 2, 0), 2 chars up on left edge
+        # lower right: (height, width), bottom right corner of screen
+        rectangle(self.stdscr, height - 3, 0, height - 1, width - 2)
+        self.stdscr.refresh()
+        self.box = Textbox(self.command_line, insert_mode=self.insert_mode)  # Editable text box element
+        self.write_to_command_line(self.current_status)  # Update current status
 
     def clear_output_window(self) -> None:
         """
@@ -249,6 +270,7 @@ class Logria():
         """
         Main program loop, handles user control and logical flow
         """
+        self.stdscr = stdscr
         stdscr.keypad(1)
         height, width = stdscr.getmaxyx()  # Get screen size
 
@@ -263,23 +285,15 @@ class Logria():
         self.outwin.refresh()
 
         # Setup Command line
-        # 1 line, screen width, start 2 from the bottom, 1 char from the side
-        self.command_line = curses.newwin(1, width, height - 2, 1)
-        # Do not block the event loop waiting for input
-        self.command_line.nodelay(True)
-        # Draw rectangle around the command line
-        # upper left:  (height - 2, 0), 2 chars up on left edge
-        # lower right: (height, width), bottom right corner of screen
-        rectangle(stdscr, height - 3, 0, height - 1, width - 2)
-        stdscr.refresh()
-        self.box = Textbox(self.command_line)  # Editable text box element
+        self.build_command_line()
 
         # Update the command line status
         self.reset_regex_status()
 
         # Disable cursor:
         curses.curs_set(0)
-        # self.stdscr = stdscr
+
+        # Start the main app loop
         while True:
             # Update messages from the input stream's queue, track time
             t_0 = time.perf_counter()
@@ -303,6 +317,10 @@ class Logria():
                             self.reset_regex_status()
                         else:
                             self.handle_regex_command(command)
+                    else:
+                        # If command is an empty string, ignore the input
+                        self.reset_regex_status()
+                        self.reset_command_line()
                 elif keypress == 'h':
                     if self.func_handle and self.highlight_match:
                         self.highlight_match = False
@@ -310,6 +328,13 @@ class Logria():
                         self.highlight_match = True
                     else:
                         self.highlight_match = False
+                elif keypress == 'i':
+                    # Toggle insert mode
+                    if self.insert_mode:
+                        self.insert_mode = False
+                    else:
+                        self.insert_mode = True
+                    self.build_command_line()
                 elif keypress == 'KEY_UP':
                     # Scroll up
                     self.manually_controlled_line = True
