@@ -9,6 +9,7 @@ import os
 import curses
 
 COLOR_PAIRS_CACHE = {}
+DEFAULT_COLOR = -1
 
 
 class TerminalColors(object):
@@ -68,13 +69,13 @@ def _get_color(foreground, background):
 
 def _color_str_to_color_pair(color):
     if color == TerminalColors.END:
-        foreground = curses.COLOR_WHITE
+        foreground = DEFAULT_COLOR
     else:
         try:
             foreground = TERMINAL_COLOR_TO_CURSES[color]
         except KeyError:
             raise ValueError(f'`{color}` not loaded to colors!')
-    color_pair = _get_color(foreground, curses.COLOR_BLACK)
+    color_pair = _get_color(foreground, DEFAULT_COLOR)
     return color_pair
 
 
@@ -83,8 +84,11 @@ def _add_line(y_coord, x_coord, window, line):
     color_split = line.split('\033')
 
     # Print the first part of the line without color change
-    default_color_pair = _get_color(curses.COLOR_WHITE, curses.COLOR_BLACK)
-    window.addstr(y_coord, x_coord, color_split[0], curses.color_pair(default_color_pair))
+    default_color_pair = _get_color(DEFAULT_COLOR, DEFAULT_COLOR)
+    try:
+        window.addstr(y_coord, x_coord, color_split[0], curses.color_pair(default_color_pair))
+    except curses.error:
+        pass
     x_coord += len(color_split[0])
 
     # Iterate over the rest of the line-parts and print them with their colors
@@ -92,7 +96,10 @@ def _add_line(y_coord, x_coord, window, line):
         color_str = substring.split('m')[0]
         substring = substring[len(color_str)+1:]
         color_pair = _color_str_to_color_pair(color_str)
-        window.addstr(y_coord, x_coord, substring, curses.color_pair(color_pair))
+        try:
+            window.addstr(y_coord, x_coord, substring, curses.color_pair(color_pair))
+        except curses.error:
+            pass
         x_coord += len(substring)
 
 

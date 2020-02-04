@@ -76,8 +76,11 @@ class Logria():
         """
         Clears the text rendered in the output window
         """
-        for i in range(self.last_row):
-            self.outwin.addstr(i, 2, '\n')
+        for i in range(self.last_row + 1):
+            try:
+                self.outwin.addstr(i, 2, '\n')
+            except curses.error:
+                pass
 
     def render_text_in_output(self) -> None:
         """
@@ -86,7 +89,7 @@ class Logria():
         If filters are inactive, we use `messages`. If they are active, we pull from `matched_rows`
         """
         self.clear_output_window()
-        current_row = 0  # The row we are currently rendering
+        current_row = -1  # The row we are currently rendering
 
         # If filters are disabled
         if self.func_handle is None:
@@ -112,13 +115,12 @@ class Logria():
                     end = len(self.messages)
             else:
                 end = len(self.messages)
-
             self.current_end = end  # Save this row so we know where we are
             start = max(0, end - self.last_row - 1)
             for i in range(start, end):
                 item = self.messages[i]
                 # Subtract since we increment only if we write the row
-                if current_row >= self.last_row - 2:
+                if current_row >= self.last_row:
                     break
                 current_row += 1
                 # Instead of window.addstr, handle colors
@@ -152,7 +154,7 @@ class Logria():
                 messages_idx = self.matched_rows[i]
                 item = self.messages[messages_idx]
                 # Subtract since we increment only if we write the row
-                if current_row >= self.last_row - 2:
+                if current_row >= self.last_row:
                     break
                 current_row += 1
                 # Instead of window.addstr, handle colors, also handle regex highlighter
@@ -276,13 +278,14 @@ class Logria():
         """
         Main program loop, handles user control and logical flow
         """
+        curses.use_default_colors()
         self.stdscr = stdscr
         stdscr.keypad(1)
         height, width = stdscr.getmaxyx()  # Get screen size
 
         # Setup Output window
         output_start_row = 0  # Leave space for top border
-        output_height = height - 2  # Leave space for command line
+        output_height = height - 3  # Leave space for command line
         self.last_row = output_height - output_start_row - \
             1  # The last row we can write to
         # Create the window with these sizes
