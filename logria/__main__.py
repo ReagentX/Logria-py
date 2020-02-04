@@ -19,7 +19,6 @@ def main():
                         help='Command to pass through that will stream into this program, ex: logria -e \'tail -f log.txt\'')
 
     args = parser.parse_args()
-    print(args)
     if args.e:
         args = args.e[0].split(' ')
         # args = args.e
