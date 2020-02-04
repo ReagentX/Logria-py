@@ -52,18 +52,23 @@ class CommandInputStream(InputStream):
         """
         Given a command passed as an array ['python', 'script.py'], open a
         pipe to it and read the contents
+
+        This will not read python print() calls because print does not flush stdout by default,
+          this can be enabled with `print('', flush=True)`
         """
         proc = Popen(args, stdout=PIPE, stderr=PIPE, bufsize=1,
                      universal_newlines=True)
         while True:
-            # This will not read python print() calls because print does not flush stdout by default
-            # this can be enabled with `print('', flush=True)`
+            # stdout
             stdout_output = proc.stdout.readline()
             if stdout_output:
                 stdoutq.put(stdout_output)
+
+            # stderr
             stderr_output = proc.stderr.readline()
             if stderr_output:
                 stderrq.put(stderr_output)
+
             # Kill condition
             if stderr_output == '' and stdout_output == '' and proc.poll() is not None:
                 break
@@ -85,20 +90,12 @@ class FileInputStream(InputStream):
 
 
 if __name__ == '__main__':
-    def handle_stream(args):
-        """
-        Test function to ensure streams are working
-        """
-        stream = CommandInputStream(args)
-        while 1:
-            if not stream.stdout.empty():
-                out_log = stream.stdout.get()
-                print('stdout:', out_log, end='', flush=True)
-            if not stream.stderr.empty():
-                err_log = stream.stderr.get()
-                print('stderr:', err_log, end='', flush=True)
-    ARGS = ['python', 'logria/communication/generate_test_logs.py']
-    PROC = multiprocessing.Process(target=handle_stream, args=(ARGS,))
-    PROC.name = 'StreamHandler'
-    PROC.start()
-    PROC.join()
+    args = ['python', 'logria/communication/generate_test_logs.py']
+    stream = CommandInputStream(args)
+    while 1:
+        if not stream.stdout.empty():
+            out_log = stream.stdout.get()
+            print('stdout:', out_log, end='', flush=True)
+        if not stream.stderr.empty():
+            err_log = stream.stderr.get()
+            print('stderr:', err_log, end='', flush=True)
