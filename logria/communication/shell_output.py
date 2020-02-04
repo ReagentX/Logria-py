@@ -96,7 +96,7 @@ class Logria():
             if self.stick_to_bottom:
                 end = len(self.messages)
             elif self.stick_to_top:
-                end = min(self.last_row, len(self.messages))
+                end = min(self.last_row + 1, len(self.messages))
             elif self.manually_controlled_line:
                 if len(self.messages) < self.last_row:
                     # If have fewer messages than lines, just render it all
@@ -129,7 +129,7 @@ class Logria():
             if self.stick_to_bottom:
                 end = len(self.matched_rows)
             elif self.stick_to_top:
-                end = min(self.last_row, len(self.matched_rows))
+                end = min(self.last_row + 1, len(self.matched_rows))
             elif self.manually_controlled_line:
                 if len(self.matched_rows) < self.last_row:
                     # If have fewer matched rows than lines, just render it all
