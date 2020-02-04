@@ -9,6 +9,7 @@ import re
 from curses.textpad import Textbox, rectangle
 from multiprocessing import Queue
 
+from logria.communication.input_handler import InputStream
 from logria.interface import color_handler
 from logria.utilities import keystrokes
 from logria.utilities.regex_generator import regex_test_generator, ANSI_COLOR_PATTERN
@@ -18,20 +19,26 @@ class Logria():
     """
     Main app class that controls the logical flow of the app
     """
-    def __init__(self, q: Queue):
+
+    def __init__(self, stream: InputStream):
         # UI Elements initialized to None
         self.stdscr = None  # The entire window
         self.outwin = None  # The output window
         self.command_line = None  # The command line
         self.box = None  # The text box inside the command line
 
-        # Data we use in runtime
-        self.queue = q  # Input queue
-        self.messages = []  # Message buffer
-        self.matched_rows = []  # Int array of matches when filtering is active
-        self.last_index_searched = 0  # The last index the filtering function saw
+        # Data streams
+        self.stderr_q = stream.stderr
+        self.stdout_q = stream.stdout
+
+        # Message buffers
+        self.stderr_messages = []
+        self.stdout_messages = []
+        self.messages = self.stderr_messages  # Default to watching stderr
 
         # Variables to store the current state of the app
+        self.matched_rows = []  # Int array of matches when filtering is active
+        self.last_index_searched = 0  # The last index the filtering function saw
         self.insert_mode = False  # Default to insert mode (like vim) off
         self.current_status = ''  # Current status, aka what is in the command line
         self.regex_pattern = ''  # Current regex pattern
@@ -60,8 +67,10 @@ class Logria():
         # lower right: (height, width), bottom right corner of screen
         rectangle(self.stdscr, height - 3, 0, height - 1, width - 2)
         self.stdscr.refresh()
-        self.box = Textbox(self.command_line, insert_mode=self.insert_mode)  # Editable text box element
-        self.write_to_command_line(self.current_status)  # Update current status
+        # Editable text box element
+        self.box = Textbox(self.command_line, insert_mode=self.insert_mode)
+        self.write_to_command_line(
+            self.current_status)  # Update current status
 
     def clear_output_window(self) -> None:
         """
@@ -144,8 +153,10 @@ class Logria():
                 current_row += 1
                 # Instead of window.addstr, handle colors, also handle regex highlighter
                 if self.highlight_match:
-                    item = re.sub(ANSI_COLOR_PATTERN, '', item)  # Remove all color codes
-                    item = re.sub(self.regex_pattern, f'\u001b[35m{self.regex_pattern}\u001b[0m', item)
+                    # Remove all color codes
+                    item = re.sub(ANSI_COLOR_PATTERN, '', item)
+                    item = re.sub(
+                        self.regex_pattern, f'\u001b[35m{self.regex_pattern}\u001b[0m', item)
                 # Print to current row, 2 chars from right edge
                 color_handler.addstr(self.outwin, current_row, 2, item + '\n')
         self.outwin.refresh()
@@ -243,7 +254,7 @@ class Logria():
         """
         self.current_status = 'No filter applied'  # CLI message, renderd after
         self.func_handle = None  # Disable filter
-        self.highlight_match = False # Disable highlighting
+        self.highlight_match = False  # Disable highlighting
         self.regex_pattern = ''  # Clear the current pattern
         self.matched_rows = []  # Clear out matched rows
         self.last_index_searched = 0  # Reset the last searched index
@@ -286,11 +297,14 @@ class Logria():
 
         # Start the main app loop
         while True:
-            # Update messages from the input stream's queue, track time
+            # Update messages from the input stream's queues, track time
             t_0 = time.perf_counter()
-            while not self.queue.empty():
-                message = self.queue.get()
-                self.messages.append(message)
+            while not self.stderr_q.empty():
+                message = self.stderr_q.get()
+                self.stderr_messages.append(message)
+            while not self.stdout_q.empty():
+                message = self.stdout_q.get()
+                self.stdout_messages.append(message)
 
             # Prevent this loop from taking up 100% of the CPU dedicated to the main thread by delaying loops
             t_1 = time.perf_counter() - t_0
@@ -326,6 +340,12 @@ class Logria():
                     else:
                         self.insert_mode = True
                     self.build_command_line()
+                if keypress == 's':
+                    self.reset_regex_status()
+                    if self.messages == self.stderr_messages:
+                        self.messages = self.stdout_messages
+                    else:
+                        self.messages = self.stderr_messages
                 elif keypress == 'KEY_UP':
                     # Scroll up
                     self.manually_controlled_line = True

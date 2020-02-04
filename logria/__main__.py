@@ -27,7 +27,7 @@ def main():
         args = ['python', 'logria/communication/generate_test_logs.py']
     stream = CommandInputStream(args)
 
-    app = Logria(stream.stderr)
+    app = Logria(stream)
     app.start()
 
     stream.exit()
