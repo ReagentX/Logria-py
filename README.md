@@ -76,6 +76,7 @@ app.start()
 
 - Cannot use python-prompt-toolkit as it does not really support multiple input streams/sharing state between Application objects
 - [`textbox.edit()`](https://docs.python.org/3/library/curses.html#curses.textpad.Textbox.edit) is blocking; we will need another solution if we want to not block output rendering
+- Curses will crash when writing to the last line of a window, but it will write correctly, so we wrap some instances of this in a try/except to ensure we don't crash when writing valid values
 
 ## Todo
 
