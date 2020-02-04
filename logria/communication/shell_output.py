@@ -99,6 +99,8 @@ class Logria():
                 if len(self.messages) < self.last_row:
                     # If have fewer messages than lines, just render it all
                     end = len(self.messages)
+                elif self.current_end < self.last_row:
+                    end = self.last_row
                 elif self.current_end < len(self.messages):
                     # If we are looking at a valid line, render ends there
                     end = self.current_end
@@ -131,6 +133,8 @@ class Logria():
                 if len(self.matched_rows) < self.last_row:
                     # If have fewer matched rows than lines, just render it all
                     end = len(self.matched_rows)
+                elif self.current_end < self.last_row:
+                    end = self.last_row
                 elif self.current_end < len(self.matched_rows):
                     # If the current end is larger
                     end = self.current_end
