@@ -101,6 +101,7 @@ app.start()
 
 ### Completed
 
+- [x] Switch between stderr and stdout
 - [x] Move `regex_test_generator` to a separate class/module
 - [x] Toggle insert mode (default off)
 - [x] Add app entry method to `setup.py`
