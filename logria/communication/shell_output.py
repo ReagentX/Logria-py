@@ -7,7 +7,6 @@ import curses
 import time
 import re
 from curses.textpad import Textbox, rectangle
-from multiprocessing import Queue
 
 from logria.communication.input_handler import InputStream
 from logria.interface import color_handler
