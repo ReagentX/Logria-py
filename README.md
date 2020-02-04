@@ -116,4 +116,3 @@ app.start()
 
 - [ ] Multiprocessing manager dict for `{stdout: [], stdin: []}`
   - This is not possible because to access the data in the array we must wait for the subprocess to complete, which defeats the purpose of this app. See branch `test/cs/multiprocessing-dict` for more info.
-
