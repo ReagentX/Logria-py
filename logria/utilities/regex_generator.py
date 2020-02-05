@@ -4,9 +4,7 @@ Contains utilities and constants that control how the app handles regex
 
 import re
 
-
-ANSI_COLOR_PATTERN = r'(\x9B|\x1B\[)[0-?]*[ -\/]*[@-~]'
-
+from logria.utilities.constants import ANSI_COLOR_PATTERN
 
 def regex_test_generator(pattern: str) -> callable:
     """
