@@ -7,11 +7,14 @@ import curses
 import time
 import re
 from curses.textpad import Textbox, rectangle
+from multiprocessing import Queue
 
 from logria.communication.input_handler import InputStream
 from logria.interface import color_handler
-from logria.utilities import keystrokes
-from logria.utilities.regex_generator import regex_test_generator, ANSI_COLOR_PATTERN
+from logria.utilities.keystrokes import validator
+from logria.utilities.regex_generator import regex_test_generator
+from logria.utilities.constants import ANSI_COLOR_PATTERN
+from logria.logger.parser import Parser
 
 
 class Logria():
@@ -22,33 +25,45 @@ class Logria():
     def __init__(self, stream: InputStream):
         # UI Elements initialized to None
         self.stdscr = None  # The entire window
-        self.outwin = None  # The output window
-        self.command_line = None  # The command line
-        self.box = None  # The text box inside the command line
+        self.outwin: curses.window = None  # The output window
+        self.command_line: curses.window = None  # The command line
+        self.box: Textbox = None  # The text box inside the command line
 
         # Data streams
-        self.stderr_q = stream.stderr
-        self.stdout_q = stream.stdout
+        self.stderr_q: Queue = stream.stderr
+        self.stdout_q: Queue = stream.stdout
 
         # Message buffers
-        self.stderr_messages = []
-        self.stdout_messages = []
-        self.messages = self.stderr_messages  # Default to watching stderr
+        self.stderr_messages: list = []
+        self.stdout_messages: list = []
+        self.messages: list = self.stderr_messages  # Default to watching stderr
+
+        # Regex Handler information
+        self.func_handle: callable = None  # Regex func that handles filtering
+        self.regex_pattern: str = ''  # Current regex pattern
+        self.matched_rows: list = []  # Int array of matches when filtering is active
+        self.last_index_regexed: int = 0  # The last index the filtering function saw
+
+        # Processor information
+        self.parser: Parser = None  # Reference to the current parser
+        self.parser_index: int = 0  # Index for the parser to look at
+        self.parsed_messages: list = []  # Array of parsed rows
+        self.last_index_processed: int = 0  # The last index the parsing function saw
+        # Pointer to the previous non-parsed message list, which is continuously updated
+        self.previous_messages: list = []
 
         # Variables to store the current state of the app
-        self.matched_rows = []  # Int array of matches when filtering is active
-        self.last_index_searched = 0  # The last index the filtering function saw
-        self.insert_mode = False  # Default to insert mode (like vim) off
-        self.current_status = ''  # Current status, aka what is in the command line
-        self.regex_pattern = ''  # Current regex pattern
-        self.func_handle = None  # Regex func that handles filtering
-        self.highlight_match = True  # Determines whether we highlight the match to the user
-        self.last_row = None  # The last row we can render, aka number of lines
-        self.editing = False  # Whether we are currently editing the command
-        self.stick_to_bottom = True  # Whether we should follow the stream
-        self.stick_to_top = False  # Whether we should stick to the top and not render new lines
-        self.manually_controlled_line = False  # Whether manual scroll is active
-        self.current_end = 0  # Current last row we have rendered
+        self.insert_mode: bool = False  # Default to insert mode (like vim) off
+        self.current_status: str = ''  # Current status, aka what is in the command line
+        # Determines whether we highlight the match to the user
+        self.highlight_match: bool = True
+        self.last_row: int = 0  # The last row we can render, aka number of lines
+        self.editing: bool = False  # Whether we are currently editing the command
+        self.stick_to_bottom: bool = True  # Whether we should follow the stream
+        # Whether we should stick to the top and not render new lines
+        self.stick_to_top: bool = False
+        self.manually_controlled_line: bool = False  # Whether manual scroll is active
+        self.current_end: bool = 0  # Current last row we have rendered
 
     def build_command_line(self) -> None:
         """
@@ -80,6 +95,110 @@ class Logria():
                 self.outwin.addstr(i, 2, '\n')
             except curses.error:
                 pass
+
+    def setup_parser(self):
+        """
+        Setup a parser object in the main runtime
+        """
+        # Reset the status for new writes
+        self.reset_parser()
+        self.reset_regex_status()
+
+        # Store previous message pointer
+        if self.messages is self.stderr_messages:
+            self.previous_messages = self.stderr_messages
+        elif self.messages is self.stdout_messages:
+            self.previous_messages = self.stdout_messages
+
+        # Stick to top to show options
+        self.manually_controlled_line = False
+        self.stick_to_bottom = False
+        self.stick_to_top = True
+
+        # Overwrite the messages pointer
+        self.messages = Parser().show_patterns()
+        self.render_text_in_output()
+        while True:
+            self.activate_prompt()
+            command = self.box.gather().strip()
+            if command == 'q':
+                self.reset_parser()
+                return
+            else:
+                try:
+                    parser = Parser()
+                    parser.load(Parser().patterns()[int(command)])
+                    break
+                except:
+                    pass
+
+        # Overwrite a different list this time, and reset it when done
+        self.messages = parser.display_example()
+        self.render_text_in_output()
+        while True:
+            self.activate_prompt()
+            command = self.box.gather().strip()
+            if command == 'q':
+                self.reset_parser()
+                return
+            else:
+                try:
+                    command = int(command)
+                    assert command < len(self.messages)
+                    self.parser_index = int(command)
+                    self.current_status = f'Parsing with {parser.get_name()}, field {command}'
+                    self.write_to_command_line(self.current_status)
+                    break
+                except Exception:
+                    pass
+
+        # Set parser
+        self.parser = parser
+
+        # Put pointer back to new array
+        self.messages = self.parsed_messages
+
+        # Stick to bottom again
+        self.stick_to_bottom = True
+        self.stick_to_top = False
+
+    def reset_parser(self):
+        """
+        Remove the current parser, if any exists
+        """
+        if self.func_handle:
+            self.current_status = f'Regex with pattern /{self.regex_pattern}/'
+        else:
+            self.current_status = 'No filter applied'  # CLI message, renderd after
+        if self.previous_messages:
+            # Move messages pointer to the previous state
+            if self.previous_messages is self.stderr_messages:
+                self.messages = self.stderr_messages
+            else:
+                self.messages = self.stdout_messages
+            self.previous_messages = []
+            self.parsed_messages = []  # Dump parsed messages
+        self.parser = None  # Dump the parser
+        self.parser_index = 0  # Dump the pattern index
+        self.last_index_processed = 0  # Reset the last searched index
+        self.current_end = 0  # We now do not know where to end
+        self.stick_to_bottom = True  # Stay at the bottom for the next render
+        self.write_to_command_line(self.current_status)
+
+    def process_parser(self):
+        """
+        Load parsed messages to new array if we have matches
+
+        # TODO: Same as process_matches
+        """
+        for index in range(self.last_index_processed, len(self.previous_messages)):
+            match = self.parser.parse(self.previous_messages[index])
+            if match:
+                try:
+                    self.parsed_messages.append(match[self.parser_index])
+                except IndexError:
+                    self.parsed_messages.append(f'Error parsing! {self.previous_messages[index]}')
+        self.last_index_processed = len(self.messages)
 
     def render_text_in_output(self) -> None:
         """
@@ -197,10 +316,10 @@ class Logria():
 
         # For each message, add its index to the list of matches; this is more efficient than
         # Storing a second copy of each match
-        for index in range(self.last_index_searched, len(self.messages)):
+        for index in range(self.last_index_regexed, len(self.messages)):
             if self.func_handle(self.messages[index]):
                 self.matched_rows.append(index)
-        self.last_index_searched = len(self.messages)
+        self.last_index_regexed = len(self.messages)
 
     def write_to_command_line(self, string: str) -> None:
         """
@@ -227,7 +346,7 @@ class Logria():
         self.editing = True
         self.reset_command_line()
         curses.curs_set(1)
-        self.box.edit(keystrokes.validator)
+        self.box.edit(validator)
 
     def handle_regex_command(self, command: str) -> None:
         """
@@ -239,14 +358,14 @@ class Logria():
         self.regex_pattern = command
 
         # Tell the user what is happening since this is synchronous
-        self.current_status = f'Searching buffer for regex /{command}/'
+        self.current_status = f'Searching buffer for regex /{self.regex_pattern}/'
         self.write_to_command_line(self.current_status)
 
         # Process any new matched messages to render
         self.process_matches()
 
         # Tell the user we are now filtering
-        self.current_status = f'Regex with pattern /{command}/'
+        self.current_status = f'Regex with pattern /{self.regex_pattern}/'
         self.write_to_command_line(self.current_status)
 
         # Render the text
@@ -257,12 +376,15 @@ class Logria():
         """
         Reset current regex/filter status to no filter
         """
-        self.current_status = 'No filter applied'  # CLI message, renderd after
+        if self.parser:
+            self.current_status = f'Parsing with {self.parser.get_name()}, field {self.parser_index}'
+        else:
+            self.current_status = 'No filter applied'  # CLI message, renderd after
         self.func_handle = None  # Disable filter
         self.highlight_match = False  # Disable highlighting
         self.regex_pattern = ''  # Clear the current pattern
         self.matched_rows = []  # Clear out matched rows
-        self.last_index_searched = 0  # Reset the last searched index
+        self.last_index_regexed = 0  # Reset the last searched index
         self.current_end = 0  # We now do not know where to end
         self.stick_to_bottom = True  # Stay at the bottom for the next render
         self.write_to_command_line(self.current_status)  # Render status
@@ -346,12 +468,20 @@ class Logria():
                     else:
                         self.insert_mode = True
                     self.build_command_line()
-                if keypress == 's':
+                elif keypress == 's':
+                    # Swap stdout and stderr
+                    self.reset_parser()
                     self.reset_regex_status()
-                    if self.messages == self.stderr_messages:
+                    if self.messages is self.stderr_messages:
                         self.messages = self.stdout_messages
                     else:
                         self.messages = self.stderr_messages
+                elif keypress == 'p':
+                    # Enable parser
+                    self.setup_parser()
+                elif keypress == 'z':
+                    # Tear down parser
+                    self.reset_parser()
                 elif keypress == 'KEY_UP':
                     # Scroll up
                     self.manually_controlled_line = True
@@ -377,6 +507,8 @@ class Logria():
                     self.manually_controlled_line = False
             except curses.error:
                 # If we have an active filter, process it, always render
+                if self.parser:
+                    self.process_parser()  # This may block if there are a lot of messages
                 if self.func_handle:
                     self.process_matches()  # This may block if there are a lot of messages
                 self.render_text_in_output()
