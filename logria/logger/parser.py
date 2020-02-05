@@ -19,6 +19,9 @@ class Parser():
         self._name = name  # The name of the pattern
         self._example = example  # An example used to list on the frontend
 
+    def get_name(self):
+        return self._name
+
     def set_pattern(self, pattern: str, type_: str, name: str, example: str) -> None:
         self._pattern = pattern
         self._type = type_
@@ -46,7 +49,7 @@ class Parser():
         elif self._type == 'regex':
             return self.regex_pattern(message)
         else:
-            raise ValueError(f'{self._type} not a valid Parser type!')
+            raise ValueError(f'{self._type} is not a valid Parser type!')
 
     def as_dict(self):
         """
@@ -77,13 +80,20 @@ class Parser():
                                  d['name'], d['example'])
 
     def display_example(self):
+        if self._pattern == None:
+            raise ValueError('Display called without loading a parser!')
         match = self.parse(self._example)
         return [f'{i}: {v}' for i, v in enumerate(match)]
 
     @classmethod
-    def find_patterns(cls) -> dict:
+    def patterns(cls) -> dict:
         patterns = os.listdir(SAVED_PATTERNS_PATH)
         return dict(zip(range(0, len(patterns)), patterns))
+
+    @classmethod
+    def show_patterns(cls) -> dict:
+        patterns = os.listdir(SAVED_PATTERNS_PATH)
+        return [f'{i}: {v}' for i, v in enumerate(patterns)]
 
 
 if __name__ == '__main__':
@@ -105,4 +115,5 @@ if __name__ == '__main__':
         # for i in d:
         #     print(f'{d.index(i)}:', i)
         # p.save()
-    parse_std_log()
+    # parse_std_log()
+    print(Parser().show_patterns())
