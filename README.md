@@ -67,6 +67,8 @@ app.start()
 | `/` | regex search |
 | `h` | if regex active, toggle highlighting of matches |
 | `i` | toggle insert mode (default off) |
+| `p` | activate parser |
+| `z` | deactivate parser |
 | ↑ | scroll buffer up one line |
 | ↓ | scroll buffer down one line |
 | → | skip to end of buffer |
