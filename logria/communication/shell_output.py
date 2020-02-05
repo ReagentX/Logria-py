@@ -7,11 +7,13 @@ import curses
 import time
 import re
 from curses.textpad import Textbox, rectangle
+from multiprocessing import Queue
 
 from logria.communication.input_handler import InputStream
 from logria.interface import color_handler
-from logria.utilities import keystrokes
-from logria.utilities.regex_generator import regex_test_generator, ANSI_COLOR_PATTERN
+from logria.utilities.keystrokes import validator
+from logria.utilities.regex_generator import regex_test_generator
+from logria.utilities.constants import ANSI_COLOR_PATTERN
 
 
 class Logria():
@@ -22,33 +24,36 @@ class Logria():
     def __init__(self, stream: InputStream):
         # UI Elements initialized to None
         self.stdscr = None  # The entire window
-        self.outwin = None  # The output window
-        self.command_line = None  # The command line
-        self.box = None  # The text box inside the command line
+        self.outwin: curses.window = None  # The output window
+        self.command_line: curses.window = None  # The command line
+        self.box: Textbox = None  # The text box inside the command line
 
         # Data streams
-        self.stderr_q = stream.stderr
-        self.stdout_q = stream.stdout
+        self.stderr_q: Queue = stream.stderr
+        self.stdout_q: Queue = stream.stdout
 
         # Message buffers
-        self.stderr_messages = []
-        self.stdout_messages = []
-        self.messages = self.stderr_messages  # Default to watching stderr
+        self.stderr_messages: list = []
+        self.stdout_messages: list = []
+        self.messages: Queue = self.stderr_messages  # Default to watching stderr
+
+        # Processor information
+        self.processor = None  # Reference to the current parser
 
         # Variables to store the current state of the app
-        self.matched_rows = []  # Int array of matches when filtering is active
-        self.last_index_searched = 0  # The last index the filtering function saw
-        self.insert_mode = False  # Default to insert mode (like vim) off
-        self.current_status = ''  # Current status, aka what is in the command line
-        self.regex_pattern = ''  # Current regex pattern
-        self.func_handle = None  # Regex func that handles filtering
-        self.highlight_match = True  # Determines whether we highlight the match to the user
-        self.last_row = None  # The last row we can render, aka number of lines
-        self.editing = False  # Whether we are currently editing the command
-        self.stick_to_bottom = True  # Whether we should follow the stream
-        self.stick_to_top = False  # Whether we should stick to the top and not render new lines
-        self.manually_controlled_line = False  # Whether manual scroll is active
-        self.current_end = 0  # Current last row we have rendered
+        self.matched_rows: list = []  # Int array of matches when filtering is active
+        self.last_index_searched: int = 0  # The last index the filtering function saw
+        self.insert_mode: bool = False  # Default to insert mode (like vim) off
+        self.current_status: str = ''  # Current status, aka what is in the command line
+        self.regex_pattern: str = ''  # Current regex pattern
+        self.func_handle: callable = None  # Regex func that handles filtering
+        self.highlight_match: bool = True  # Determines whether we highlight the match to the user
+        self.last_row: int = 0  # The last row we can render, aka number of lines
+        self.editing: bool = False  # Whether we are currently editing the command
+        self.stick_to_bottom: bool = True  # Whether we should follow the stream
+        self.stick_to_top: bool = False  # Whether we should stick to the top and not render new lines
+        self.manually_controlled_line: bool = False  # Whether manual scroll is active
+        self.current_end: bool = 0  # Current last row we have rendered
 
     def build_command_line(self) -> None:
         """
@@ -227,7 +232,7 @@ class Logria():
         self.editing = True
         self.reset_command_line()
         curses.curs_set(1)
-        self.box.edit(keystrokes.validator)
+        self.box.edit(validator)
 
     def handle_regex_command(self, command: str) -> None:
         """
