@@ -90,7 +90,6 @@ app.start()
     - [ ] Add 'status bar' since we have an empty row so the user can see what we are currently doing
     - [ ] Support optional piping as input stream - [SO Link](https://stackoverflow.com/questions/1450393/how-do-you-read-from-stdin)
     - [ ] Add statistics tracking for log messages
-    - [ ] Support parsing logs using `Log()` class
     - [ ] Class for parsing paths for shell commands, i.e. resolving paths to tools on the `PATH`
 
 ### Todos with Caveats
@@ -102,6 +101,7 @@ app.start()
 
 ### Completed
 
+- [x] Support parsing logs using `Log()` class
 - [x] Switch between stderr and stdout
 - [x] Move `regex_test_generator` to a separate class/module
 - [x] Toggle insert mode (default off)
