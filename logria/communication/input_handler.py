@@ -33,7 +33,8 @@ class InputStream():
         """
         Called by the process; should put data in stdoutq and/or stderrq
         """
-        raise NotImplementedError('Input stream class initialized from parent!')
+        raise NotImplementedError(
+            'Input stream class initialized from parent!')
 
     def exit(self):
         """
@@ -90,8 +91,8 @@ class FileInputStream(InputStream):
 
 
 if __name__ == '__main__':
-    args = ['python', 'logria/communication/generate_test_logs.py']
-    stream = CommandInputStream(args)
+    cmd = ['python', 'logria/communication/generate_test_logs.py']
+    stream = CommandInputStream(cmd)
     while 1:
         if not stream.stdout.empty():
             out_log = stream.stdout.get()
