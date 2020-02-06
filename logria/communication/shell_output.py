@@ -197,7 +197,8 @@ class Logria():
                 try:
                     self.parsed_messages.append(match[self.parser_index])
                 except IndexError:
-                    self.parsed_messages.append(f'Error parsing! {self.previous_messages[index]}')
+                    self.parsed_messages.append(
+                        f'Error parsing! {self.previous_messages[index]}')
         self.last_index_processed = len(self.messages)
 
     def render_text_in_output(self) -> None:
