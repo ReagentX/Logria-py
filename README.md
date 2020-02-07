@@ -83,16 +83,16 @@ app.start()
 ## Todo
 
 - Enhancements
-    - [ ] Main app loop starts when we call start, but the listener happens on init
-    - [ ] Support line breaks - requires rework of rendering logic
-    - [ ] New "event loop" to handle multiple featuresets, i.e. other than just regex search
-    - [ ] Make the command line show what current command is active, ex `/` for regex mode, `:` for command, etc
-    - [ ] Spawn a subprocess to find all the matches in the list of messages
+  - [ ] Main app loop starts when we call start, but the listener happens on init
+  - [ ] Support line breaks - requires rework of rendering logic
+  - [ ] New "event loop" to handle multiple feature-sets, i.e. other than just regex search
+  - [ ] Make the command line show what current command is active, ex `/` for regex mode, `:` for command, etc
+  - [ ] Spawn a subprocess to find all the matches in the list of messages
 - New features
-    - [ ] Add 'status bar' since we have an empty row so the user can see what we are currently doing
-    - [ ] Support optional piping as input stream - [SO Link](https://stackoverflow.com/questions/1450393/how-do-you-read-from-stdin)
-    - [ ] Add statistics tracking for log messages
-    - [ ] Class for parsing paths for shell commands, i.e. resolving paths to tools on the `PATH`
+  - [ ] Add 'status bar' since we have an empty row so the user can see what we are currently doing
+  - [ ] Support optional piping as input stream - [SO Link](https://stackoverflow.com/questions/1450393/how-do-you-read-from-stdin)
+  - [ ] Add statistics tracking for log messages
+  - [ ] Class for parsing paths for shell commands, i.e. resolving paths to tools on the `PATH`
 
 ### Todos with Caveats
 

@@ -41,7 +41,7 @@ class Parser():
         if self._pattern is None:
             raise ValueError('Parsing pattern when pattern not set!')
         matches = re.match(self._pattern, message)
-        return list(matches.groups())
+        return list(matches.groups()) if matches is not None else None
 
     def parse(self, message: str) -> list:
         if self._type == 'split':
