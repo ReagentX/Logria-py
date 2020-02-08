@@ -8,6 +8,7 @@ A powerful CLI tool that puts log analytics at your fingertips.
 
 - Live filtering of stream or streams from other executed processes, replacing `grep`
 - Full regex support
+- Parse logs using user-defined rules
 - Low-overhead, no dependencies
 
 ## Installation
