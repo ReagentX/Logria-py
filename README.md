@@ -54,7 +54,7 @@ from logria.communication.input_handler import CommandInputStream
 from logria.communication.shell_output import Logria
 
 
-process_to_read = ['python', 'logria/communication/generate_test_logs.py']
+process_to_read = ['python', 'sample_streams/generate_test_logs.py']
 stream = CommandInputStream(process_to_read)
 app = Logria(stream)  # Capture output from `process_to_read`
 app.start()
@@ -84,13 +84,11 @@ app.start()
 ## Todo
 
 - Enhancements
-  - [ ] Main app loop starts when we call start, but the listener happens on init
   - [ ] Support line breaks - requires rework of rendering logic
   - [ ] Make the command line show what current command is active, ex `/` for regex mode, `:` for command, etc
   - [ ] Spawn a subprocess to find all the matches in the list of messages
   - [ ] New "event loop" to handle multiple feature-sets, i.e. other than just regex search
 - New features
-  - [ ] Allow user to define multiple streams e.x. `ssh` sessions, and have a class to join them together
   - [ ] Add statistics tracking for log messages
   - [ ] Add 'status bar' since we have an empty row so the user can see what we are currently doing
 - Clerical
@@ -112,6 +110,8 @@ app.start()
 
 ### Completed
 
+- [x] Allow user to define multiple streams e.x. `ssh` sessions, and have a class to join them together
+- [x] Main app loop starts when we call start, but the listener happens on init
 - [x] Save sessions through class, make init process nicer
 - [x] Init screen when launched with no args
 - [x] Class for parsing paths for shell commands, i.e. resolving paths to tools on the `PATH`

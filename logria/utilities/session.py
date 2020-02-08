@@ -59,6 +59,6 @@ if __name__ == '__main__':
     print(s.show_sessions())
     print(s.load_session(0).get('commands')[0])
     # r = Resolver()
-    # command = 'python logria/communication/generate_test_logs.py'
+    # command = 'python sample_streams/generate_test_logs.py'
     # cmd = r.resolve_command_as_list(command)
     # s.save_session('Generate Test Logs', [cmd])

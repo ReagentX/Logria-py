@@ -13,7 +13,7 @@ LOGGER = setup_default_logger(__name__)
 LOGGER.info('I am the first log in the list! %s', 0)
 while True:
     RANDINT = random.randint(1, 100)
-    LOGGER.info('I am a log! %s', RANDINT)
+    LOGGER.info('I am a first log! %s', RANDINT)
     # String formatting is too slow
     print('I am standard output %s' % RANDINT, flush=True)
     time.sleep(0.01)

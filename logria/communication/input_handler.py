@@ -27,6 +27,11 @@ class InputStream():
             target=self.run, args=(args, self.stdout, self.stderr,))
         self.process.daemon = True
         self.process.name = ' '.join(args)
+
+    def start(self):
+        """
+        Start the process independent of init
+        """
         self.process.start()
 
     def run(self, args: list, stdoutq: multiprocessing.Queue, stderrq: multiprocessing.Queue) -> None:
