@@ -29,6 +29,7 @@ def main():
         if args.e:
             args = args.e[0].split(' ')
             stream = CommandInputStream(args)
+            stream.start()
         else:
             stream = None
 
