@@ -171,7 +171,7 @@ class Logria():
                     parser = Parser()
                     parser.load(Parser().patterns()[int(command)])
                     break
-                except:
+                except ValueError:
                     pass
 
         # Overwrite a different list this time, and reset it when done
