@@ -43,8 +43,8 @@ There are a few main ways to invoke Logria:
   - `logria`
 - With args:
   - `logria -e 'tail -f log.txt'`
-~~- As a pipe:~~
-  ~~- `tail -f log.txt | logria`~~  [See Todos with Caveats](#todos-with-caveats)
+- ~~As a pipe:~~
+  - ~~`tail -f log.txt | logria`~~  [See Todos with Caveats](#todos-with-caveats)
 
 It may also be imported invoked programmatically as part of other software:
 
