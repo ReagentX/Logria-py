@@ -29,9 +29,6 @@ class Logria():
         self.command_line: curses.window = None  # The command line
         self.box: Textbox = None  # The text box inside the command line
 
-        # Data streams
-        self.stderr_q: Queue = stream.stderr
-        self.stdout_q: Queue = stream.stdout
 
         # Message buffers
         self.stderr_messages: list = []
@@ -65,6 +62,14 @@ class Logria():
         self.manually_controlled_line: bool = False  # Whether manual scroll is active
         self.current_end: bool = 0  # Current last row we have rendered
 
+        # If we do not have a stream yet, tell the user to set one up
+        if stream is None:
+            self.setup_streams()
+        else:
+            # Data streams
+            self.stderr_q: Queue = stream.stderr
+            self.stdout_q: Queue = stream.stdout
+
     def build_command_line(self) -> None:
         """
         Creates a textbox object that has insert mode set to the passed value
@@ -95,6 +100,12 @@ class Logria():
                 self.outwin.addstr(i, 2, '\n')
             except curses.error:
                 pass
+
+    def setup_streams(self) -> None:
+        """
+        When launched without a stream, allow the user to define them for us
+        """
+        pass
 
     def setup_parser(self):
         """
@@ -149,7 +160,7 @@ class Logria():
                     self.current_status = f'Parsing with {parser.get_name()}, field {command}'
                     self.write_to_command_line(self.current_status)
                     break
-                except Exception:
+                except ValueError:
                     pass
 
         # Set parser
