@@ -23,7 +23,7 @@ class SessionHandler():
         out_d = {}
         if item in SessionHandler().sessions():
             name = SessionHandler().sessions()[item]
-            with open(Path(SAVED_SESSIONS_PATH, name), 'w') as f:
+            with open(Path(SAVED_SESSIONS_PATH, name), 'r') as f:
                 out_d = json.loads(f.read())
         return out_d
 
@@ -57,6 +57,7 @@ if __name__ == '__main__':
     s = SessionHandler()
     print(s.sessions())
     print(s.show_sessions())
+    print(s.load_session(0).get('commands')[0])
     # r = Resolver()
     # command = 'python logria/communication/generate_test_logs.py'
     # cmd = r.resolve_command_as_list(command)
