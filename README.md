@@ -42,9 +42,9 @@ There are a few main ways to invoke Logria:
 - Directly:
   - `logria`
 - With args:
-  - `logria -e tail -f log.txt`
-- As a pipe:
-  - `tail -f log.txt | logria`
+  - `logria -e 'tail -f log.txt'`
+~~- As a pipe:~~
+  ~~- `tail -f log.txt | logria`~~  [See Todos with Caveats](#todos-with-caveats)
 
 It may also be imported invoked programmatically as part of other software:
 
@@ -90,12 +90,15 @@ app.start()
   - [ ] Spawn a subprocess to find all the matches in the list of messages
 - New features
   - [ ] Add 'status bar' since we have an empty row so the user can see what we are currently doing
-  - [ ] Support optional piping as input stream - [SO Link](https://stackoverflow.com/questions/1450393/how-do-you-read-from-stdin)
   - [ ] Add statistics tracking for log messages
   - [ ] Class for parsing paths for shell commands, i.e. resolving paths to tools on the `PATH`
 
 ### Todos with Caveats
 
+- [ ] Support optional piping as input stream - [SO Link](https://stackoverflow.com/questions/1450393/how-do-you-read-from-stdin)
+  - Not possible to implement
+  - stdin gets taken over by whatever we pipe to this program, and we cannot move that pipe away from stdin until the pipe finishes
+  - We can overwrite the pipe with `sys.stdin = open(0)` however this will not work until the original pipe ends, which will never happen when tailing a stream
 - [x] Highlight match in log - requires rework of regex method
   - We cannot just add ANSI codes as we might overwrite/alter existing ones
   - We also cannot just use a reset code after we insert a new code because it may reset what was already in the message
