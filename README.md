@@ -85,13 +85,13 @@ app.start()
 - Enhancements
   - [ ] Main app loop starts when we call start, but the listener happens on init
   - [ ] Support line breaks - requires rework of rendering logic
-  - [ ] New "event loop" to handle multiple feature-sets, i.e. other than just regex search
   - [ ] Make the command line show what current command is active, ex `/` for regex mode, `:` for command, etc
   - [ ] Spawn a subprocess to find all the matches in the list of messages
+  - [ ] New "event loop" to handle multiple feature-sets, i.e. other than just regex search
 - New features
-  - [ ] Add 'status bar' since we have an empty row so the user can see what we are currently doing
-  - [ ] Add statistics tracking for log messages
   - [ ] Class for parsing paths for shell commands, i.e. resolving paths to tools on the `PATH`
+  - [ ] Add statistics tracking for log messages
+  - [ ] Add 'status bar' since we have an empty row so the user can see what we are currently doing
 
 ### Todos with Caveats
 
