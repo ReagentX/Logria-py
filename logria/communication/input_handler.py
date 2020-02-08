@@ -75,6 +75,26 @@ class CommandInputStream(InputStream):
                 break
 
 
+class PipeInputStream(InputStream):
+    """
+    Read in a file as a stream
+    """
+
+    def run(self, pipe: PIPE, stdoutq: multiprocessing.Queue, _: multiprocessing.Queue) -> None:
+        """
+        Given a filename, open the file and read the contents
+        args: a list of folders to be joined ['Docs', 'file.py'] -> 'Docs/file.py'
+        """
+        pipe = open(0)
+        while True:
+            try:
+                pipe_input = pipe.readline()
+                if pipe_input:
+                    stdoutq.put(pipe_input)
+            except:
+                pass
+
+
 class FileInputStream(InputStream):
     """
     Read in a file as a stream
