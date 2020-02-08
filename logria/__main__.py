@@ -28,13 +28,12 @@ def main():
         args = parser.parse_args()
         if args.e:
             args = args.e[0].split(' ')
-            # args = args.e
+            stream = CommandInputStream(args)
         else:
-            args = ['python', 'logria/communication/generate_test_logs.py']
-        stream = CommandInputStream(args)
+            stream = None
 
     # Start the app
-    app = Logria(stream)
+    app = Logria(stream)   # If the stream is None, the app will ask the user to init
     app.start()
     stream.exit()
 
