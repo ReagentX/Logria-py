@@ -71,8 +71,8 @@ app.start()
 | `z` | deactivate parser |
 | ↑ | scroll buffer up one line |
 | ↓ | scroll buffer down one line |
-| → | skip to end of buffer |
-| ← | skip to beginning of buffer |
+| → | skip and stick to end of buffer |
+| ← | skip and stick to beginning of buffer |
 
 ## Notes / Caveats
 
