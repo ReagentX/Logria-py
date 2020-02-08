@@ -1,0 +1,8 @@
+{
+    "commands": [
+        [
+            "/Users/chris/Documents/Code/Python/logria/venv/bin/python",
+            "logria/communication/generate_test_logs.py"
+        ]
+    ]
+}
