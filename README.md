@@ -55,7 +55,7 @@ from logria.communication.shell_output import Logria
 
 process_to_read = ['python', 'logria/communication/generate_test_logs.py']
 stream = CommandInputStream(process_to_read)
-app = Logria(stream.stderr)  # Capture output from `process_to_read`s `stderr`
+app = Logria(stream)  # Capture output from `process_to_read`
 app.start()
 ```
 
