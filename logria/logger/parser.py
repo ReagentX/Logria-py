@@ -13,11 +13,11 @@ from logria.utilities.constants import ANSI_COLOR_PATTERN, SAVED_PATTERNS_PATH
 
 class Parser():
     def __init__(self, pattern=None, type_=None, name=None, example=None):
-        self._pattern = pattern  # The raw pattern
+        self._pattern: str = pattern  # The raw pattern
         # The type of pattern to parse, string {'split', 'regex'}
-        self._type = type_
-        self._name = name  # The name of the pattern
-        self._example = example  # An example used to list on the frontend
+        self._type: str = type_
+        self._name: str = name  # The name of the pattern
+        self._example: str = example  # An example used to list on the frontend
 
     def get_name(self):
         return self._name
