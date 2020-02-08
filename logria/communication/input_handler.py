@@ -3,8 +3,8 @@ Functions for handling getting input from a file or from stdout/stderr
 """
 
 
-from subprocess import Popen, PIPE
 import multiprocessing
+from subprocess import PIPE, Popen
 
 from logria.logger.default_logger import setup_default_logger
 

@@ -3,16 +3,18 @@ Classes to handle saving sessions
 """
 
 
-import os
 import json
+import os
 from pathlib import Path
 
-
 from logria.utilities.constants import SAVED_SESSIONS_PATH
-from logria.communication.input_handler import CommandInputStream
 
 
 class SessionHandler():
+    """
+    Class that manages sessions for the user
+    """
+
     def __init__(self):
         self._commands: dict = {}
 
@@ -53,11 +55,11 @@ class SessionHandler():
 
 
 if __name__ == '__main__':
-    from logria.utilities.command_parser import Resolver
     s = SessionHandler()
     print(s.sessions())
     print(s.show_sessions())
     print(s.load_session(0).get('commands')[0])
+    # from logria.utilities.command_parser import Resolver
     # r = Resolver()
     # command = 'python sample_streams/generate_test_logs.py'
     # cmd = r.resolve_command_as_list(command)

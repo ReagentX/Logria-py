@@ -7,9 +7,8 @@ import curses
 import re
 import time
 from curses.textpad import Textbox, rectangle
-from multiprocessing import Queue
 
-from logria.communication.input_handler import InputStream, CommandInputStream
+from logria.communication.input_handler import CommandInputStream, InputStream
 from logria.interface import color_handler
 from logria.logger.parser import Parser
 from logria.utilities.command_parser import Resolver
@@ -66,9 +65,9 @@ class Logria():
 
         # If we do not have a stream yet, tell the user to set one up
         if stream is None:
-            self.streams = []
+            self.streams: list = []
         else:
-            self.streams = [stream]  # Stream list to handle mutliple streams
+            self.streams: list = [stream]  # Stream list to handle mutliple streams
 
     def build_command_line(self) -> None:
         """

@@ -2,16 +2,19 @@
 Class to handle parsing of standard log patterns
 """
 
+import json
 import os
 import re
-import json
-import pprint
 from pathlib import Path
 
 from logria.utilities.constants import ANSI_COLOR_PATTERN, SAVED_PATTERNS_PATH
 
 
 class Parser():
+    """
+    Handles setting up of log message parsing
+    """
+
     def __init__(self, pattern=None, type_=None, name=None, example=None):
         self._pattern: str = pattern  # The raw pattern
         # The type of pattern to parse, string {'split', 'regex'}
@@ -20,30 +23,48 @@ class Parser():
         self._example: str = example  # An example used to list on the frontend
 
     def get_name(self):
+        """
+        Get the name of the parser as a string
+        """
         return self._name
 
     def set_pattern(self, pattern: str, type_: str, name: str, example: str) -> None:
+        """
+        Init the class variables when loading
+        """
         self._pattern = pattern
         self._type = type_
         self._name = name
         self._example = example
 
     def clean_ansi_codes(self, string: str) -> str:
+        """
+        Remove ANSI escape sequences from a string
+        """
         return re.sub(ANSI_COLOR_PATTERN, '', string)
 
     def split_pattern(self, message: str) -> str:
+        """
+        Split a log message based on a delimiter
+        """
         if self._pattern is None:
             raise ValueError('Parsing pattern when pattern not set!')
         parts = re.split(self._pattern, message)
         return parts
 
     def regex_pattern(self, message: str) -> str:
+        """
+        Split a log message based on matches to a regex pattern
+        """
         if self._pattern is None:
             raise ValueError('Parsing pattern when pattern not set!')
         matches = re.match(self._pattern, message)
         return list(matches.groups()) if matches is not None else None
 
     def parse(self, message: str) -> list:
+        """
+        Parse a log message
+        """
         if self._type == 'split':
             return self.split_pattern(message)
         elif self._type == 'regex':
@@ -89,7 +110,7 @@ class Parser():
         """
         Show parser result so the user can choose what section to look at
         """
-        if self._pattern == None:
+        if self._pattern is None:
             raise ValueError('Display called without loading a parser!')
         match = self.parse(self._example)
         return [f'{i}: {v}' for i, v in enumerate(match)]

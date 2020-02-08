@@ -2,11 +2,10 @@
 Main app loop
 """
 
-import sys
-import os
 import argparse
+import os
 
-from logria.communication.input_handler import CommandInputStream, PipeInputStream
+from logria.communication.input_handler import CommandInputStream
 from logria.communication.shell_output import Logria
 
 
