@@ -16,6 +16,7 @@ from logria.utilities.command_parser import Resolver
 from logria.utilities.constants import ANSI_COLOR_PATTERN
 from logria.utilities.keystrokes import validator
 from logria.utilities.regex_generator import regex_test_generator
+from logria.utilities.session import SessionHandler
 
 
 class Logria():
@@ -107,8 +108,11 @@ class Logria():
         """
         When launched without a stream, allow the user to define them for us
         """
+        # Setup a SessionHandler and get the existing saved sessions
+        session_handler = SessionHandler()
         # Tell the user what we are doing
-        self.messages.append('Enter a command to open a stream')
+        self.messages.append('Enter a new command to open a stream or choose a saved one from the list:')
+        self.messages.extend(session_handler.show_sessions())
         self.render_text_in_output()
 
         # Dump the existing status
@@ -124,7 +128,13 @@ class Logria():
             if command == 'q':
                 raise ValueError('User quit!')
             else:
-                command = resolver.resolve_command_as_list(command)
+                try:
+                    command = int(command)
+                    session = session_handler.load_session(command)
+                    command = session.get('commands')[0]
+                except ValueError:
+                    command = resolver.resolve_command_as_list(command)
+                    session_handler.save_session(command, [command])
                 break
 
         # Launch the subprocess, assign values
@@ -137,6 +147,10 @@ class Logria():
 
         # Set status back to what it was
         self.write_to_command_line(self.current_status)
+
+        # Reset messages
+        self.stderr_messages = []
+        self.messages = self.stderr_messages
 
     def setup_parser(self):
         """
