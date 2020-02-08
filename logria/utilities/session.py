@@ -17,6 +17,9 @@ class SessionHandler():
         self._commands: dict = {}
 
     def load_session(self, item: int) -> dict:
+        """
+        Load data for a session
+        """
         out_d = {}
         if item in SessionHandler().sessions():
             name = SessionHandler().sessions()[item]
@@ -25,17 +28,26 @@ class SessionHandler():
         return out_d
 
     def save_session(self, name: str, commands: list) -> None:
+        """
+        Save a session to the sessions directory
+        """
         out_json = {'commands': commands}
         with open(Path(SAVED_SESSIONS_PATH, name), 'w') as f:
             f.write(json.dumps(out_json, indent=4))
 
     @classmethod
     def sessions(cls) -> dict:
+        """
+        Get the existing sessions as a dict
+        """
         sessions = os.listdir(SAVED_SESSIONS_PATH)
         return dict(zip(range(0, len(sessions)), sessions))
 
     @classmethod
     def show_sessions(cls) -> dict:
+        """
+        Get the existing sessions as a list for output
+        """
         sessions = os.listdir(SAVED_SESSIONS_PATH)
         return [f'{i}: {v}' for i, v in enumerate(sessions)]
 
