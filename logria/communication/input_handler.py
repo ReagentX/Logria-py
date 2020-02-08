@@ -97,7 +97,7 @@ class PipeInputStream(InputStream):
                 if pipe_input:
                     stdoutq.put(pipe_input)
             except:
-                pass
+                break
 
 
 class FileInputStream(InputStream):
