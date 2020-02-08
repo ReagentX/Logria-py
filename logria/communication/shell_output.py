@@ -66,12 +66,9 @@ class Logria():
 
         # If we do not have a stream yet, tell the user to set one up
         if stream is None:
-            self.stderr_q: Queue = None
-            self.stdout_q: Queue = None
+            self.streams = []
         else:
-            # Data streams
-            self.stderr_q: Queue = stream.stderr
-            self.stdout_q: Queue = stream.stdout
+            self.streams = [stream]  # Stream list to handle mutliple streams
 
     def build_command_line(self) -> None:
         """
@@ -131,7 +128,9 @@ class Logria():
                 try:
                     command = int(command)
                     session = session_handler.load_session(command)
-                    command = session.get('commands')[0]
+                    commands = session.get('commands')
+                    for command in commands:
+                        self.streams.append(CommandInputStream(command))
                 except ValueError:
                     command = resolver.resolve_command_as_list(command)
                     session_handler.save_session(command, [command])
@@ -139,11 +138,10 @@ class Logria():
 
         # Launch the subprocess, assign values
         try:
-            proc = CommandInputStream(command)
+            for stream in self.streams:
+                stream.start()
         except Exception as e:
-            raise e
-        self.stderr_q = proc.stderr
-        self.stdout_q = proc.stdout
+            pass
 
         # Set status back to what it was
         self.write_to_command_line(self.current_status)
@@ -482,17 +480,18 @@ class Logria():
 
         # Start the main app loop
         while True:
-            if self.stderr_q is None and self.stdout_q is None:
+            if not self.streams:
                 self.setup_streams()
             # Update messages from the input stream's queues, track time
             t_0 = time.perf_counter()
-            while not self.stderr_q.empty():
-                message = self.stderr_q.get()
-                self.stderr_messages.append(message)
-        
-            while not self.stdout_q.empty():
-                message = self.stdout_q.get()
-                self.stdout_messages.append(message)
+            for stream in self.streams:
+                while not stream.stderr.empty():
+                    message = stream.stderr.get()
+                    self.stderr_messages.append(message)
+
+                while not stream.stdout.empty():
+                    message = stream.stdout.get()
+                    self.stdout_messages.append(message)
 
             # Prevent this loop from taking up 100% of the CPU dedicated to the main thread by delaying loops
             t_1 = time.perf_counter() - t_0
