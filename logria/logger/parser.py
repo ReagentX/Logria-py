@@ -13,11 +13,11 @@ from logria.utilities.constants import ANSI_COLOR_PATTERN, SAVED_PATTERNS_PATH
 
 class Parser():
     def __init__(self, pattern=None, type_=None, name=None, example=None):
-        self._pattern = pattern  # The raw pattern
+        self._pattern: str = pattern  # The raw pattern
         # The type of pattern to parse, string {'split', 'regex'}
-        self._type = type_
-        self._name = name  # The name of the pattern
-        self._example = example  # An example used to list on the frontend
+        self._type: str = type_
+        self._name: str = name  # The name of the pattern
+        self._example: str = example  # An example used to list on the frontend
 
     def get_name(self):
         return self._name
@@ -62,6 +62,9 @@ class Parser():
                 }
 
     def save(self) -> None:
+        """
+        Save current pattern
+        """
         # Convert to json
         if self._pattern:
             d = self.as_dict()
@@ -69,6 +72,9 @@ class Parser():
                 f.write(json.dumps(d, indent=4))
 
     def load(self, name: str) -> None:
+        """
+        Load existing pattern
+        """
         # Convert to json
         if self._pattern is not None:
             raise ValueError('Setting pattern while pattern already set!')
@@ -80,6 +86,9 @@ class Parser():
                                  d['name'], d['example'])
 
     def display_example(self):
+        """
+        Show parser result so the user can choose what section to look at
+        """
         if self._pattern == None:
             raise ValueError('Display called without loading a parser!')
         match = self.parse(self._example)
@@ -87,11 +96,17 @@ class Parser():
 
     @classmethod
     def patterns(cls) -> dict:
+        """
+        Get the existing patterns as a dict
+        """
         patterns = os.listdir(SAVED_PATTERNS_PATH)
         return dict(zip(range(0, len(patterns)), patterns))
 
     @classmethod
-    def show_patterns(cls) -> dict:
+    def show_patterns(cls) -> list:
+        """
+        Get the existing patterns as a list
+        """
         patterns = os.listdir(SAVED_PATTERNS_PATH)
         return [f'{i}: {v}' for i, v in enumerate(patterns)]
 

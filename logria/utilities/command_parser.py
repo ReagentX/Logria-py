@@ -29,7 +29,8 @@ class Resolver():
         if paths is None:
             LOGGER.info('PATH environment variable does not exist!')
             return None
-        for path in paths.split(':'):
+        # Iterate in reverse so we resolve tools in local paths after system paths
+        for path in paths.split(':')[::-1]:
             programs = os.listdir(path)
             self._paths.update(dict([(programs, f'{path}/{programs}') for programs in programs]))
 

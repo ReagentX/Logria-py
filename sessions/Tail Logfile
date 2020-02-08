@@ -1,0 +1,9 @@
+{
+    "commands": [
+        [
+            "/usr/bin/tail",
+            "-f",
+            "server.log"
+        ]
+    ]
+}
