@@ -34,9 +34,15 @@ class Resolver():
             self._paths.update(dict([(programs, f'{path}/{programs}') for programs in programs]))
 
     def get(self, program: str) -> str:
+        """
+        Get a program's fully qualified path if it exists
+        """
         return self._paths.get(program, program)
 
     def resolve_command_as_string(self, command: str) -> str:
+        """
+        Replace all programs on the path with their fully qualified counterparts as a string
+        """
         command_parts = command.split(' ')
         new_command = ''
         for part in command_parts:
@@ -45,6 +51,9 @@ class Resolver():
         return new_command
 
     def resolve_command_as_list(self, command: str) -> list:
+        """
+        Replace all programs on the path with their fully qualified counterparts as a list
+        """
         command_parts = command.split(' ')
         new_command = []
         for part in command_parts:
