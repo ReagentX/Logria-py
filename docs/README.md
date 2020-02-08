@@ -5,5 +5,5 @@ This folder contains the documentation on how to interact with Logria programmat
 
 ## Index
 
-- (Patterns)[patterns.md]
-- (Sessions)[sessions.md]
+- [Patterns](patterns.md)
+- [Sessions](sessions.md)
