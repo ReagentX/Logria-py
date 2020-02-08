@@ -92,7 +92,6 @@ app.start()
 - New features
   - [ ] Init screen when launched with no args
   - [ ] Allow user to define multiple streams e.x. `ssh` sessions, and have a class to join them together
-  - [ ] Class for parsing paths for shell commands, i.e. resolving paths to tools on the `PATH`
   - [ ] Add statistics tracking for log messages
   - [ ] Add 'status bar' since we have an empty row so the user can see what we are currently doing
 - Clerical
@@ -110,10 +109,11 @@ app.start()
 - [x] Highlight match in log - requires rework of regex method
   - We cannot just add ANSI codes as we might overwrite/alter existing ones
   - We also cannot just use a reset code after we insert a new code because it may reset what was already in the message
-  - Current workaround is to disable all color codes before inserting a highlighter and toggle
+  - Current workaround is to regex out all color codes before inserting a highlighter and toggle
 
 ### Completed
 
+- [x] Class for parsing paths for shell commands, i.e. resolving paths to tools on the `PATH`
 - [x] Support parsing logs using `Log()` class
 - [x] Switch between stderr and stdout
 - [x] Move `regex_test_generator` to a separate class/module

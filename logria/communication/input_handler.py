@@ -85,7 +85,7 @@ class PipeInputStream(InputStream):
         Given a filename, open the file and read the contents
         args: a list of folders to be joined ['Docs', 'file.py'] -> 'Docs/file.py'
         """
-        pipe = open(0)
+        # pipe = open(0)
         while True:
             try:
                 pipe_input = pipe.readline()
