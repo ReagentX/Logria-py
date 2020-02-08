@@ -4,17 +4,18 @@ Contains the main class that controls the state of the app
 
 
 import curses
-import time
 import re
+import time
 from curses.textpad import Textbox, rectangle
 from multiprocessing import Queue
 
-from logria.communication.input_handler import InputStream
+from logria.communication.input_handler import InputStream, CommandInputStream
 from logria.interface import color_handler
+from logria.logger.parser import Parser
+from logria.utilities.command_parser import Resolver
+from logria.utilities.constants import ANSI_COLOR_PATTERN
 from logria.utilities.keystrokes import validator
 from logria.utilities.regex_generator import regex_test_generator
-from logria.utilities.constants import ANSI_COLOR_PATTERN
-from logria.logger.parser import Parser
 
 
 class Logria():
@@ -29,9 +30,6 @@ class Logria():
         self.command_line: curses.window = None  # The command line
         self.box: Textbox = None  # The text box inside the command line
 
-        # Data streams
-        self.stderr_q: Queue = stream.stderr
-        self.stdout_q: Queue = stream.stdout
 
         # Message buffers
         self.stderr_messages: list = []
@@ -65,6 +63,15 @@ class Logria():
         self.manually_controlled_line: bool = False  # Whether manual scroll is active
         self.current_end: bool = 0  # Current last row we have rendered
 
+        # If we do not have a stream yet, tell the user to set one up
+        if stream is None:
+            self.stderr_q: Queue = None
+            self.stdout_q: Queue = None
+        else:
+            # Data streams
+            self.stderr_q: Queue = stream.stderr
+            self.stdout_q: Queue = stream.stdout
+
     def build_command_line(self) -> None:
         """
         Creates a textbox object that has insert mode set to the passed value
@@ -95,6 +102,41 @@ class Logria():
                 self.outwin.addstr(i, 2, '\n')
             except curses.error:
                 pass
+
+    def setup_streams(self) -> None:
+        """
+        When launched without a stream, allow the user to define them for us
+        """
+        # Tell the user what we are doing
+        self.messages.append('Enter a command to open a stream')
+        self.render_text_in_output()
+
+        # Dump the existing status
+        self.write_to_command_line('')
+
+        # Create resolver class to resolve commands
+        resolver = Resolver()
+
+        # Get user input
+        while True:
+            self.activate_prompt()
+            command = self.box.gather().strip()
+            if command == 'q':
+                raise ValueError('User quit!')
+            else:
+                command = resolver.resolve_command_as_list(command)
+                break
+
+        # Launch the subprocess, assign values
+        try:
+            proc = CommandInputStream(command)
+        except Exception as e:
+            raise e
+        self.stderr_q = proc.stderr
+        self.stdout_q = proc.stdout
+
+        # Set status back to what it was
+        self.write_to_command_line(self.current_status)
 
     def setup_parser(self):
         """
@@ -149,7 +191,7 @@ class Logria():
                     self.current_status = f'Parsing with {parser.get_name()}, field {command}'
                     self.write_to_command_line(self.current_status)
                     break
-                except Exception:
+                except ValueError:
                     pass
 
         # Set parser
@@ -426,11 +468,14 @@ class Logria():
 
         # Start the main app loop
         while True:
+            if self.stderr_q is None and self.stdout_q is None:
+                self.setup_streams()
             # Update messages from the input stream's queues, track time
             t_0 = time.perf_counter()
             while not self.stderr_q.empty():
                 message = self.stderr_q.get()
                 self.stderr_messages.append(message)
+        
             while not self.stdout_q.empty():
                 message = self.stdout_q.get()
                 self.stdout_messages.append(message)
