@@ -36,8 +36,25 @@ class Resolver():
     def get(self, program: str) -> str:
         return self._paths.get(program, program)
 
+    def resolve_command_as_string(self, command: str) -> str:
+        command_parts = command.split(' ')
+        new_command = ''
+        for part in command_parts:
+            resolved_part = self.get(part)
+            new_command += ' ' + resolved_part
+        return new_command
+
+    def resolve_command_as_list(self, command: str) -> list:
+        command_parts = command.split(' ')
+        new_command = []
+        for part in command_parts:
+            resolved_part = self.get(part)
+            new_command.append(resolved_part)
+        return new_command
 
 if __name__ == '__main__':
     r = Resolver()
-    print(r.get('tail'))
-    print(r.get('tail23'))
+    print('  path\t', r.get('tail'))
+    print('nopath\t', r.get('tail23'))
+    print(r.resolve_command_as_string('tail -f file.txt | grep [^a-z](.*?)<'))
+    print(r.resolve_command_as_list('tail -f file.txt | grep [^a-z](.*?)<'))
