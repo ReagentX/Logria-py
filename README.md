@@ -90,9 +90,16 @@ app.start()
   - [ ] Spawn a subprocess to find all the matches in the list of messages
   - [ ] New "event loop" to handle multiple feature-sets, i.e. other than just regex search
 - New features
+  - [ ] Init screen when launched with no args
+  - [ ] Allow user to define multiple streams e.x. `ssh` sessions, and have a class to join them together
   - [ ] Class for parsing paths for shell commands, i.e. resolving paths to tools on the `PATH`
   - [ ] Add statistics tracking for log messages
   - [ ] Add 'status bar' since we have an empty row so the user can see what we are currently doing
+- Clerical
+  - [ ] Write docs
+  - [ ] Screenshots for readme
+  - [ ] Add license
+  - [ ] Add contribution guidelines
 
 ### Todos with Caveats
 
