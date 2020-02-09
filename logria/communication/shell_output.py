@@ -296,7 +296,7 @@ class Logria():
                     break
                 current_row += 1
                 # Instead of window.addstr, handle colors
-                color_handler.addstr(self.outwin, current_row, 2, item + '\n')
+                color_handler.addstr(self.outwin, current_row, 2, item)
         elif self.matched_rows:
             # Handle where the bottom of the stream is
             if self.stick_to_bottom:
@@ -336,7 +336,7 @@ class Logria():
                     item = re.sub(
                         self.regex_pattern, f'\u001b[35m{self.regex_pattern}\u001b[0m', item)
                 # Print to current row, 2 chars from right edge
-                color_handler.addstr(self.outwin, current_row, 2, item + '\n')
+                color_handler.addstr(self.outwin, current_row, 2, item)
         self.outwin.refresh()
 
     def process_matches(self) -> None:
