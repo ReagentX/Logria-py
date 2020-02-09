@@ -6,4 +6,6 @@ This folder contains the documentation on how to interact with Logria programmat
 ## Index
 
 - [Patterns](patterns.md)
+  - Details on how to configure patterns for log parsing
 - [Sessions](sessions.md)
+  - Details on how to configure sessions when launching the app
