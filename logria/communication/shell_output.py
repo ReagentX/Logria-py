@@ -139,11 +139,11 @@ class Logria():
                 except Exception as e:
                     if isfile(command):
                         self.streams.append(FileInputStream(command.split('/')))
-                        session_handler.save_session('File: ' + command.replace('/', '|'), [command], 'file')
+                        session_handler.save_session('File: ' + command.replace('/', '|'), [command.split('/')], 'file')
                     else:
                         cmd = resolver.resolve_command_as_list(command)
                         self.streams.append(CommandInputStream(cmd))
-                        session_handler.save_session('Cmd: ' + command.replace('/', '|'), [cmd], 'command')
+                        session_handler.save_session('Cmd: ' + command.replace('/', '|'), [cmd.split(' ')], 'command')
                 finally:
                     break
 
