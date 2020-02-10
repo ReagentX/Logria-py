@@ -17,13 +17,20 @@ Sessions are stored as `JSON` in `/sessions` and do not have file extensions. A 
             "/Users/chris/Documents/Code/Python/logria/venv/bin/python",
             "sample_streams/generate_test_logs_2.py"
         ]
-    ]
+    ],
+    "type": "command"
 }
 ```
 
 ## Elements
 
-All sessions have one key, `commands`, which contains a list of commands to listen on.
+All sessions have two keys:
+
+- `commands`
+  - Contains a list of commands to listen on
+- `type`
+  - Contains a string of the type of input handler to use, either `file` or `command`
+  - `file` creates a `FileInputHander` and `command` creates a `CommandInputHandler`
 
 ## Interpreting Sessions at Runtime
 

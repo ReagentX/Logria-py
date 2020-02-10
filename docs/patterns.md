@@ -11,7 +11,13 @@ Patterns are stored as `JSON` in `/patterns` and do not have file extensions. A 
     "pattern": " - ",
     "type": "split",
     "name": "Hyphen Separated",
-    "example": "2005-03-19 15:10:26,773 - simple_example - CRITICAL - critical message"
+    "example": "2005-03-19 15:10:26,773 - simple_example - CRITICAL - critical message",
+    "analytics": {
+      "Date": "date",
+      "Caller": "count",
+      "Level": "count",
+      "Message": "sum"
+    }
 }
 ```
 
@@ -27,6 +33,10 @@ There are two types of patterns: `regex` and `split`. Both use regex, but in dif
   - The name of the pattern
 - `example`
   - An example message to match with the pattern
+- `analytics`
+  - A map of the name of the parsed message to a method to handle analytics
+  - These are mapped internally by index, i.e. the first item in the dict maps to the first match
+  - Methods currently include `count`, `sum`, and `average`, other methods are ignored
 
 ### Regex Patterns
 
@@ -37,7 +47,8 @@ A `regex` pattern matches parts of a log to the matches in a regex expression an
     "pattern": "([^ ]*) ([^ ]*) ([^ ]*) \\[([^]]*)\\] \"([^\"]*)\" ([^ ]*) ([^ ]*)",
     "type": "regex",
     "name": "Common Log Format",
-    "example": "127.0.0.1 user-identifier frank [10/Oct/2000:13:55:36 -0700] \"GET /apache_pb.gif HTTP/1.0\" 200 2326"
+    "example": "127.0.0.1 user-identifier frank [10/Oct/2000:13:55:36 -0700] \"GET /apache_pb.gif HTTP/1.0\" 200 2326",
+    "analytics": {...}
 }
 ```
 
@@ -50,7 +61,8 @@ A split pattern uses regex to split a message on a delimiter:
     "pattern": " - ",
     "type": "split",
     "name": "Hyphen Separated",
-    "example": "2005-03-19 15:10:26,773 - simple_example - CRITICAL - critical message"
+    "example": "2005-03-19 15:10:26,773 - simple_example - CRITICAL - critical message",
+    "analytics": {...}
 }
 ```
 
