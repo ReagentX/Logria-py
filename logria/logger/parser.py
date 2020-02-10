@@ -6,6 +6,7 @@ import json
 import os
 import re
 from pathlib import Path
+from collections import Counter
 
 from logria.utilities.constants import ANSI_COLOR_PATTERN, SAVED_PATTERNS_PATH
 
@@ -15,12 +16,15 @@ class Parser():
     Handles setting up of log message parsing
     """
 
-    def __init__(self, pattern=None, type_=None, name=None, example=None):
+    def __init__(self, pattern=None, type_=None, name=None, example=None, analytics_methods=None):
         self._pattern: str = pattern  # The raw pattern
         # The type of pattern to parse, string {'split', 'regex'}
         self._type: str = type_
         self._name: str = name  # The name of the pattern
         self._example: str = example  # An example used to list on the frontend
+        self._analytics_methods: dict = analytics_methods  # Analytics methods to use when parsing
+        self._analytics_map: dict = {}  # Stores the map of the message index to the analytics method names
+        self.analytics: dict = {}  # Analytics the main script can access
 
     def get_name(self):
         """
@@ -28,7 +32,7 @@ class Parser():
         """
         return self._name
 
-    def set_pattern(self, pattern: str, type_: str, name: str, example: str) -> None:
+    def set_pattern(self, pattern: str, type_: str, name: str, example: str, analytics_methods: dict) -> None:
         """
         Init the class variables when loading
         """
@@ -36,6 +40,77 @@ class Parser():
         self._type = type_
         self._name = name
         self._example = example
+        self._analytics_methods = analytics_methods
+
+    def extract_numbers_from_message(self, message: str) -> int or float:
+        r"""
+        We do not use regex replacement here because...
+
+        chris ~ % python -m timeit '"".join(c for c in "sdkjh987978asd098as0980a98sd" if c.isdigit() or c == ".")'
+        100000 loops, best of 3: 3.47 usec per loop
+        chris ~ % python -m timeit 'import re; re.sub(r"[^\d\.]", "", "sdkjh987978asd098as0980a98sd")'
+        100000 loops, best of 3: 4.67 usec per loop
+        """
+        digits = "".join(c for c in message if c.isdigit() or c == ".")
+        out_num = float(digits)
+        if out_num.is_integer():
+            return int(out_num)
+        return out_num
+
+    def apply_analytics(self, index: str, part: str) -> None:
+        """
+        Applies an analytics rule to a message
+        """
+        # Figure out what rule we want to apply
+        rule_name = self._analytics_map[index]
+        rule = self._analytics_methods[rule_name]
+        if rule == 'count':
+            if not self.analytics[index]:
+                self.analytics[index] = Counter()
+            self.analytics[index].update([part])
+        elif rule == 'sum':
+            if not self.analytics[index]:
+                self.analytics[index] = 0
+            try:
+                val = self.extract_numbers_from_message(part)
+                self.analytics[index] += val
+            except ValueError:
+                pass
+        elif rule == 'average':
+            if not self.analytics[index]:
+                self.analytics[index] = {'average': 0, 'count': 0, 'total': 0}
+            try:
+                val = self.extract_numbers_from_message(part)
+                self.analytics[index]['count'] += 1
+                self.analytics[index]['total'] += val
+                self.analytics[index]['average'] += self.analytics[index]['total'] / self.analytics[index]['count']
+            except ValueError:
+                pass
+
+    def handle_analytics_for_message(self, message: str) -> None:
+        """
+        Applies the analytics rules for each part of a message
+        """
+        for index, part in enumerate(self.parse(message)):
+            # str_idx = str(index)  # Python JSON dump cannot make integer keys
+            if index not in self.analytics:
+                self.analytics[index] = None
+            self.apply_analytics(index, part)
+
+    def analytics_to_list(self) -> list:
+        out_l = []
+        for stat in self.analytics:
+            value = self.analytics[stat]
+            if value is None:
+                continue
+            out_l += [f'{self._analytics_map[stat]}']
+            if isinstance(value, Counter):
+                out_l += [f'  {item}: {count}' for item, count in value.most_common()]
+            elif isinstance(value, int) or isinstance(value, float):
+                out_l += f'  Total: {value}'
+            elif isinstance(value, dict):
+                out_l += [f'  {key}:\t {value[key]}' for key in value]
+        return out_l
 
     def clean_ansi_codes(self, string: str) -> str:
         """
@@ -79,7 +154,8 @@ class Parser():
         return {'pattern': self._pattern,
                 'type': self._type,
                 'name': self._name,
-                'example': self._example
+                'example': self._example,
+                'analytics': self._analytics_methods
                 }
 
     def save(self) -> None:
@@ -104,7 +180,8 @@ class Parser():
             with open(Path(SAVED_PATTERNS_PATH, name), 'r') as f:
                 d = json.loads(f.read())
                 self.set_pattern(d['pattern'], d['type'],
-                                 d['name'], d['example'])
+                                 d['name'], d['example'], d['analytics'])
+                self._analytics_map = dict(zip(range(len(d['analytics'].keys())), d['analytics'].keys()))
 
     def display_example(self):
         """
@@ -133,9 +210,10 @@ class Parser():
 
 
 if __name__ == '__main__':
-    log_message = '2005-03-19 15:10:26,773 - simple_example - CRITICAL - critical message'
+    log_message = '2005-03-19 15:10:26,773 - simple_example - CRITICAL - critical message 34'
     log_message_short = '200 - simp - CRI - critical message'
     color_log_message = '\u001b[33m2020-02-04 19:06:52,852 \u001b[0m- \u001b[34m__main__.<module> \u001b[0m- \u001b[32mMainProcess \u001b[0m- \u001b[36mINFO \u001b[0m- I am a log! 91'
+    color_log_message2 = '\u001b[33m2020-02-04 19:06:52,852 \u001b[0m- \u001b[34m__main__.<module> \u001b[0m- \u001b[32mMainProcess \u001b[0m- \u001b[36mWARNING \u001b[0m- I am a log! 23'
     std_log_message = '127.0.0.1 user-identifier frank [10/Oct/2000:13:55:36 -0700] "GET /apache_pb.gif HTTP/1.0" 200 2326'
 
     def parse_std_log():
@@ -143,13 +221,17 @@ if __name__ == '__main__':
         # p.set_pattern(r'([^ ]*) ([^ ]*) ([^ ]*) \[([^]]*)\] "([^"]*)" ([^ ]*) ([^ ]*)', 'regex', 'Common Log Format', std_log_message)
         # p.set_pattern(r'- ', 'split', 'Color + Hyphen Separated', color_log_message)
         # p.set_pattern(r' - ', 'split', 'Hyphen Separated', log_message)
-        p.load('Hyphen Separated')
-        v = p.display_example()
-        for i in v:
-            print(i)
+        p.load('Color + Hyphen Separated')
+        # v = p.display_example()
+        # for i in v:
+        #     print(i)
         # d = p.parse(log_message)
         # for i in d:
         #     print(f'{d.index(i)}:', i)
         # p.save()
-    # parse_std_log()
-    print(Parser().show_patterns())
+        p.handle_analytics_for_message(color_log_message)
+        p.handle_analytics_for_message(color_log_message2)
+        for i in p.analytics_to_list():
+            print(i)
+    parse_std_log()
+    # print(Parser().show_patterns())
