@@ -133,7 +133,7 @@ class Logria():
                     # Commands need a type
                     for command in commands:
                         if session.get('type') == 'file':
-                            self.streams.append(FileInputStream(command.split('/')))
+                            self.streams.append(FileInputStream(command))
                         elif session.get('type') == 'command':
                             self.streams.append(CommandInputStream(command))
                 except Exception as e:
