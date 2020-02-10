@@ -8,8 +8,8 @@
         "User ID": "count",
         "Username": "count",
         "Date": "count",
-        "Request": "count"
-        "Status": "count"
+        "Request": "count",
+        "Status": "count",
         "Size": "count"
     }
 }
