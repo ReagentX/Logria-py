@@ -3,12 +3,13 @@ Contains the main class that controls the state of the app
 """
 
 
+from os.path import isfile
 import curses
 import re
 import time
 from curses.textpad import Textbox, rectangle
 
-from logria.communication.input_handler import CommandInputStream, InputStream
+from logria.communication.input_handler import CommandInputStream, InputStream, FileInputStream
 from logria.interface import color_handler
 from logria.logger.parser import Parser
 from logria.utilities.command_parser import Resolver
@@ -129,12 +130,22 @@ class Logria():
                     command = int(command)
                     session = session_handler.load_session(command)
                     commands = session.get('commands')
+                    # Commands need a type
                     for command in commands:
-                        self.streams.append(CommandInputStream(command))
-                except ValueError:
-                    command = resolver.resolve_command_as_list(command)
-                    session_handler.save_session(command, [command])
-                break
+                        if session.get('type') == 'file':
+                            self.streams.append(FileInputStream(command.split('/')))
+                        elif session.get('type') == 'command':
+                            self.streams.append(CommandInputStream(command))
+                except Exception as e:
+                    if isfile(command):
+                        self.streams.append(FileInputStream(command.split('/')))
+                        session_handler.save_session('File: ' + command.replace('/', '|'), [command], 'file')
+                    else:
+                        cmd = resolver.resolve_command_as_list(command)
+                        self.streams.append(CommandInputStream(cmd))
+                        session_handler.save_session('Cmd: ' + command.replace('/', '|'), [cmd], 'command')
+                finally:
+                    break
 
         # Launch the subprocess, assign values
         try:
@@ -251,6 +262,7 @@ class Logria():
                 self.parser.handle_analytics_for_message(self.previous_messages[index])
                 self.messages = self.parser.analytics_to_list()
                 # For some reason this isnt switching back
+                self.last_index_processed = len(self.previous_messages)
             else:
                 if self.messages is not self.parsed_messages:
                     self.messages = self.parsed_messages
@@ -261,7 +273,7 @@ class Logria():
                     except IndexError:
                         self.parsed_messages.append(
                             f'Error parsing! {self.previous_messages[index]}')
-        self.last_index_processed = len(self.messages)
+                self.last_index_processed = len(self.messages)
         self.write_to_command_line(self.current_status)
 
     def render_text_in_output(self) -> None:
@@ -553,14 +565,15 @@ class Logria():
                     self.setup_parser()
                 elif keypress == 'a':
                     # Enable analytics engine
-                    self.last_index_processed = 0
-                    if self.analytics_enabled:
-                        self.current_status = f'Parsing with {self.parser.get_name()}, field {self.parser._analytics_map[self.parser_index]}'
-                        self.parsed_messages = []
-                        self.analytics_enabled = False
-                    else:
-                        self.analytics_enabled = True
-                        self.current_status = f'Parsing with {self.parser.get_name()}, analytics view'
+                    if self.parser is not None:
+                        self.last_index_processed = 0
+                        if self.analytics_enabled:
+                            self.current_status = f'Parsing with {self.parser.get_name()}, field {self.parser._analytics_map[self.parser_index]}'
+                            self.parsed_messages = []
+                            self.analytics_enabled = False
+                        else:
+                            self.analytics_enabled = True
+                            self.current_status = f'Parsing with {self.parser.get_name()}, analytics view'
                 elif keypress == 'z':
                     # Tear down parser
                     self.reset_parser()
