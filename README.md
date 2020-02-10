@@ -94,7 +94,6 @@ app.start()
 - Clerical
   - [ ] Write docs
   - [ ] Screenshots for readme
-  - [ ] Add license
   - [ ] Add contribution guidelines
 
 ### Todos with Caveats
@@ -110,6 +109,7 @@ app.start()
 
 ### Completed
 
+- [x] Add license
 - [x] Add statistics tracking for log messages
 - [x] Allow user to define multiple streams e.x. `ssh` sessions, and have a class to join them together
 - [x] Main app loop starts when we call start, but the listener happens on init
