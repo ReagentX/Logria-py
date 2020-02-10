@@ -46,6 +46,7 @@ class Logria():
         self.parser: Parser = None  # Reference to the current parser
         self.parser_index: int = 0  # Index for the parser to look at
         self.parsed_messages: list = []  # Array of parsed rows
+        self.analytics_enabled: bool = False  # Array for statistics messages
         self.last_index_processed: int = 0  # The last index the parsing function saw
         # Pointer to the previous non-parsed message list, which is continuously updated
         self.previous_messages: list = []
@@ -244,15 +245,24 @@ class Logria():
 
         # TODO: Same as process_matches
         """
+        self.write_to_command_line('Handling message parsing...')
         for index in range(self.last_index_processed, len(self.previous_messages)):
-            match = self.parser.parse(self.previous_messages[index])
-            if match:
-                try:
-                    self.parsed_messages.append(match[self.parser_index])
-                except IndexError:
-                    self.parsed_messages.append(
-                        f'Error parsing! {self.previous_messages[index]}')
+            if self.analytics_enabled:
+                self.parser.handle_analytics_for_message(self.previous_messages[index])
+                self.messages = self.parser.analytics_to_list()
+                # For some reason this isnt switching back
+            else:
+                if self.messages is not self.parsed_messages:
+                    self.messages = self.parsed_messages
+                match = self.parser.parse(self.previous_messages[index])
+                if match:
+                    try:
+                        self.parsed_messages.append(match[self.parser_index])
+                    except IndexError:
+                        self.parsed_messages.append(
+                            f'Error parsing! {self.previous_messages[index]}')
         self.last_index_processed = len(self.messages)
+        self.write_to_command_line(self.current_status)
 
     def render_text_in_output(self) -> None:
         """
@@ -370,10 +380,12 @@ class Logria():
 
         # For each message, add its index to the list of matches; this is more efficient than
         # Storing a second copy of each match
+        self.write_to_command_line('Searching messages...')
         for index in range(self.last_index_regexed, len(self.messages)):
             if self.func_handle(self.messages[index]):
                 self.matched_rows.append(index)
         self.last_index_regexed = len(self.messages)
+        self.write_to_command_line(self.current_status)
 
     def write_to_command_line(self, string: str) -> None:
         """
@@ -500,6 +512,8 @@ class Logria():
             try:
                 keypress = self.command_line.getkey()  # Get keypress
                 if keypress == '/':
+                    if self.analytics_enabled:  # Disable regex in analytics view
+                        continue
                     # Handle getting input from the command line for regex
                     self.activate_prompt()
                     command = self.box.gather().strip()
@@ -537,6 +551,16 @@ class Logria():
                 elif keypress == 'p':
                     # Enable parser
                     self.setup_parser()
+                elif keypress == 'a':
+                    # Enable analytics engine
+                    self.last_index_processed = 0
+                    if self.analytics_enabled:
+                        self.current_status = f'Parsing with {self.parser.get_name()}, field {self.parser._analytics_map[self.parser_index]}'
+                        self.parsed_messages = []
+                        self.analytics_enabled = False
+                    else:
+                        self.analytics_enabled = True
+                        self.current_status = f'Parsing with {self.parser.get_name()}, analytics view'
                 elif keypress == 'z':
                     # Tear down parser
                     self.reset_parser()
