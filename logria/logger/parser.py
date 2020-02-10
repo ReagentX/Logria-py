@@ -104,7 +104,7 @@ class Parser():
                 continue
             out_l += [f'{self._analytics_map[stat]}']
             if isinstance(value, Counter):
-                out_l += [f'  {item}: {count:,}' for item, count in value.most_common()]
+                out_l += [f'  {item}: {count:,}' for item, count in value.most_common(5)]
             elif isinstance(value, int) or isinstance(value, float):
                 out_l += f'  Total: {value:,}'
             elif isinstance(value, dict):
@@ -215,8 +215,8 @@ if __name__ == '__main__':
     color_log_message2 = '\u001b[33m2020-02-04 19:06:52,852 \u001b[0m- \u001b[34m__main__.<module> \u001b[0m- \u001b[32mMainProcess \u001b[0m- \u001b[36mWARNING \u001b[0m- I am a log! 23'
     std_log_message = '127.0.0.1 user-identifier frank [10/Oct/2000:13:55:36 -0700] "GET /apache_pb.gif HTTP/1.0" 200 2326'
 
+    p = Parser()
     def parse_std_log():
-        p = Parser()
         # p.set_pattern(r'([^ ]*) ([^ ]*) ([^ ]*) \[([^]]*)\] "([^"]*)" ([^ ]*) ([^ ]*)', 'regex', 'Common Log Format', std_log_message)
         # p.set_pattern(r'- ', 'split', 'Color + Hyphen Separated', color_log_message)
         # p.set_pattern(r' - ', 'split', 'Hyphen Separated', log_message)
@@ -232,5 +232,9 @@ if __name__ == '__main__':
         p.handle_analytics_for_message(color_log_message2)
         for i in p.analytics_to_list():
             print(i)
-    parse_std_log()
+    # parse_std_log()
     # print(Parser().show_patterns())
+    print(Parser().patterns())
+    print(Parser().patterns()[0])
+    p.load(Parser().patterns()[0])
+    print(p.get_name())
