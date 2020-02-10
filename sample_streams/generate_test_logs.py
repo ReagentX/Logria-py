@@ -13,6 +13,8 @@ LOGGER = setup_default_logger(__name__)
 LOGGER.info('I am the first log in the list! %s', 0)
 while True:
     RANDINT = random.randint(1, 100)
+    if RANDINT % 5 == 0:
+        LOGGER.warning('I am a first log! %s', RANDINT)
     LOGGER.info('I am a first log! %s', RANDINT)
     # String formatting is too slow
     print('I am standard output %s' % RANDINT, flush=True)

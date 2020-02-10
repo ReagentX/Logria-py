@@ -17,6 +17,7 @@ class SessionHandler():
 
     def __init__(self):
         self._commands: dict = {}
+        self._type = ''
 
     def load_session(self, item: int) -> dict:
         """
@@ -29,11 +30,11 @@ class SessionHandler():
                 out_d = json.loads(f.read())
         return out_d
 
-    def save_session(self, name: str, commands: list) -> None:
+    def save_session(self, name: str, commands: list, type: str) -> None:
         """
         Save a session to the sessions directory
         """
-        out_json = {'commands': commands}
+        out_json = {'commands': commands, 'type': type}
         with open(Path(SAVED_SESSIONS_PATH, name), 'w') as f:
             f.write(json.dumps(out_json, indent=4))
 

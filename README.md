@@ -69,6 +69,7 @@ app.start()
 | `h` | if regex active, toggle highlighting of matches |
 | `i` | toggle insert mode (default off) |
 | `p` | activate parser |
+| `a` | toggle analytics mode when parser is active |
 | `z` | deactivate parser |
 | ↑ | scroll buffer up one line |
 | ↓ | scroll buffer down one line |
@@ -89,7 +90,6 @@ app.start()
   - [ ] Spawn a subprocess to find all the matches in the list of messages
   - [ ] New "event loop" to handle multiple feature-sets, i.e. other than just regex search
 - New features
-  - [ ] Add statistics tracking for log messages
   - [ ] Add 'status bar' since we have an empty row so the user can see what we are currently doing
 - Clerical
   - [ ] Write docs
@@ -110,6 +110,7 @@ app.start()
 
 ### Completed
 
+- [x] Add statistics tracking for log messages
 - [x] Allow user to define multiple streams e.x. `ssh` sessions, and have a class to join them together
 - [x] Main app loop starts when we call start, but the listener happens on init
 - [x] Save sessions through class, make init process nicer
