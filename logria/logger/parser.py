@@ -5,8 +5,8 @@ Class to handle parsing of standard log patterns
 import json
 import os
 import re
-from pathlib import Path
 from collections import Counter
+from pathlib import Path
 
 from logria.utilities.constants import ANSI_COLOR_PATTERN, SAVED_PATTERNS_PATH
 
@@ -22,8 +22,10 @@ class Parser():
         self._type: str = type_
         self._name: str = name  # The name of the pattern
         self._example: str = example  # An example used to list on the frontend
-        self._analytics_methods: dict = analytics_methods  # Analytics methods to use when parsing
-        self._analytics_map: dict = {}  # Stores the map of the message index to the analytics method names
+        # Analytics methods to use when parsing
+        self._analytics_methods: dict = analytics_methods
+        # Stores the map of the message index to the analytics method names
+        self._analytics_map: dict = {}
         self.analytics: dict = {}  # Analytics the main script can access
 
     def get_name(self):
@@ -86,7 +88,8 @@ class Parser():
                 val = self.extract_numbers_from_message(part)
                 self.analytics[index]['count'] += 1
                 self.analytics[index]['total'] += val
-                self.analytics[index]['average'] = self.analytics[index]['total'] / self.analytics[index]['count']
+                self.analytics[index]['average'] = self.analytics[index]['total'] / \
+                    self.analytics[index]['count']
             except ValueError:
                 pass
 
@@ -110,7 +113,8 @@ class Parser():
                 continue
             out_l += [f'{self.get_analytics_for_index(stat)}']
             if isinstance(value, Counter):
-                out_l += [f'  {item}: {count:,}' for item, count in value.most_common(5)]
+                out_l += [f'  {item}: {count:,}' for item,
+                          count in value.most_common(5)]
             elif isinstance(value, int) or isinstance(value, float):
                 out_l += f'  Total: {value:,}'
             elif isinstance(value, dict):
@@ -186,7 +190,8 @@ class Parser():
                 d = json.loads(f.read())
                 self.set_pattern(d['pattern'], d['type'],
                                  d['name'], d['example'], d['analytics'])
-                self._analytics_map = dict(zip(range(len(d['analytics'].keys())), d['analytics'].keys()))
+                self._analytics_map = dict(
+                    zip(range(len(d['analytics'].keys())), d['analytics'].keys()))
 
     def display_example(self):
         """
@@ -222,6 +227,7 @@ if __name__ == '__main__':
     std_log_message = '127.0.0.1 user-identifier frank [10/Oct/2000:13:55:36 -0700] "GET /apache_pb.gif HTTP/1.0" 200 2326'
 
     p = Parser()
+
     def parse_std_log():
         # p.set_pattern(r'([^ ]*) ([^ ]*) ([^ ]*) \[([^]]*)\] "([^"]*)" ([^ ]*) ([^ ]*)', 'regex', 'Common Log Format', std_log_message)
         # p.set_pattern(r'- ', 'split', 'Color + Hyphen Separated', color_log_message)

@@ -6,7 +6,6 @@ fully qualified names when spawning new shells
 
 import os
 
-
 from logria.logger.default_logger import setup_default_logger
 
 # Setup default logger
@@ -17,6 +16,7 @@ class Resolver():
     """
     Resolves a tool to its fully qualified name if it exists on the user's PATH
     """
+
     def __init__(self):
         self._paths = {}
         self.resolve_paths()
@@ -32,7 +32,8 @@ class Resolver():
         # Iterate in reverse so we resolve tools in local paths after system paths
         for path in paths.split(':')[::-1]:
             programs = os.listdir(path)
-            self._paths.update(dict([(programs, f'{path}/{programs}') for programs in programs]))
+            self._paths.update(
+                dict([(programs, f'{path}/{programs}') for programs in programs]))
 
     def get(self, program: str) -> str:
         """
@@ -61,6 +62,7 @@ class Resolver():
             resolved_part = self.get(part)
             new_command.append(resolved_part)
         return new_command
+
 
 if __name__ == '__main__':
     r = Resolver()
