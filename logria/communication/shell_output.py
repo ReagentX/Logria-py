@@ -568,7 +568,7 @@ class Logria():
                     if self.parser is not None:
                         self.last_index_processed = 0
                         if self.analytics_enabled:
-                            self.current_status = f'Parsing with {self.parser.get_name()}, field {self.parser._analytics_map[self.parser_index]}'
+                            self.current_status = f'Parsing with {self.parser.get_name()}, field {self.parser.get_analytics_for_index(self.parser_index)}'
                             self.parsed_messages = []
                             self.analytics_enabled = False
                         else:

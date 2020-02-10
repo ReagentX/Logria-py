@@ -42,6 +42,9 @@ class Parser():
         self._example = example
         self._analytics_methods = analytics_methods
 
+    def get_analytics_for_index(self, index: int) -> str:
+        return self._analytics_map[index]
+
     def extract_numbers_from_message(self, message: str) -> int or float:
         r"""
         We do not use regex replacement here because...
@@ -62,7 +65,7 @@ class Parser():
         Applies an analytics rule to a message
         """
         # Figure out what rule we want to apply
-        rule_name = self._analytics_map[index]
+        rule_name = self.get_analytics_for_index(index)
         rule = self._analytics_methods[rule_name]
         if rule == 'count':
             if not self.analytics[index]:
@@ -97,12 +100,15 @@ class Parser():
             self.apply_analytics(index, part)
 
     def analytics_to_list(self) -> list:
+        """
+        Return the existing parsed analytics as a list
+        """
         out_l = []
         for stat in self.analytics:
             value = self.analytics[stat]
             if value is None:
                 continue
-            out_l += [f'{self._analytics_map[stat]}']
+            out_l += [f'{self.get_analytics_for_index(stat)}']
             if isinstance(value, Counter):
                 out_l += [f'  {item}: {count:,}' for item, count in value.most_common(5)]
             elif isinstance(value, int) or isinstance(value, float):
