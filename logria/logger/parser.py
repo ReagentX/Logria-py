@@ -83,7 +83,7 @@ class Parser():
                 val = self.extract_numbers_from_message(part)
                 self.analytics[index]['count'] += 1
                 self.analytics[index]['total'] += val
-                self.analytics[index]['average'] += self.analytics[index]['total'] / self.analytics[index]['count']
+                self.analytics[index]['average'] = self.analytics[index]['total'] / self.analytics[index]['count']
             except ValueError:
                 pass
 
@@ -92,7 +92,6 @@ class Parser():
         Applies the analytics rules for each part of a message
         """
         for index, part in enumerate(self.parse(message)):
-            # str_idx = str(index)  # Python JSON dump cannot make integer keys
             if index not in self.analytics:
                 self.analytics[index] = None
             self.apply_analytics(index, part)
@@ -105,11 +104,11 @@ class Parser():
                 continue
             out_l += [f'{self._analytics_map[stat]}']
             if isinstance(value, Counter):
-                out_l += [f'  {item}: {count}' for item, count in value.most_common()]
+                out_l += [f'  {item}: {count:,}' for item, count in value.most_common()]
             elif isinstance(value, int) or isinstance(value, float):
-                out_l += f'  Total: {value}'
+                out_l += f'  Total: {value:,}'
             elif isinstance(value, dict):
-                out_l += [f'  {key}:\t {value[key]}' for key in value]
+                out_l += [f'  {key}:\t {value[key]:,.2f}' for key in value]
         return out_l
 
     def clean_ansi_codes(self, string: str) -> str:
