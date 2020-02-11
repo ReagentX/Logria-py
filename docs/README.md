@@ -8,6 +8,10 @@ This folder contains the documentation on how to interact with Logria programmat
   - Details on how to configure patterns for log parsing
 - [Sessions](sessions.md)
   - Details on how to configure sessions when launching the app
+- [Input Handler](input_handler.md)
+  - Details on how input handler classes open subprocesses
+- [Todo](todo.md)
+  - List of tasks for the repo
 
 ## Profiling
 
@@ -36,3 +40,9 @@ Profiling a 30 second sample with `python -m cProfile -s time logria/__main__.py
     58944    0.208    0.000    0.512    0.000 selectors.py:234(register)
     85273    0.205    0.000    0.321    0.000 textpad.py:95(do_command)
 ```
+
+## Guidelines
+
+- "Brand" colors:
+  - Letters: ![#e63462](https://placehold.it/15/e63462/000000?text=+)`#e63462`
+  - Accent: ![#333745](https://placehold.it/15/333745/000000?text=+)`#333745`

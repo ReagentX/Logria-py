@@ -1,10 +1,10 @@
-![Logria Logo](/branding/logria.png)
+![Logria Logo](/resources/branding/logria.png)
 
 # Logria
 
 A powerful CLI tool that puts log analytics at your fingertips.
 
-## Features
+## tl;dr
 
 - Live filtering of stream or streams from other executed processes, replacing `grep`
 - Full regex support
@@ -76,59 +76,36 @@ app.start()
 | → | skip and stick to end of buffer |
 | ← | skip and stick to beginning of buffer |
 
+## Features
+
+Here are some of ways you can leverage Logria
+
+### Live stream of log data
+
+![logria](/resources/screenshots/logria.png)
+
+### Interactive, live, editable grep
+
+![regex](/resources/screenshots/regex.png)
+
+### Live log message parsing
+
+![parser](/resources/screenshots/parser.png)
+
+### Live analytics/statistics tracking
+
+![analytics](/resources/screenshots/analytics.png)
+
+### User-defined saved sessions
+
+See [session](/docs/sessions.md) docs.
+
+### User-defined saved log parsing methods
+
+See [patterns](/docs/patterns.md) docs.
+
 ## Notes / Caveats
 
 - Cannot use python-prompt-toolkit as it does not really support multiple input streams/sharing state between Application objects
 - [`textbox.edit()`](https://docs.python.org/3/library/curses.html#curses.textpad.Textbox.edit) is blocking; we will need another solution if we want to not block output rendering
 - Curses will crash when writing to the last line of a window, but it will write correctly, so we wrap some instances of this in a try/except to ensure we don't crash when writing valid values
-
-## Todo
-
-- Enhancements
-  - [ ] Support line breaks - requires rework of rendering logic
-  - [ ] Make the command line show what current command is active, ex `/` for regex mode, `:` for command, etc
-  - [ ] Spawn a subprocess to find all the matches in the list of messages
-  - [ ] New "event loop" to handle multiple feature-sets, i.e. other than just regex search
-- New features
-  - [ ] Add 'status bar' since we have an empty row so the user can see what we are currently doing
-- Clerical
-  - [ ] Write docs
-  - [ ] Screenshots for readme
-  - [ ] Add license
-  - [ ] Add contribution guidelines
-
-### Todos with Caveats
-
-- [ ] Support optional piping as input stream - [SO Link](https://stackoverflow.com/questions/1450393/how-do-you-read-from-stdin)
-  - Not possible to implement
-  - stdin gets taken over by whatever we pipe to this program, and we cannot move that pipe away from stdin until the pipe finishes
-  - We can overwrite the pipe with `sys.stdin = open(0)` however this will not work until the original pipe ends, which will never happen when tailing a stream
-- [x] Highlight match in log - requires rework of regex method
-  - We cannot just add ANSI codes as we might overwrite/alter existing ones
-  - We also cannot just use a reset code after we insert a new code because it may reset what was already in the message
-  - Current workaround is to regex out all color codes before inserting a highlighter and toggle
-
-### Completed
-
-- [x] Add statistics tracking for log messages
-- [x] Allow user to define multiple streams e.x. `ssh` sessions, and have a class to join them together
-- [x] Main app loop starts when we call start, but the listener happens on init
-- [x] Save sessions through class, make init process nicer
-- [x] Init screen when launched with no args
-- [x] Class for parsing paths for shell commands, i.e. resolving paths to tools on the `PATH`
-- [x] Support parsing logs using `Log()` class
-- [x] Switch between stderr and stdout
-- [x] Move `regex_test_generator` to a separate class/module
-- [x] Toggle insert mode (default off)
-- [x] Add app entry method to `setup.py`
-- [x] Regex searches through pre-formatted string, not color formatted string - requires rework of regex method
-- [x] Make window scroll
-- [x] Move with arrow keys
-- [x] Refactor to class
-- [x] Handle editor validation
-- [x] Make backspace work
-
-### Rejected
-
-- [ ] Multiprocessing manager dict for `{stdout: [], stdin: []}`
-  - This is not possible because to access the data in the array we must wait for the subprocess to complete, which defeats the purpose of this app. See branch `test/cs/multiprocessing-dict` for more info.

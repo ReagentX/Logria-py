@@ -1,6 +1,9 @@
 {
     "commands": [
-        "sample_streams/accesslog"
+        [
+            "sample_streams",
+            "accesslog"
+        ]
     ],
     "type": "file"
 }

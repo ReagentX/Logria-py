@@ -1,4 +1,4 @@
-# Sessions Documentations
+# Sessions Documentation
 
 A session is a collection of commands that result in input streams.
 

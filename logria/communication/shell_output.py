@@ -3,13 +3,14 @@ Contains the main class that controls the state of the app
 """
 
 
-from os.path import isfile
 import curses
 import re
 import time
 from curses.textpad import Textbox, rectangle
+from os.path import isfile
 
-from logria.communication.input_handler import CommandInputStream, InputStream, FileInputStream
+from logria.communication.input_handler import (CommandInputStream,
+                                                FileInputStream, InputStream)
 from logria.interface import color_handler
 from logria.logger.parser import Parser
 from logria.utilities.command_parser import Resolver
@@ -30,7 +31,6 @@ class Logria():
         self.outwin: curses.window = None  # The output window
         self.command_line: curses.window = None  # The command line
         self.box: Textbox = None  # The text box inside the command line
-
 
         # Message buffers
         self.stderr_messages: list = []
@@ -69,7 +69,8 @@ class Logria():
         if stream is None:
             self.streams: list = []
         else:
-            self.streams: list = [stream]  # Stream list to handle mutliple streams
+            # Stream list to handle mutliple streams
+            self.streams: list = [stream]
 
     def build_command_line(self) -> None:
         """
@@ -109,7 +110,8 @@ class Logria():
         # Setup a SessionHandler and get the existing saved sessions
         session_handler = SessionHandler()
         # Tell the user what we are doing
-        self.messages.append('Enter a new command to open a stream or choose a saved one from the list:')
+        self.messages.append(
+            'Enter a new command to open a stream or choose a saved one from the list:')
         self.messages.extend(session_handler.show_sessions())
         self.render_text_in_output()
 
@@ -133,17 +135,20 @@ class Logria():
                     # Commands need a type
                     for command in commands:
                         if session.get('type') == 'file':
-                            self.streams.append(FileInputStream(command.split('/')))
+                            self.streams.append(FileInputStream(command))
                         elif session.get('type') == 'command':
                             self.streams.append(CommandInputStream(command))
                 except Exception as e:
                     if isfile(command):
-                        self.streams.append(FileInputStream(command.split('/')))
-                        session_handler.save_session('File: ' + command.replace('/', '|'), [command], 'file')
+                        self.streams.append(
+                            FileInputStream(command.split('/')))
+                        session_handler.save_session(
+                            'File: ' + command.replace('/', '|'), [command.split('/')], 'file')
                     else:
                         cmd = resolver.resolve_command_as_list(command)
                         self.streams.append(CommandInputStream(cmd))
-                        session_handler.save_session('Cmd: ' + command.replace('/', '|'), [cmd], 'command')
+                        session_handler.save_session(
+                            'Cmd: ' + command.replace('/', '|'), [cmd], 'command')
                 finally:
                     break
 
@@ -259,7 +264,8 @@ class Logria():
         self.write_to_command_line('Handling message parsing...')
         for index in range(self.last_index_processed, len(self.previous_messages)):
             if self.analytics_enabled:
-                self.parser.handle_analytics_for_message(self.previous_messages[index])
+                self.parser.handle_analytics_for_message(
+                    self.previous_messages[index])
                 self.messages = self.parser.analytics_to_list()
                 # For some reason this isnt switching back
                 self.last_index_processed = len(self.previous_messages)
