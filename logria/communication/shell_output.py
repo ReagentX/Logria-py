@@ -148,7 +148,7 @@ class Logria():
                         cmd = resolver.resolve_command_as_list(command)
                         self.streams.append(CommandInputStream(cmd))
                         session_handler.save_session(
-                            'Cmd: ' + command.replace('/', '|'), [cmd.split(' ')], 'command')
+                            'Cmd: ' + command.replace('/', '|'), [cmd], 'command')
                 finally:
                     break
 
