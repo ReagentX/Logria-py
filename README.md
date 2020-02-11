@@ -1,10 +1,10 @@
-![Logria Logo](/branding/logria.png)
+![Logria Logo](/resources/branding/logria.png)
 
 # Logria
 
 A powerful CLI tool that puts log analytics at your fingertips.
 
-## Features
+## tl;dr
 
 - Live filtering of stream or streams from other executed processes, replacing `grep`
 - Full regex support
@@ -75,6 +75,34 @@ app.start()
 | ↓ | scroll buffer down one line |
 | → | skip and stick to end of buffer |
 | ← | skip and stick to beginning of buffer |
+
+## Features
+
+Here are some of ways you can leverage Logria
+
+### Live stream of log data
+
+![logria](/resources/screenshots/logria.png)
+
+### Interactive, live, editable grep
+
+![regex](/resources/screenshots/regex.png)
+
+### Live log message parsing
+
+![parser](/resources/screenshots/parser.png)
+
+### Live analytics/statistics tracking
+
+![analytics](/resources/screenshots/analytics.png)
+
+### User-defined saved sessions
+
+See [session](/docs/sessions.md) docs.
+
+### User-defined saved log parsing methods
+
+See [patterns](/docs/patterns.md) docs.
 
 ## Notes / Caveats
 
