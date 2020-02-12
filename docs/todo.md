@@ -9,7 +9,6 @@
   - [ ] Add 'status bar' since we have an empty row so the user can see what we are currently doing
 - Clerical
   - [ ] Write docs
-  - [ ] Screenshots for readme
   - [ ] Add contribution guidelines
 
 ## Todos with Caveats
@@ -25,6 +24,7 @@
 
 ## Completed
 
+- [x] Screenshots for readme
 - [x] Add license
 - [x] Add statistics tracking for log messages
 - [x] Allow user to define multiple streams e.x. `ssh` sessions, and have a class to join them together
