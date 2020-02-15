@@ -1,4 +1,4 @@
-![Logria Logo](/resources/branding/logria.png)
+![Logria Logo](/resources/branding/logria.svg)
 
 # Logria
 
