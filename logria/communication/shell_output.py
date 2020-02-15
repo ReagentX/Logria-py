@@ -421,12 +421,16 @@ class Logria():
         self.command_line.deleteln()
         curses.curs_set(0)
 
-    def activate_prompt(self) -> None:
+    def activate_prompt(self, text='') -> None:
         """
         Activate the prompt so we can edit it
+
+        text: str, some text to prepend to the command
         """
         self.editing = True
         self.reset_command_line()
+        if text:
+            self.write_to_command_line('text')
         curses.curs_set(1)
         self.box.edit(validator)
 
