@@ -125,32 +125,30 @@ class Logria():
         while True:
             self.activate_prompt()
             command = self.box.gather().strip()
-            if command == 'q':
-                raise ValueError('User quit!')
-            else:
-                try:
-                    command = int(command)
-                    session = session_handler.load_session(command)
-                    commands = session.get('commands')
-                    # Commands need a type
-                    for command in commands:
-                        if session.get('type') == 'file':
-                            self.streams.append(FileInputStream(command))
-                        elif session.get('type') == 'command':
-                            self.streams.append(CommandInputStream(command))
-                except Exception as e:
-                    if isfile(command):
-                        self.streams.append(
-                            FileInputStream(command.split('/')))
-                        session_handler.save_session(
-                            'File: ' + command.replace('/', '|'), [command.split('/')], 'file')
-                    else:
-                        cmd = resolver.resolve_command_as_list(command)
-                        self.streams.append(CommandInputStream(cmd))
-                        session_handler.save_session(
-                            'Cmd: ' + command.replace('/', '|'), [cmd], 'command')
-                finally:
-                    break
+            if not command:
+                continue
+            try:
+                command = int(command)
+                session = session_handler.load_session(command)
+                commands = session.get('commands')
+                # Commands need a type
+                for command in commands:
+                    if session.get('type') == 'file':
+                        self.streams.append(FileInputStream(command))
+                    elif session.get('type') == 'command':
+                        self.streams.append(CommandInputStream(command))
+            except ValueError:
+                if isfile(command):
+                    self.streams.append(
+                        FileInputStream(command.split('/')))
+                    session_handler.save_session(
+                        'File: ' + command.replace('/', '|'), [command.split('/')], 'file')
+                else:
+                    cmd = resolver.resolve_command_as_list(command)
+                    self.streams.append(CommandInputStream(cmd))
+                    session_handler.save_session(
+                        'Cmd: ' + command.replace('/', '|'), [cmd], 'command')
+            break
 
         # Launch the subprocess, assign values
         try:
