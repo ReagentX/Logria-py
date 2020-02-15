@@ -64,7 +64,7 @@ app.start()
 
 | Key | Command |
 |--|--|
-| `:` | command mode |
+| `:` | [command mode](docs/commands.md) |
 | `/` | regex search |
 | `h` | if regex active, toggle highlighting of matches |
 | `i` | toggle insert mode (default off) |
