@@ -7,8 +7,7 @@
 - New features
   - [ ] Add 'status bar' since we have an empty row so the user can see what we are currently doing
 - Clerical
-  - [ ] Write docs
-  - [ ] Add contribution guidelines
+  - None
 
 ## Todos with Caveats
 
@@ -19,6 +18,8 @@
 
 ## Completed
 
+- [x] Write docs
+- [x] Add contribution guidelines
 - [x] Refactor command handlers that are > 5 lines to method calls
 - [x] Support line breaks - requires rework of rendering logic
 - [x] Support updating poll rate
