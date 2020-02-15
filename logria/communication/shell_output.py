@@ -488,6 +488,9 @@ class Logria():
             return textwrap.wrap(message, self.width - 4)
 
     def handle_regex_mode(self) -> None:
+        """
+        Handle when user activates regex mode, including parsing textbox message
+        """
         if not self.analytics_enabled:  # Disable regex in analytics view
             # Handle getting input from the command line for regex
             self.activate_prompt()
@@ -503,6 +506,9 @@ class Logria():
                 self.reset_command_line()
 
     def handle_command_mode(self) -> None:
+        """
+        Handle when user activates command mode, including parsing textbox message
+        """
         # Handle getting input from the command line for commands
         self.activate_prompt(':')
         command = self.box.gather().strip()
