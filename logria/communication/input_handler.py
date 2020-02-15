@@ -62,22 +62,25 @@ class CommandInputStream(InputStream):
         This will not read python print() calls because print does not flush stdout by default,
           this can be enabled with `print('', flush=True)`
         """
-        proc = Popen(args, stdout=PIPE, stderr=PIPE, bufsize=1,
-                     universal_newlines=True)
-        while True:
-            # stdout
-            stdout_output = proc.stdout.readline()
-            if stdout_output:
-                stdoutq.put(stdout_output)
+        try:
+            proc = Popen(args, stdout=PIPE, stderr=PIPE, bufsize=1,
+                        universal_newlines=True)
+            while True:
+                # stdout
+                stdout_output = proc.stdout.readline()
+                if stdout_output:
+                    stdoutq.put(stdout_output)
 
-            # stderr
-            stderr_output = proc.stderr.readline()
-            if stderr_output:
-                stderrq.put(stderr_output)
+                # stderr
+                stderr_output = proc.stderr.readline()
+                if stderr_output:
+                    stderrq.put(stderr_output)
 
-            # Kill condition
-            if stderr_output == '' and stdout_output == '' and proc.poll() is not None:
-                break
+                # Kill condition
+                if stderr_output == '' and stdout_output == '' and proc.poll() is not None:
+                    break
+        except PermissionError:
+            stderrq.put(f'Permissions error opening handle to command: {"/".join(args)}')
 
 
 class PipeInputStream(InputStream):
@@ -110,9 +113,12 @@ class FileInputStream(InputStream):
         Given a filename, open the file and read the contents
         args: a list of folders to be joined ['Docs', 'file.py'] -> 'Docs/file.py'
         """
-        with open('/'.join(args), 'r') as f_in:
-            for line in f_in.readlines():
-                stdoutq.put(line)
+        try:
+            with open('/'.join(args), 'r') as f_in:
+                for line in f_in.readlines():
+                    stdoutq.put(line)
+        except PermissionError:
+            _.put(f'Permissions error opening file handle to: {"/".join(args)}')
 
 
 if __name__ == '__main__':

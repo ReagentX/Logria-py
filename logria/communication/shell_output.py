@@ -125,32 +125,30 @@ class Logria():
         while True:
             self.activate_prompt()
             command = self.box.gather().strip()
-            if command == 'q':
-                raise ValueError('User quit!')
-            else:
-                try:
-                    command = int(command)
-                    session = session_handler.load_session(command)
-                    commands = session.get('commands')
-                    # Commands need a type
-                    for command in commands:
-                        if session.get('type') == 'file':
-                            self.streams.append(FileInputStream(command))
-                        elif session.get('type') == 'command':
-                            self.streams.append(CommandInputStream(command))
-                except Exception as e:
-                    if isfile(command):
-                        self.streams.append(
-                            FileInputStream(command.split('/')))
-                        session_handler.save_session(
-                            'File: ' + command.replace('/', '|'), [command.split('/')], 'file')
-                    else:
-                        cmd = resolver.resolve_command_as_list(command)
-                        self.streams.append(CommandInputStream(cmd))
-                        session_handler.save_session(
-                            'Cmd: ' + command.replace('/', '|'), [cmd], 'command')
-                finally:
-                    break
+            if not command:
+                continue
+            try:
+                command = int(command)
+                session = session_handler.load_session(command)
+                commands = session.get('commands')
+                # Commands need a type
+                for command in commands:
+                    if session.get('type') == 'file':
+                        self.streams.append(FileInputStream(command))
+                    elif session.get('type') == 'command':
+                        self.streams.append(CommandInputStream(command))
+            except ValueError:
+                if isfile(command):
+                    self.streams.append(
+                        FileInputStream(command.split('/')))
+                    session_handler.save_session(
+                        'File: ' + command.replace('/', '|'), [command.split('/')], 'file')
+                else:
+                    cmd = resolver.resolve_command_as_list(command)
+                    self.streams.append(CommandInputStream(cmd))
+                    session_handler.save_session(
+                        'Cmd: ' + command.replace('/', '|'), [cmd], 'command')
+            break
 
         # Launch the subprocess, assign values
         try:
@@ -423,12 +421,16 @@ class Logria():
         self.command_line.deleteln()
         curses.curs_set(0)
 
-    def activate_prompt(self) -> None:
+    def activate_prompt(self, text='') -> None:
         """
         Activate the prompt so we can edit it
+
+        text: str, some text to prepend to the command
         """
         self.editing = True
         self.reset_command_line()
+        if text:
+            self.write_to_command_line('text')
         curses.curs_set(1)
         self.box.edit(validator)
 
@@ -543,6 +545,16 @@ class Logria():
                     else:
                         # If command is an empty string, ignore the input
                         self.reset_regex_status()
+                        self.reset_command_line()
+                if keypress == ':':
+                    # Handle getting input from the command line for commands
+                    self.activate_prompt(':')
+                    command = self.box.gather().strip()
+                    if command:
+                        if command == ':q':
+                            return
+                    else:
+                        # If command is an empty string, ignore the input
                         self.reset_command_line()
                 elif keypress == 'h':
                     if self.func_handle and self.highlight_match:
