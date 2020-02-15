@@ -12,10 +12,6 @@
 
 ## Todos with Caveats
 
-- [ ] Support optional piping as input stream - [SO Link](https://stackoverflow.com/questions/1450393/how-do-you-read-from-stdin)
-  - Not possible to implement
-  - stdin gets taken over by whatever we pipe to this program, and we cannot move that pipe away from stdin until the pipe finishes
-  - We can overwrite the pipe with `sys.stdin = open(0)` however this will not work until the original pipe ends, which will never happen when tailing a stream
 - [x] Highlight match in log - requires rework of regex method
   - We cannot just add ANSI codes as we might overwrite/alter existing ones
   - We also cannot just use a reset code after we insert a new code because it may reset what was already in the message
@@ -51,3 +47,7 @@
 
 - [ ] Multiprocessing manager dict for `{stdout: [], stdin: []}`
   - This is not possible because to access the data in the array we must wait for the subprocess to complete, which defeats the purpose of this app. See branch `test/cs/multiprocessing-dict` for more info.
+- [ ] Support optional piping as input stream - [SO Link](https://stackoverflow.com/questions/1450393/how-do-you-read-from-stdin)
+  - Not possible to implement
+  - stdin gets taken over by whatever we pipe to this program, and we cannot move that pipe away from stdin until the pipe finishes
+  - We can overwrite the pipe with `sys.stdin = open(0)` however this will not work until the original pipe ends, which will never happen when tailing a stream
