@@ -487,6 +487,21 @@ class Logria():
         else:
             return textwrap.wrap(message, self.width - 4)
 
+    def handle_regex_mode(self) -> None:
+        if not self.analytics_enabled:  # Disable regex in analytics view
+            # Handle getting input from the command line for regex
+            self.activate_prompt()
+            command = self.box.gather().strip()
+            if command:
+                if command == ':q':
+                    self.reset_regex_status()
+                else:
+                    self.handle_regex_command(command)
+            else:
+                # If command is an empty string, ignore the input
+                self.reset_regex_status()
+                self.reset_command_line()
+
     def start(self) -> None:
         """
         Starts the program
@@ -548,20 +563,7 @@ class Logria():
             try:
                 keypress = self.command_line.getkey()  # Get keypress
                 if keypress == '/':
-                    if self.analytics_enabled:  # Disable regex in analytics view
-                        continue
-                    # Handle getting input from the command line for regex
-                    self.activate_prompt()
-                    command = self.box.gather().strip()
-                    if command:
-                        if command == ':q':
-                            self.reset_regex_status()
-                        else:
-                            self.handle_regex_command(command)
-                    else:
-                        # If command is an empty string, ignore the input
-                        self.reset_regex_status()
-                        self.reset_command_line()
+                    self.handle_regex_mode()
                 if keypress == ':':
                     # Handle getting input from the command line for commands
                     self.activate_prompt(':')
