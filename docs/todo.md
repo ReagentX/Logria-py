@@ -2,7 +2,7 @@
 
 - Enhancements
   - [ ] Support line breaks - requires rework of rendering logic
-  - [ ] Make the command line show what current command is active, ex `/` for regex mode, `:` for command, etc
+  - [ ] Refactor command handlers that are > 5 lines to method calls
   - [ ] Spawn a subprocess to find all the matches in the list of messages
   - [ ] New "event loop" to handle multiple feature-sets, i.e. other than just regex search
 - New features
@@ -24,6 +24,8 @@
 
 ## Completed
 
+- [x] Support updating poll rate
+- [x] Make the command line show what current command is active, ex `/` for regex mode, `:` for command, etc
 - [x] Screenshots for readme
 - [x] Add license
 - [x] Add statistics tracking for log messages
