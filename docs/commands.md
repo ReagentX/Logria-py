@@ -8,7 +8,7 @@
 
 ## Notes
 
-To use a command, simply enter text after the `:`. If the `:` is delete, the  command will be ignored.
+To use a command, simply enter text after the `:`. If the `:` is deleted, the  command will be ignored.
 
 ### Poll Rate
 
