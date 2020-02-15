@@ -1,7 +1,6 @@
 # Todo
 
 - Enhancements
-  - [ ] Support line breaks - requires rework of rendering logic
   - [ ] Esc key to go back to previous state
   - [ ] Refactor command handlers that are > 5 lines to method calls
   - [ ] Spawn a subprocess to find all the matches in the list of messages
@@ -25,6 +24,7 @@
 
 ## Completed
 
+- [x] Support line breaks - requires rework of rendering logic
 - [x] Support updating poll rate
 - [x] Make the command line show what current command is active, ex `/` for regex mode, `:` for command, etc
 - [x] Screenshots for readme
