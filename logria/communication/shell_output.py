@@ -502,6 +502,22 @@ class Logria():
                 self.reset_regex_status()
                 self.reset_command_line()
 
+    def handle_command_mode(self) -> None:
+        # Handle getting input from the command line for commands
+        self.activate_prompt(':')
+        command = self.box.gather().strip()
+        curses.curs_set(0)
+        if command:
+            if command == ':q':
+                return -1
+            elif ':poll' in command:
+                try:
+                    command = float(command.replace(':poll', ''))
+                    self.poll_rate = command
+                except ValueError:
+                    pass
+        self.reset_command_line()
+
     def start(self) -> None:
         """
         Starts the program
@@ -565,20 +581,9 @@ class Logria():
                 if keypress == '/':
                     self.handle_regex_mode()
                 if keypress == ':':
-                    # Handle getting input from the command line for commands
-                    self.activate_prompt(':')
-                    command = self.box.gather().strip()
-                    curses.curs_set(0)
-                    if command:
-                        if command == ':q':
-                            return
-                        elif ':poll' in command:
-                            try:
-                                command = float(command.replace(':poll', ''))
-                                self.poll_rate = command
-                            except ValueError:
-                                pass
-                    self.reset_command_line()
+                    v = self.handle_command_mode()
+                    if v == -1:
+                        return v
                 elif keypress == 'h':
                     if self.func_handle and self.highlight_match:
                         self.highlight_match = False
