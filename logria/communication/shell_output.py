@@ -546,6 +546,16 @@ class Logria():
                         # If command is an empty string, ignore the input
                         self.reset_regex_status()
                         self.reset_command_line()
+                if keypress == ':':
+                    # Handle getting input from the command line for commands
+                    self.activate_prompt(':')
+                    command = self.box.gather().strip()
+                    if command:
+                        if command == ':q':
+                            return
+                    else:
+                        # If command is an empty string, ignore the input
+                        self.reset_command_line()
                 elif keypress == 'h':
                     if self.func_handle and self.highlight_match:
                         self.highlight_match = False
