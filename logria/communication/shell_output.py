@@ -25,12 +25,15 @@ class Logria():
     Main app class that controls the logical flow of the app
     """
 
-    def __init__(self, stream: InputStream):
+    def __init__(self, stream: InputStream, poll_rate=0.001):
         # UI Elements initialized to None
         self.stdscr = None  # The entire window
         self.outwin: curses.window = None  # The output window
         self.command_line: curses.window = None  # The command line
         self.box: Textbox = None  # The text box inside the command line
+
+        # App state
+        self.poll_rate: float = poll_rate  # The rate at which we check for new messages
 
         # Message buffers
         self.stderr_messages: list = []
@@ -430,7 +433,7 @@ class Logria():
         self.editing = True
         self.reset_command_line()
         if text:
-            self.write_to_command_line('text')
+            self.write_to_command_line(text)
         curses.curs_set(1)
         self.box.edit(validator)
 
@@ -527,7 +530,7 @@ class Logria():
             # Prevent this loop from taking up 100% of the CPU dedicated to the main thread by delaying loops
             t_1 = time.perf_counter() - t_0
             # Don't delay if the queue processing took too long
-            time.sleep(max(0, 0.001 - t_1))
+            time.sleep(max(0, self.poll_rate - t_1))
 
             try:
                 keypress = self.command_line.getkey()  # Get keypress
@@ -550,12 +553,17 @@ class Logria():
                     # Handle getting input from the command line for commands
                     self.activate_prompt(':')
                     command = self.box.gather().strip()
+                    curses.curs_set(0)
                     if command:
                         if command == ':q':
                             return
-                    else:
-                        # If command is an empty string, ignore the input
-                        self.reset_command_line()
+                        elif ':poll' in command:
+                            try:
+                                command = float(command.replace(':poll', ''))
+                                self.poll_rate = command
+                            except ValueError:
+                                pass
+                    self.reset_command_line()
                 elif keypress == 'h':
                     if self.func_handle and self.highlight_match:
                         self.highlight_match = False
