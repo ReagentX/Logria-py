@@ -8,6 +8,7 @@ import re
 import time
 from curses.textpad import Textbox, rectangle
 from os.path import isfile
+import textwrap
 
 from logria.communication.input_handler import (CommandInputStream,
                                                 FileInputStream, InputStream)
@@ -34,6 +35,8 @@ class Logria():
 
         # App state
         self.poll_rate: float = poll_rate  # The rate at which we check for new messages
+        self.height: int = None  # Window height
+        self.width: int = None  # Window width
 
         # Message buffers
         self.stderr_messages: list = []
@@ -153,12 +156,9 @@ class Logria():
                         'Cmd: ' + command.replace('/', '|'), [cmd], 'command')
             break
 
-        # Launch the subprocess, assign values
-        try:
-            for stream in self.streams:
-                stream.start()
-        except Exception as e:
-            pass
+        # Launch the subprocess
+        for stream in self.streams:
+            stream.start()
 
         # Set status back to what it was
         self.write_to_command_line(self.current_status)
@@ -478,6 +478,15 @@ class Logria():
         self.stick_to_bottom = True  # Stay at the bottom for the next render
         self.write_to_command_line(self.current_status)  # Render status
 
+    def split_message_for_width(self, message: str) -> list:
+        """
+        Breaks a message to a list of parts if it is too long to fit on a line
+        """
+        if len(message) < self.width - 4:
+            return [message]
+        else:
+            return textwrap.wrap(message, self.width - 4)
+
     def start(self) -> None:
         """
         Starts the program
@@ -492,6 +501,10 @@ class Logria():
         self.stdscr = stdscr
         stdscr.keypad(1)
         height, width = stdscr.getmaxyx()  # Get screen size
+
+        # Save these values
+        self.height = height
+        self.width = width
 
         # Setup Output window
         output_start_row = 0  # Leave space for top border
@@ -521,11 +534,11 @@ class Logria():
             for stream in self.streams:
                 while not stream.stderr.empty():
                     message = stream.stderr.get()
-                    self.stderr_messages.append(message)
+                    self.stderr_messages.extend(self.split_message_for_width(message))
 
                 while not stream.stdout.empty():
                     message = stream.stdout.get()
-                    self.stdout_messages.append(message)
+                    self.stdout_messages.extend(self.split_message_for_width(message))
 
             # Prevent this loop from taking up 100% of the CPU dedicated to the main thread by delaying loops
             t_1 = time.perf_counter() - t_0
