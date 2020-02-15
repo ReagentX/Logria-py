@@ -1,3 +1,8 @@
+"""
+Utilitites to handle input validation
+"""
+
+
 def validator(key):
     # Handle backspace on MacOS
     if key == 127:
