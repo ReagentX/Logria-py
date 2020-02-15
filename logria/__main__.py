@@ -35,7 +35,6 @@ def main():
     # Start the app
     app = Logria(stream)   # If the stream is None, the app will ask the user to init
     app.start()
-    stream.exit()
 
 
 if __name__ == '__main__':
