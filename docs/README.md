@@ -45,6 +45,17 @@ Profiling a 30 second sample with `python -m cProfile -s time logria/__main__.py
 
 ## Guidelines
 
-- "Brand" colors:
+- "Brand" colors
   - Letters: ![#e63462](https://placehold.it/15/e63462/000000?text=+)`#e63462`
   - Accent: ![#333745](https://placehold.it/15/333745/000000?text=+)`#333745`
+- Contributing
+  - No pull request shall be behind develop
+  - First come, first served
+  - If anything breaks, the pull request will be queued again when the issue is resolved
+  - Pull request comments will be resolved by the person who created them
+
+## Notes / Caveats
+
+- Cannot use python-prompt-toolkit as it does not really support multiple input streams/sharing state between Application objects
+- [`textbox.edit()`](https://docs.python.org/3/library/curses.html#curses.textpad.Textbox.edit) is blocking; we will need another solution if we want to not block output rendering
+- Curses will crash when writing to the last line of a window, but it will write correctly, so we wrap some instances of this in a try/except to ensure we don't crash when writing valid values
