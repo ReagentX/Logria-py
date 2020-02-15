@@ -2,6 +2,7 @@
 
 - Enhancements
   - [ ] Support line breaks - requires rework of rendering logic
+  - [ ] Esc key to go back to previous state
   - [ ] Refactor command handlers that are > 5 lines to method calls
   - [ ] Spawn a subprocess to find all the matches in the list of messages
   - [ ] New "event loop" to handle multiple feature-sets, i.e. other than just regex search
