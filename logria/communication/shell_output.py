@@ -581,9 +581,9 @@ class Logria():
                 if keypress == '/':
                     self.handle_regex_mode()
                 if keypress == ':':
-                    v = self.handle_command_mode()
-                    if v == -1:
-                        return v
+                    result = self.handle_command_mode()
+                    if result == -1:  # Handle exiting application loop
+                        return result
                 elif keypress == 'h':
                     if self.func_handle and self.highlight_match:
                         self.highlight_match = False
