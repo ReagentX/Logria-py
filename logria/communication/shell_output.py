@@ -413,6 +413,9 @@ class Logria():
         self.write_to_command_line(self.current_status)
 
     def setup_expanded_mode(self) -> None:
+        """
+        Swap to expanded message buffer
+        """
         # Reset any app state
         self.reset_parser()
         self.reset_regex_status()
@@ -434,6 +437,9 @@ class Logria():
         self.write_to_command_line(self.current_status)
 
     def process_expanded_messages(self) -> None:
+        """
+        Fill expanded message buffer
+        """
         self.write_to_command_line('Expanding messages...')
         for index in range(self.last_index_expanded, len(self.previous_messages)):
             message = self.previous_messages[index]
@@ -443,6 +449,9 @@ class Logria():
         self.write_to_command_line(self.current_status)
 
     def reset_expanded_mode(self) -> None:
+        """
+        Go back to normal message buffer from expanded message buffer
+        """
         if self.previous_messages:
             # Move messages pointer to the previous state
             if self.previous_messages is self.stderr_messages:
