@@ -1,9 +1,0 @@
-{
-    "commands": [
-        [
-            "sample_streams",
-            "accesslog"
-        ]
-    ],
-    "type": "file"
-}
