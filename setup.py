@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='logria',
-    version='0.1.2',
+    version='0.1.3',
     description='A powerful CLI tool that puts log analytics at your fingertips.',
     long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
