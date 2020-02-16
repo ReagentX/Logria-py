@@ -6,3 +6,8 @@ venv/*
 # Generated Python Files
 *.pyc
 logria.egg-info/*
+
+# Build
+build/*
+dist/*
+logria_ReagentX.egg-info/*
