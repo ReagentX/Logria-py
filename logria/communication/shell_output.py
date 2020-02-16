@@ -37,11 +37,19 @@ class Logria():
         self.poll_rate: float = poll_rate  # The rate at which we check for new messages
         self.height: int = None  # Window height
         self.width: int = None  # Window width
+        # Pointer to the previous non-parsed message list, which is continuously updated
+        self.previous_messages: list = []
 
         # Message buffers
         self.stderr_messages: list = []
         self.stdout_messages: list = []
         self.messages: list = self.stderr_messages  # Default to watching stderr
+
+        # Expanded message information
+        # Whether we should expand messages before render
+        self.should_expand_messages: bool = False
+        self.expanded_messages: list = []  # Buffer to hold expanded messages
+        self.last_index_expanded: int = 0  # The last index the expanding function saw
 
         # Regex Handler information
         self.func_handle: callable = None  # Regex func that handles filtering
@@ -55,8 +63,6 @@ class Logria():
         self.parsed_messages: list = []  # Array of parsed rows
         self.analytics_enabled: bool = False  # Array for statistics messages
         self.last_index_processed: int = 0  # The last index the parsing function saw
-        # Pointer to the previous non-parsed message list, which is continuously updated
-        self.previous_messages: list = []
 
         # Variables to store the current state of the app
         self.insert_mode: bool = False  # Default to insert mode (like vim) off
@@ -75,7 +81,7 @@ class Logria():
         if stream is None:
             self.streams: list = []
         else:
-            # Stream list to handle mutliple streams
+            # Stream list to handle multiple streams
             self.streams: list = [stream]
 
     def build_command_line(self) -> None:
@@ -105,7 +111,7 @@ class Logria():
         """
         for i in range(self.last_row + 1):
             try:
-                self.outwin.addstr(i, 2, '\n')
+                self.outwin.addstr(i, 0, '\n')
             except curses.error:
                 pass
 
@@ -240,7 +246,7 @@ class Logria():
         if self.func_handle:
             self.current_status = f'Regex with pattern /{self.regex_pattern}/'
         else:
-            self.current_status = 'No filter applied'  # CLI message, renderd after
+            self.current_status = 'No filter applied'  # CLI message, rendered after
         if self.previous_messages:
             # Move messages pointer to the previous state
             if self.previous_messages is self.stderr_messages:
@@ -268,7 +274,7 @@ class Logria():
                 self.parser.handle_analytics_for_message(
                     self.previous_messages[index])
                 self.messages = self.parser.analytics_to_list()
-                # For some reason this isnt switching back
+                # For some reason this isn't switching back
                 self.last_index_processed = len(self.previous_messages)
             else:
                 if self.messages is not self.parsed_messages:
@@ -288,6 +294,8 @@ class Logria():
         Renders stream content in the output window
 
         If filters are inactive, we use `messages`. If they are active, we pull from `matched_rows`
+
+        We write the whole message, regardless of length, because slicing a string allocates a new string
         """
         self.clear_output_window()
         current_row = -1  # The row we are currently rendering
@@ -309,7 +317,7 @@ class Logria():
                     # If we are looking at a valid line, render ends there
                     end = self.current_end
                 else:
-                    # If we have overscrolled, go back
+                    # If we have over-scrolled, go back
                     if self.current_end > len(self.messages):
                         self.current_end = len(self.messages)
                     # Since current_end can be zero, we have to use the number of messages
@@ -325,7 +333,7 @@ class Logria():
                     break
                 current_row += 1
                 # Instead of window.addstr, handle colors
-                color_handler.addstr(self.outwin, current_row, 2, item)
+                color_handler.addstr(self.outwin, current_row, 0, item)
         elif self.matched_rows:
             # Handle where the bottom of the stream is
             if self.stick_to_bottom:
@@ -342,7 +350,7 @@ class Logria():
                     # If the current end is larger
                     end = self.current_end
                 else:
-                    # If we have overscrolled, go back
+                    # If we have over-scrolled, go back
                     if self.current_end > len(self.matched_rows):
                         self.current_end = len(self.matched_rows)
                     # Since current_end can be zero, we have to use the number of matched rows
@@ -365,7 +373,7 @@ class Logria():
                     item = re.sub(
                         self.regex_pattern, f'\u001b[35m{self.regex_pattern}\u001b[0m', item)
                 # Print to current row, 2 chars from right edge
-                color_handler.addstr(self.outwin, current_row, 2, item)
+                color_handler.addstr(self.outwin, current_row, 0, item)
         self.outwin.refresh()
 
     def process_matches(self) -> None:
@@ -404,6 +412,59 @@ class Logria():
             if self.func_handle(self.messages[index]):
                 self.matched_rows.append(index)
         self.last_index_regexed = len(self.messages)
+        self.write_to_command_line(self.current_status)
+
+    def setup_expanded_mode(self) -> None:
+        """
+        Swap to expanded message buffer
+        """
+        # Reset any app state
+        self.reset_parser()
+        self.reset_regex_status()
+
+        # Store previous message pointer
+        if self.messages is self.stderr_messages:
+            self.previous_messages = self.stderr_messages
+        elif self.messages is self.stdout_messages:
+            self.previous_messages = self.stdout_messages
+
+        # Place new pointer
+        self.messages = self.expanded_messages
+
+        # Enable expanded messages
+        self.should_expand_messages = True
+
+        # Update status
+        self.current_status = 'Expanding messages, filtering and parsing disabled'
+        self.write_to_command_line(self.current_status)
+
+    def process_expanded_messages(self) -> None:
+        """
+        Fill expanded message buffer
+        """
+        self.write_to_command_line('Expanding messages...')
+        for index in range(self.last_index_expanded, len(self.previous_messages)):
+            message = self.previous_messages[index]
+            self.expanded_messages.extend(
+                self.split_message_for_width(message))
+        self.last_index_expanded = len(self.previous_messages)
+        self.write_to_command_line(self.current_status)
+
+    def reset_expanded_mode(self) -> None:
+        """
+        Go back to normal message buffer from expanded message buffer
+        """
+        if self.previous_messages:
+            # Move messages pointer to the previous state
+            if self.previous_messages is self.stderr_messages:
+                self.messages = self.stderr_messages
+            else:
+                self.messages = self.stdout_messages
+            self.previous_messages = []
+            self.expanded_messages = []  # Dump expanded messages
+        self.should_expand_messages = False
+        self.current_status = 'No filter applied'
+        self.last_index_expanded = 0
         self.write_to_command_line(self.current_status)
 
     def write_to_command_line(self, string: str) -> None:
@@ -468,7 +529,7 @@ class Logria():
         if self.parser:
             self.current_status = f'Parsing with {self.parser.get_name()}, field {self.parser_index}'
         else:
-            self.current_status = 'No filter applied'  # CLI message, renderd after
+            self.current_status = 'No filter applied'  # CLI message, rendered after
         self.func_handle = None  # Disable filter
         self.highlight_match = False  # Disable highlighting
         self.regex_pattern = ''  # Clear the current pattern
@@ -571,11 +632,11 @@ class Logria():
             for stream in self.streams:
                 while not stream.stderr.empty():
                     message = stream.stderr.get()
-                    self.stderr_messages.extend(self.split_message_for_width(message))
+                    self.stderr_messages.append(message)
 
                 while not stream.stdout.empty():
                     message = stream.stdout.get()
-                    self.stdout_messages.extend(self.split_message_for_width(message))
+                    self.stdout_messages.append(message)
 
             # Prevent this loop from taking up 100% of the CPU dedicated to the main thread by delaying loops
             t_1 = time.perf_counter() - t_0
@@ -590,6 +651,11 @@ class Logria():
                     result = self.handle_command_mode()
                     if result == -1:  # Handle exiting application loop
                         return result
+                elif keypress == 'e':
+                    if self.should_expand_messages:
+                        self.reset_expanded_mode()
+                    else:
+                        self.setup_expanded_mode()
                 elif keypress == 'h':
                     if self.func_handle and self.highlight_match:
                         self.highlight_match = False
@@ -658,4 +724,6 @@ class Logria():
                     self.process_parser()  # This may block if there are a lot of messages
                 if self.func_handle:
                     self.process_matches()  # This may block if there are a lot of messages
+                if self.should_expand_messages:
+                    self.process_expanded_messages()  # This may block if there are a lot of messages
                 self.render_text_in_output()
