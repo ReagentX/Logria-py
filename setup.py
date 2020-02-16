@@ -26,9 +26,8 @@ setup(
         'Natural Language :: English',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 3.8',
+        'Topic :: System :: Logging'
         'Topic :: Internet :: Log Analysis',
         'Topic :: Software Development :: Libraries :: Python Modules',
-        'Topic :: Scientific/Engineering :: Information Analysis',
-        'Topic :: System :: Logging'
     ]
 )
