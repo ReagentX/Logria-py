@@ -27,6 +27,15 @@ class Parser():
         # Stores the map of the message index to the analytics method names
         self._analytics_map: dict = {}
         self.analytics: dict = {}  # Analytics the main script can access
+        self.setup_folder()
+
+    def setup_folder(self):
+        home = str(Path.home())
+        if Path(home, SAVED_PATTERNS_PATH).exists():
+            pass
+        else:
+            os.mkdir(Path(home, SAVED_PATTERNS_PATH))
+        self.folder = Path(home, SAVED_PATTERNS_PATH)
 
     def get_name(self):
         """
@@ -174,7 +183,7 @@ class Parser():
         # Convert to json
         if self._pattern:
             d = self.as_dict()
-            with open(Path(SAVED_PATTERNS_PATH, self._name), 'w') as f:
+            with open(self.folder / self._name, 'w') as f:
                 f.write(json.dumps(d, indent=4))
 
     def load(self, name: str) -> None:
@@ -184,9 +193,9 @@ class Parser():
         # Convert to json
         if self._pattern is not None:
             raise ValueError('Setting pattern while pattern already set!')
-        patterns = set(os.listdir(SAVED_PATTERNS_PATH))
+        patterns = set(os.listdir(self.folder))
         if name in patterns:
-            with open(Path(SAVED_PATTERNS_PATH, name), 'r') as f:
+            with open(self.folder / name, 'r') as f:
                 d = json.loads(f.read())
                 self.set_pattern(d['pattern'], d['type'],
                                  d['name'], d['example'], d['analytics'])
@@ -202,20 +211,18 @@ class Parser():
         match = self.parse(self._example)
         return [f'{i}: {v}' for i, v in enumerate(match)]
 
-    @classmethod
-    def patterns(cls) -> dict:
+    def patterns(self) -> dict:
         """
         Get the existing patterns as a dict
         """
-        patterns = os.listdir(SAVED_PATTERNS_PATH)
+        patterns = os.listdir(self.folder)
         return dict(zip(range(0, len(patterns)), patterns))
 
-    @classmethod
-    def show_patterns(cls) -> list:
+    def show_patterns(self) -> list:
         """
         Get the existing patterns as a list
         """
-        patterns = os.listdir(SAVED_PATTERNS_PATH)
+        patterns = os.listdir(self.folder)
         return [f'{i}: {v}' for i, v in enumerate(patterns)]
 
 

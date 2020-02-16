@@ -17,7 +17,17 @@ class SessionHandler():
 
     def __init__(self):
         self._commands: dict = {}
-        self._type = ''
+        self._type: str = ''
+        self.folder: Path = None
+        self.setup_folder()
+
+    def setup_folder(self):
+        home = str(Path.home())
+        if Path(home, SAVED_SESSIONS_PATH).exists():
+            pass
+        else:
+            os.mkdir(Path(home, SAVED_SESSIONS_PATH))
+        self.folder = Path(home, SAVED_SESSIONS_PATH)
 
     def load_session(self, item: int) -> dict:
         """
@@ -26,7 +36,7 @@ class SessionHandler():
         out_d = {}
         if item in SessionHandler().sessions():
             name = SessionHandler().sessions()[item]
-            with open(Path(SAVED_SESSIONS_PATH, name), 'r') as f:
+            with open(self.folder / name, 'r') as f:
                 out_d = json.loads(f.read())
         return out_d
 
@@ -35,23 +45,21 @@ class SessionHandler():
         Save a session to the sessions directory
         """
         out_json = {'commands': commands, 'type': type_}
-        with open(Path(SAVED_SESSIONS_PATH, name), 'w') as f:
+        with open(self.folder / name, 'w') as f:
             f.write(json.dumps(out_json, indent=4))
 
-    @classmethod
-    def sessions(cls) -> dict:
+    def sessions(self) -> dict:
         """
         Get the existing sessions as a dict
         """
-        sessions = os.listdir(SAVED_SESSIONS_PATH)
+        sessions = os.listdir(self.folder)
         return dict(zip(range(0, len(sessions)), sessions))
 
-    @classmethod
-    def show_sessions(cls) -> dict:
+    def show_sessions(self) -> dict:
         """
         Get the existing sessions as a list for output
         """
-        sessions = os.listdir(SAVED_SESSIONS_PATH)
+        sessions = os.listdir(self.folder)
         return [f'{i}: {v}' for i, v in enumerate(sessions)]
 
 
