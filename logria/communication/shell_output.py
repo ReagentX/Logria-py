@@ -294,6 +294,8 @@ class Logria():
         Renders stream content in the output window
 
         If filters are inactive, we use `messages`. If they are active, we pull from `matched_rows`
+
+        We write the whole message, regardless of length, because slicing a string allocates a new string
         """
         self.clear_output_window()
         current_row = -1  # The row we are currently rendering
