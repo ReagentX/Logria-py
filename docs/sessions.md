@@ -4,7 +4,7 @@ A session is a collection of commands that result in input streams.
 
 ## Storage
 
-Sessions are stored as `JSON` in `/sessions` and do not have file extensions. A pattern is defined like so:
+Sessions are stored as `JSON` in `~/sessions` and do not have file extensions. A pattern is defined like so:
 
 ```json
 {
@@ -21,6 +21,8 @@ Sessions are stored as `JSON` in `/sessions` and do not have file extensions. A 
     "type": "command"
 }
 ```
+
+If `~/sessions` does not exist, Logira will create it.
 
 ## Elements
 
