@@ -22,6 +22,9 @@ class SessionHandler():
         self.setup_folder()
 
     def setup_folder(self):
+        """
+        Set workspace folder, create if nonexistent
+        """
         home = str(Path.home())
         if Path(home, SAVED_SESSIONS_PATH).exists():
             pass
