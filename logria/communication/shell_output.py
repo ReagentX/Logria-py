@@ -571,11 +571,11 @@ class Logria():
             for stream in self.streams:
                 while not stream.stderr.empty():
                     message = stream.stderr.get()
-                    self.stderr_messages.extend(message)
+                    self.stderr_messages.append(message)
 
                 while not stream.stdout.empty():
                     message = stream.stdout.get()
-                    self.stdout_messages.extend(message)
+                    self.stdout_messages.append(message)
 
             # Prevent this loop from taking up 100% of the CPU dedicated to the main thread by delaying loops
             t_1 = time.perf_counter() - t_0
