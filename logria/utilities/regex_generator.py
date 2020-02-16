@@ -10,7 +10,7 @@ from logria.utilities.constants import ANSI_COLOR_PATTERN
 def regex_test_generator(pattern: str) -> callable:
     """
     Return a function that will test a string against `pattern`
-    Ignores charachers in ANSI color escape codes
+    Ignores characters in ANSI color escape codes
     """
     return lambda string: bool(re.search(pattern,
                                          re.sub(ANSI_COLOR_PATTERN,

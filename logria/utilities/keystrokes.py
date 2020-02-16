@@ -1,5 +1,5 @@
 """
-Utilitites to handle input validation
+Utilities to handle input validation
 """
 
 

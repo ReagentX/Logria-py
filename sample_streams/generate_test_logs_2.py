@@ -16,4 +16,4 @@ while True:
     LOGGER.info('I am a second log! %s', RANDINT)
     # String formatting is too slow
     print('I am standard output %s' % RANDINT, flush=True)
-    time.sleep(0.01)
+    time.sleep(0.1)

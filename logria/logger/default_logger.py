@@ -8,7 +8,7 @@ import logging
 def setup_default_logger(name: str) -> logging.Logger:
     """
     Create a logger instance we can import to anywhere, logs in format:
-    2019-10-28 14:32:57,843 - chargemaster.views - INFO - Received request to GetChargemasterData
+    2019-10-28 14:32:57,843 - model.views - INFO - Received request to get_data
 
     To create an instance of the logger, import with
         from repricing_modules.helpers import logger

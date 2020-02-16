@@ -75,7 +75,7 @@ class Logria():
         if stream is None:
             self.streams: list = []
         else:
-            # Stream list to handle mutliple streams
+            # Stream list to handle multiple streams
             self.streams: list = [stream]
 
     def build_command_line(self) -> None:
@@ -240,7 +240,7 @@ class Logria():
         if self.func_handle:
             self.current_status = f'Regex with pattern /{self.regex_pattern}/'
         else:
-            self.current_status = 'No filter applied'  # CLI message, renderd after
+            self.current_status = 'No filter applied'  # CLI message, rendered after
         if self.previous_messages:
             # Move messages pointer to the previous state
             if self.previous_messages is self.stderr_messages:
@@ -268,7 +268,7 @@ class Logria():
                 self.parser.handle_analytics_for_message(
                     self.previous_messages[index])
                 self.messages = self.parser.analytics_to_list()
-                # For some reason this isnt switching back
+                # For some reason this isn't switching back
                 self.last_index_processed = len(self.previous_messages)
             else:
                 if self.messages is not self.parsed_messages:
@@ -309,7 +309,7 @@ class Logria():
                     # If we are looking at a valid line, render ends there
                     end = self.current_end
                 else:
-                    # If we have overscrolled, go back
+                    # If we have over-scrolled, go back
                     if self.current_end > len(self.messages):
                         self.current_end = len(self.messages)
                     # Since current_end can be zero, we have to use the number of messages
@@ -342,7 +342,7 @@ class Logria():
                     # If the current end is larger
                     end = self.current_end
                 else:
-                    # If we have overscrolled, go back
+                    # If we have over-scrolled, go back
                     if self.current_end > len(self.matched_rows):
                         self.current_end = len(self.matched_rows)
                     # Since current_end can be zero, we have to use the number of matched rows
@@ -468,7 +468,7 @@ class Logria():
         if self.parser:
             self.current_status = f'Parsing with {self.parser.get_name()}, field {self.parser_index}'
         else:
-            self.current_status = 'No filter applied'  # CLI message, renderd after
+            self.current_status = 'No filter applied'  # CLI message, rendered after
         self.func_handle = None  # Disable filter
         self.highlight_match = False  # Disable highlighting
         self.regex_pattern = ''  # Clear the current pattern
