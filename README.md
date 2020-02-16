@@ -13,9 +13,15 @@ A powerful CLI tool that puts log analytics at your fingertips.
 
 ## Installation
 
-There are two options to install this app.
+There are several options to install this app.
 
-### Installing as a standalone app (`brew`, `apt-get`, etc coming soon!)
+### Normal Usage
+
+`pip install logria`
+
+### Development
+
+#### Installing as a standalone app
 
 - `clone` the repository
 - `cd` to the repository
@@ -29,7 +35,7 @@ There are two options to install this app.
   - `deactivate` if we want to install globally, otherwise leave your `venv` active
   - `python setup.py develop` or `python setup.py install` depending on whether you are actively developing this app
 
-### Installing as part of another app (`pip` coming soon!)
+#### Installing as part of another app
 
 - `clone` the repository to your `venv` folder
   - Be sure your virtual environment is active
