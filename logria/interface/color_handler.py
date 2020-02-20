@@ -87,9 +87,10 @@ def _add_line(y_coord, x_coord, window, line):
     default_color_pair = _get_color(DEFAULT_COLOR, DEFAULT_COLOR)
     try:
         window.addstr(y_coord, x_coord, color_split[0], curses.color_pair(default_color_pair))
+        window.noutrefresh()
+        y_coord, x_coord = curses.getsyx()
     except curses.error:
         pass
-    x_coord += len(color_split[0])
 
     # Iterate over the rest of the line-parts and print them with their colors
     for substring in color_split[1:]:
@@ -98,9 +99,10 @@ def _add_line(y_coord, x_coord, window, line):
         color_pair = _color_str_to_color_pair(color_str)
         try:
             window.addstr(y_coord, x_coord, substring, curses.color_pair(color_pair))
+            window.noutrefresh()
+            y_coord, x_coord = curses.getsyx()
         except curses.error:
             pass
-        x_coord += len(substring)
 
 
 def _inner_addstr(window, string, y_coord=-1, x_coord=-1):
