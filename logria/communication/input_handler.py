@@ -31,7 +31,6 @@ class InputStream():
         # Create the child process, have it run in the background
         self.process = multiprocessing.Process(
             target=self.run, args=(args, self.stdout, self.stderr,))
-        self.process.daemon = True
         self.process.name = ' '.join(args)
 
     def start(self):
