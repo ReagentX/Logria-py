@@ -17,7 +17,7 @@ from logria.logger.parser import Parser
 from logria.utilities.command_parser import Resolver
 from logria.utilities.constants import ANSI_COLOR_PATTERN
 from logria.utilities.keystrokes import validator
-from logria.utilities.regex_generator import regex_test_generator
+from logria.utilities.regex_generator import regex_test_generator, get_real_length
 from logria.utilities.session import SessionHandler
 
 
@@ -109,7 +109,7 @@ class Logria():
                 self.outwin.addstr(i, 0, '\n')
             except curses.error:
                 pass
-        self.outwin.refresh()
+        # self.outwin.refresh()
 
     def setup_streams(self) -> None:
         """
@@ -333,9 +333,7 @@ class Logria():
                 item = self.messages[i]
                 # Instead of window.addstr, handle colors
                 color_handler.addstr(self.outwin, current_row, 0, item.strip())
-                self.outwin.refresh()  # Update the window data but don't refresh the screen
-                current_row, _ = curses.getsyx()  # Get the current row
-                current_row += max(1, round(len(item) / self.width) - 1) # Go to the next open line
+                current_row += ceil(get_real_length(item) / self.width) # Go to the next open line
                 if current_row > self.last_row:
                     break
         elif self.matched_rows:
@@ -380,12 +378,10 @@ class Logria():
                         self.regex_pattern, f'\u001b[35m{self.regex_pattern}\u001b[0m', item.strip())
                 # Print to current row, 2 chars from right edge
                 color_handler.addstr(self.outwin, current_row, 0, item)
-                self.outwin.refresh()  # Update the window data but don't refresh the screen
-                current_row, _ = curses.getsyx()  # Get the current row
-                current_row += max(1, round(len(item) / self.width) - 1) # Go to the next open line
+                current_row += max(1, ceil(get_real_length(item) / self.width) - 1) # Go to the next open line
                 if current_row > self.last_row:
                     break
-        curses.doupdate()
+        self.outwin.refresh()
 
     def process_matches(self) -> None:
         """
