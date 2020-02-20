@@ -3,7 +3,7 @@ Utilities to handle input validation
 """
 
 
-def validator(key):
+def validator(key: int):
     """
     Intercept invalid strokes and convert them to valid ones
     """
