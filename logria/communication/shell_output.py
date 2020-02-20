@@ -37,6 +37,7 @@ class Logria():
         self.poll_rate: float = poll_rate  # The rate at which we check for new messages
         self.height: int = None  # Window height
         self.width: int = None  # Window width
+        self.first_line_rendered: int = None  # Store the first line we render so we know if we need to refresh
         # Pointer to the previous non-parsed message list, which is continuously updated
         self.previous_messages: list = []
 
@@ -114,6 +115,7 @@ class Logria():
                 self.outwin.addstr(i, 0, '\n')
             except curses.error:
                 pass
+        self.outwin.refresh()
 
     def setup_streams(self) -> None:
         """
@@ -297,9 +299,6 @@ class Logria():
 
         We write the whole message, regardless of length, because slicing a string allocates a new string
         """
-        self.clear_output_window()
-        current_row = -1  # The row we are currently rendering
-
         # If filters are disabled
         if self.func_handle is None:
             # Handle where the bottom of the stream should be
@@ -326,14 +325,20 @@ class Logria():
                 end = len(self.messages)
             self.current_end = end  # Save this row so we know where we are
             start = max(0, end - self.last_row - 1)
+            if self.first_line_rendered == start:
+                return
+            self.first_line_rendered = start
+            self.clear_output_window()
+            current_row = 0  # The row we are currently rendering
             for i in range(start, end):
                 item = self.messages[i]
-                # Subtract since we increment only if we write the row
-                if current_row >= self.last_row:
-                    break
-                current_row += 1
                 # Instead of window.addstr, handle colors
                 color_handler.addstr(self.outwin, current_row, 0, item)
+                self.outwin.noutrefresh()  # Update the window data but don't refresh the screen
+                current_row, _ = curses.getsyx()  # Get the current row
+                current_row += 1  # Go to the next line
+                if current_row >= self.last_row:
+                    break
         elif self.matched_rows:
             # Handle where the bottom of the stream is
             if self.stick_to_bottom:
@@ -359,13 +364,14 @@ class Logria():
                 end = len(self.matched_rows)
             self.current_end = end
             start = max(0, end - self.last_row - 1)
+            if self.first_line_rendered == start:
+                return
+            self.first_line_rendered = start
+            self.clear_output_window()
+            current_row = 0  # The row we are currently rendering
             for i in range(start, end):
                 messages_idx = self.matched_rows[i]
                 item = self.messages[messages_idx]
-                # Subtract since we increment only if we write the row
-                if current_row >= self.last_row:
-                    break
-                current_row += 1
                 # Instead of window.addstr, handle colors, also handle regex highlighter
                 if self.highlight_match:
                     # Remove all color codes
@@ -374,7 +380,12 @@ class Logria():
                         self.regex_pattern, f'\u001b[35m{self.regex_pattern}\u001b[0m', item)
                 # Print to current row, 2 chars from right edge
                 color_handler.addstr(self.outwin, current_row, 0, item)
-        self.outwin.refresh()
+                self.outwin.noutrefresh()  # Update the window data but don't refresh the screen
+                current_row, _ = curses.getsyx()  # Get the current row
+                current_row += 1  # Go to the next line
+                if current_row >= self.last_row:
+                    break
+        curses.doupdate()
 
     def process_matches(self) -> None:
         """
