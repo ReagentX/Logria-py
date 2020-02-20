@@ -65,7 +65,6 @@ class Logria():
         # Determines whether we highlight the match to the user
         self.highlight_match: bool = True
         self.last_row: int = 0  # The last row we can render, aka number of lines
-        self.editing: bool = False  # Whether we are currently editing the command
         self.stick_to_bottom: bool = True  # Whether we should follow the stream
         # Whether we should stick to the top and not render new lines
         self.stick_to_top: bool = False
@@ -131,6 +130,7 @@ class Logria():
 
         # Get user input
         while True:
+            time.sleep(self.poll_rate)
             self.activate_prompt()
             command = self.box.gather().strip()
             if not command:
@@ -194,6 +194,7 @@ class Logria():
         self.messages = Parser().show_patterns()
         self.render_text_in_output()
         while True:
+            time.sleep(self.poll_rate)
             self.activate_prompt()
             command = self.box.gather().strip()
             if command == 'q':
@@ -211,6 +212,7 @@ class Logria():
         self.messages = parser.display_example()
         self.render_text_in_output()
         while True:
+            time.sleep(self.poll_rate)
             self.activate_prompt()
             command = self.box.gather().strip()
             if command == 'q':
@@ -445,7 +447,6 @@ class Logria():
 
         text: str, some text to prepend to the command
         """
-        self.editing = True
         self.reset_command_line()
         if text:
             self.write_to_command_line(text)
@@ -522,11 +523,15 @@ class Logria():
         curses.curs_set(0)
         if command:
             if command == ':q':
+                for stream in self.streams:
+                    stream.exit()
                 return -1
             elif ':poll' in command:
                 try:
                     command = float(command.replace(':poll', ''))
                     self.poll_rate = command
+                    for stream in self.streams:
+                        stream.poll_rate = command
                 except ValueError:
                     pass
         self.reset_command_line()
