@@ -9,7 +9,6 @@ import time
 from math import ceil
 from curses.textpad import Textbox, rectangle
 from os.path import isfile
-import textwrap
 
 from logria.communication.input_handler import (CommandInputStream,
                                                 FileInputStream, InputStream)
@@ -27,7 +26,7 @@ class Logria():
     Main app class that controls the logical flow of the app
     """
 
-    def __init__(self, stream: InputStream, poll_rate=0.001):
+    def __init__(self, stream: InputStream, poll_rate=0.005):
         # UI Elements initialized to None
         self.stdscr = None  # The entire window
         self.outwin: curses.window = None  # The output window
@@ -38,7 +37,7 @@ class Logria():
         self.poll_rate: float = poll_rate  # The rate at which we check for new messages
         self.height: int = None  # Window height
         self.width: int = None  # Window width
-        self.first_line_rendered: int = None  # Store the first line we render so we know if we need to refresh
+        self.prevous_render: list = None  # Store the state of the previous render so we know if we need to refresh
         # Pointer to the previous non-parsed message list, which is continuously updated
         self.previous_messages: list = []
 
@@ -167,7 +166,6 @@ class Logria():
         self.write_to_command_line(self.current_status)
 
         # Render immediately
-        self.first_line_rendered = None
 
         # Reset messages
         self.stderr_messages = []
@@ -194,7 +192,6 @@ class Logria():
 
         # Overwrite the messages pointer
         self.messages = Parser().show_patterns()
-        self.first_line_rendered = None
         self.render_text_in_output()
         while True:
             self.activate_prompt()
@@ -212,7 +209,6 @@ class Logria():
 
         # Overwrite a different list this time, and reset it when done
         self.messages = parser.display_example()
-        self.first_line_rendered = None
         self.render_text_in_output()
         while True:
             self.activate_prompt()
@@ -238,7 +234,6 @@ class Logria():
         self.messages = self.parsed_messages
 
         # Render immediately
-        self.first_line_rendered = None
 
         # Stick to bottom again
         self.stick_to_bottom = True
@@ -264,7 +259,6 @@ class Logria():
         self.parser_index = 0  # Dump the pattern index
         self.last_index_processed = 0  # Reset the last searched index
         self.current_end = 0  # We now do not know where to end
-        self.first_line_rendered = None  # Render immediately
         self.stick_to_bottom = True  # Stay at the bottom for the next render
         self.write_to_command_line(self.current_status)
 
@@ -330,18 +324,18 @@ class Logria():
             self.current_end = end  # Save this row so we know where we are
             start = max(0, end - self.last_row - 1)
             # Don't do anything if nothing changed
-            if self.first_line_rendered == start and not self.analytics_enabled:
+            if self.prevous_render == self.messages[start:end]:
                 return
-            self.first_line_rendered = start
+            self.prevous_render = self.messages[start:end]
             self.clear_output_window()
             current_row = 0  # The row we are currently rendering
             for i in range(start, end):
                 item = self.messages[i]
                 # Instead of window.addstr, handle colors
-                color_handler.addstr(self.outwin, current_row, 0, item)
-                self.outwin.noutrefresh()  # Update the window data but don't refresh the screen
+                color_handler.addstr(self.outwin, current_row, 0, item.strip())
+                self.outwin.refresh()  # Update the window data but don't refresh the screen
                 current_row, _ = curses.getsyx()  # Get the current row
-                current_row += max(1, ceil(len(item) / self.width) - 1) # Go to the next open line
+                current_row += max(1, round(len(item) / self.width) - 1) # Go to the next open line
                 if current_row > self.last_row:
                     break
         elif self.matched_rows:
@@ -370,9 +364,9 @@ class Logria():
             self.current_end = end
             start = max(0, end - self.last_row - 1)
             # Don't do anything if nothing changed
-            if self.first_line_rendered == start and not self.analytics_enabled:
+            if self.prevous_render == self.matched_rows[start:end]:
                 return
-            self.first_line_rendered = start
+            self.prevous_render = self.matched_rows[start:end]
             self.clear_output_window()
             current_row = 0  # The row we are currently rendering
             for i in range(start, end):
@@ -383,12 +377,12 @@ class Logria():
                     # Remove all color codes
                     item = re.sub(ANSI_COLOR_PATTERN, '', item)
                     item = re.sub(
-                        self.regex_pattern, f'\u001b[35m{self.regex_pattern}\u001b[0m', item)
+                        self.regex_pattern, f'\u001b[35m{self.regex_pattern}\u001b[0m', item.strip())
                 # Print to current row, 2 chars from right edge
                 color_handler.addstr(self.outwin, current_row, 0, item)
-                self.outwin.noutrefresh()  # Update the window data but don't refresh the screen
+                self.outwin.refresh()  # Update the window data but don't refresh the screen
                 current_row, _ = curses.getsyx()  # Get the current row
-                current_row += max(1, ceil(len(item) / self.width)) # Go to the next open line
+                current_row += max(1, round(len(item) / self.width) - 1) # Go to the next open line
                 if current_row > self.last_row:
                     break
         curses.doupdate()
@@ -483,7 +477,6 @@ class Logria():
         self.write_to_command_line(self.current_status)
 
         # Render the text
-        self.first_line_rendered = None  # Render immediately
         self.render_text_in_output()
         curses.curs_set(0)
 
@@ -502,7 +495,6 @@ class Logria():
         self.last_index_regexed = 0  # Reset the last searched index
         self.current_end = 0  # We now do not know where to end
         self.stick_to_bottom = True  # Stay at the bottom for the next render
-        self.first_line_rendered = None  # Render immediately
         self.write_to_command_line(self.current_status)  # Render status
 
     def handle_regex_mode(self) -> None:
@@ -609,7 +601,6 @@ class Logria():
                     if result == -1:  # Handle exiting application loop
                         return result
                 elif keypress == 'h':
-                    self.first_line_rendered = None  # Render immediately
                     if self.func_handle and self.highlight_match:
                         self.highlight_match = False
                     elif self.func_handle and not self.highlight_match:
@@ -635,7 +626,6 @@ class Logria():
                     # Enable parser
                     self.setup_parser()
                 elif keypress == 'a':
-                    self.first_line_rendered = None  # Render immediately
                     # Enable analytics engine
                     if self.parser is not None:
                         self.last_index_processed = 0
