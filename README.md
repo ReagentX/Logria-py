@@ -77,7 +77,6 @@ app.start()
 | `p` | activate parser |
 | `a` | toggle analytics mode when parser is active |
 | `z` | deactivate parser |
-| `e` | enable expanded mode (line break instead of truncate) |
 | ↑ | scroll buffer up one line |
 | ↓ | scroll buffer down one line |
 | → | skip and stick to end of buffer |

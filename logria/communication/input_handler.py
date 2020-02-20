@@ -3,8 +3,11 @@ Functions for handling getting input from a file or from stdout/stderr
 """
 
 
+import time
 import multiprocessing
 from subprocess import PIPE, Popen
+from fcntl import fcntl, F_GETFL, F_SETFL
+from os import O_NONBLOCK, read
 
 from logria.logger.default_logger import setup_default_logger
 
@@ -17,7 +20,10 @@ class InputStream():
     Spawns a process that will create queues we can read from to get input from a stream
     """
 
-    def __init__(self, args: list) -> None:
+    def __init__(self, args: list, poll_rate=0.001) -> None:
+        # Poll processes for new messages at this rate
+        self.poll_rate = poll_rate
+
         # Use separate queues for stdout/stderr so we can parse separately
         self.stdout = multiprocessing.Queue()
         self.stderr = multiprocessing.Queue()
@@ -25,7 +31,6 @@ class InputStream():
         # Create the child process, have it run in the background
         self.process = multiprocessing.Process(
             target=self.run, args=(args, self.stdout, self.stderr,))
-        self.process.daemon = True
         self.process.name = ' '.join(args)
 
     def start(self):
@@ -45,8 +50,7 @@ class InputStream():
         """
         Kills the process
         """
-        self.process.join()
-        self.process.close()
+        self.process.terminate()
 
 
 class CommandInputStream(InputStream):
@@ -64,8 +68,17 @@ class CommandInputStream(InputStream):
         """
         try:
             proc = Popen(args, stdout=PIPE, stderr=PIPE, bufsize=1,
-                        universal_newlines=True)
+                         universal_newlines=True)
+
+            # Un-buffer streams
+            stdout_flag = fcntl(proc.stdout, F_GETFL)
+            fcntl(proc.stdout, F_SETFL, stdout_flag | O_NONBLOCK)
+
+            stderr_flag = fcntl(proc.stderr, F_GETFL)
+            fcntl(proc.stderr, F_SETFL, stderr_flag | O_NONBLOCK)
+
             while True:
+                time.sleep(self.poll_rate)
                 # stdout
                 stdout_output = proc.stdout.readline()
                 if stdout_output:
@@ -95,6 +108,7 @@ class PipeInputStream(InputStream):
         """
         # pipe = open(0)
         while True:
+            time.sleep(self.poll_rate)
             try:
                 pipe_input = pipe.readline()
                 if pipe_input:
