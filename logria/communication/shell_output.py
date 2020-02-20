@@ -6,9 +6,9 @@ Contains the main class that controls the state of the app
 import curses
 import re
 import time
+from math import ceil
 from curses.textpad import Textbox, rectangle
 from os.path import isfile
-import textwrap
 
 from logria.communication.input_handler import (CommandInputStream,
                                                 FileInputStream, InputStream)
@@ -17,7 +17,7 @@ from logria.logger.parser import Parser
 from logria.utilities.command_parser import Resolver
 from logria.utilities.constants import ANSI_COLOR_PATTERN
 from logria.utilities.keystrokes import validator
-from logria.utilities.regex_generator import regex_test_generator
+from logria.utilities.regex_generator import regex_test_generator, get_real_length
 from logria.utilities.session import SessionHandler
 
 
@@ -26,7 +26,7 @@ class Logria():
     Main app class that controls the logical flow of the app
     """
 
-    def __init__(self, stream: InputStream, poll_rate=0.001):
+    def __init__(self, stream: InputStream, poll_rate=0.005):
         # UI Elements initialized to None
         self.stdscr = None  # The entire window
         self.outwin: curses.window = None  # The output window
@@ -37,6 +37,7 @@ class Logria():
         self.poll_rate: float = poll_rate  # The rate at which we check for new messages
         self.height: int = None  # Window height
         self.width: int = None  # Window width
+        self.prevous_render: list = None  # Store the state of the previous render so we know if we need to refresh
         # Pointer to the previous non-parsed message list, which is continuously updated
         self.previous_messages: list = []
 
@@ -44,12 +45,6 @@ class Logria():
         self.stderr_messages: list = []
         self.stdout_messages: list = []
         self.messages: list = self.stderr_messages  # Default to watching stderr
-
-        # Expanded message information
-        # Whether we should expand messages before render
-        self.should_expand_messages: bool = False
-        self.expanded_messages: list = []  # Buffer to hold expanded messages
-        self.last_index_expanded: int = 0  # The last index the expanding function saw
 
         # Regex Handler information
         self.func_handle: callable = None  # Regex func that handles filtering
@@ -114,6 +109,7 @@ class Logria():
                 self.outwin.addstr(i, 0, '\n')
             except curses.error:
                 pass
+        # self.outwin.refresh()
 
     def setup_streams(self) -> None:
         """
@@ -168,6 +164,8 @@ class Logria():
 
         # Set status back to what it was
         self.write_to_command_line(self.current_status)
+
+        # Render immediately
 
         # Reset messages
         self.stderr_messages = []
@@ -235,6 +233,8 @@ class Logria():
         # Put pointer back to new array
         self.messages = self.parsed_messages
 
+        # Render immediately
+
         # Stick to bottom again
         self.stick_to_bottom = True
         self.stick_to_top = False
@@ -297,9 +297,6 @@ class Logria():
 
         We write the whole message, regardless of length, because slicing a string allocates a new string
         """
-        self.clear_output_window()
-        current_row = -1  # The row we are currently rendering
-
         # If filters are disabled
         if self.func_handle is None:
             # Handle where the bottom of the stream should be
@@ -326,14 +323,19 @@ class Logria():
                 end = len(self.messages)
             self.current_end = end  # Save this row so we know where we are
             start = max(0, end - self.last_row - 1)
+            # Don't do anything if nothing changed
+            if self.prevous_render == self.messages[start:end]:
+                return
+            self.prevous_render = self.messages[start:end]
+            self.clear_output_window()
+            current_row = 0  # The row we are currently rendering
             for i in range(start, end):
                 item = self.messages[i]
-                # Subtract since we increment only if we write the row
-                if current_row >= self.last_row:
-                    break
-                current_row += 1
                 # Instead of window.addstr, handle colors
-                color_handler.addstr(self.outwin, current_row, 0, item)
+                color_handler.addstr(self.outwin, current_row, 0, item.strip())
+                current_row += ceil(get_real_length(item) / self.width) # Go to the next open line
+                if current_row > self.last_row:
+                    break
         elif self.matched_rows:
             # Handle where the bottom of the stream is
             if self.stick_to_bottom:
@@ -359,21 +361,26 @@ class Logria():
                 end = len(self.matched_rows)
             self.current_end = end
             start = max(0, end - self.last_row - 1)
+            # Don't do anything if nothing changed
+            if self.prevous_render == self.matched_rows[start:end]:
+                return
+            self.prevous_render = self.matched_rows[start:end]
+            self.clear_output_window()
+            current_row = 0  # The row we are currently rendering
             for i in range(start, end):
                 messages_idx = self.matched_rows[i]
                 item = self.messages[messages_idx]
-                # Subtract since we increment only if we write the row
-                if current_row >= self.last_row:
-                    break
-                current_row += 1
                 # Instead of window.addstr, handle colors, also handle regex highlighter
                 if self.highlight_match:
                     # Remove all color codes
                     item = re.sub(ANSI_COLOR_PATTERN, '', item)
                     item = re.sub(
-                        self.regex_pattern, f'\u001b[35m{self.regex_pattern}\u001b[0m', item)
+                        self.regex_pattern, f'\u001b[35m{self.regex_pattern}\u001b[0m', item.strip())
                 # Print to current row, 2 chars from right edge
                 color_handler.addstr(self.outwin, current_row, 0, item)
+                current_row += ceil(get_real_length(item) / self.width) # Go to the next open line
+                if current_row > self.last_row:
+                    break
         self.outwin.refresh()
 
     def process_matches(self) -> None:
@@ -412,59 +419,6 @@ class Logria():
             if self.func_handle(self.messages[index]):
                 self.matched_rows.append(index)
         self.last_index_regexed = len(self.messages)
-        self.write_to_command_line(self.current_status)
-
-    def setup_expanded_mode(self) -> None:
-        """
-        Swap to expanded message buffer
-        """
-        # Reset any app state
-        self.reset_parser()
-        self.reset_regex_status()
-
-        # Store previous message pointer
-        if self.messages is self.stderr_messages:
-            self.previous_messages = self.stderr_messages
-        elif self.messages is self.stdout_messages:
-            self.previous_messages = self.stdout_messages
-
-        # Place new pointer
-        self.messages = self.expanded_messages
-
-        # Enable expanded messages
-        self.should_expand_messages = True
-
-        # Update status
-        self.current_status = 'Expanding messages, filtering and parsing disabled'
-        self.write_to_command_line(self.current_status)
-
-    def process_expanded_messages(self) -> None:
-        """
-        Fill expanded message buffer
-        """
-        self.write_to_command_line('Expanding messages...')
-        for index in range(self.last_index_expanded, len(self.previous_messages)):
-            message = self.previous_messages[index]
-            self.expanded_messages.extend(
-                self.split_message_for_width(message))
-        self.last_index_expanded = len(self.previous_messages)
-        self.write_to_command_line(self.current_status)
-
-    def reset_expanded_mode(self) -> None:
-        """
-        Go back to normal message buffer from expanded message buffer
-        """
-        if self.previous_messages:
-            # Move messages pointer to the previous state
-            if self.previous_messages is self.stderr_messages:
-                self.messages = self.stderr_messages
-            else:
-                self.messages = self.stdout_messages
-            self.previous_messages = []
-            self.expanded_messages = []  # Dump expanded messages
-        self.should_expand_messages = False
-        self.current_status = 'No filter applied'
-        self.last_index_expanded = 0
         self.write_to_command_line(self.current_status)
 
     def write_to_command_line(self, string: str) -> None:
@@ -530,6 +484,7 @@ class Logria():
             self.current_status = f'Parsing with {self.parser.get_name()}, field {self.parser_index}'
         else:
             self.current_status = 'No filter applied'  # CLI message, rendered after
+        self.prevous_render = None  # Reset previous render
         self.func_handle = None  # Disable filter
         self.highlight_match = False  # Disable highlighting
         self.regex_pattern = ''  # Clear the current pattern
@@ -538,15 +493,6 @@ class Logria():
         self.current_end = 0  # We now do not know where to end
         self.stick_to_bottom = True  # Stay at the bottom for the next render
         self.write_to_command_line(self.current_status)  # Render status
-
-    def split_message_for_width(self, message: str) -> list:
-        """
-        Breaks a message to a list of parts if it is too long to fit on a line
-        """
-        if len(message) < self.width - 4:
-            return [message]
-        else:
-            return textwrap.wrap(message, self.width - 4)
 
     def handle_regex_mode(self) -> None:
         """
@@ -651,12 +597,8 @@ class Logria():
                     result = self.handle_command_mode()
                     if result == -1:  # Handle exiting application loop
                         return result
-                elif keypress == 'e':
-                    if self.should_expand_messages:
-                        self.reset_expanded_mode()
-                    else:
-                        self.setup_expanded_mode()
                 elif keypress == 'h':
+                    self.prevous_render = None  #  Force render
                     if self.func_handle and self.highlight_match:
                         self.highlight_match = False
                     elif self.func_handle and not self.highlight_match:
@@ -707,7 +649,7 @@ class Logria():
                     self.stick_to_top = False
                     self.stick_to_bottom = False
                     self.current_end = min(
-                        len(self.messages), self.current_end + 1)
+                        len(self.messages) + 5, self.current_end + 1)
                 elif keypress == 'KEY_RIGHT':
                     # Stick to bottom
                     self.stick_to_top = False
@@ -724,6 +666,4 @@ class Logria():
                     self.process_parser()  # This may block if there are a lot of messages
                 if self.func_handle:
                     self.process_matches()  # This may block if there are a lot of messages
-                if self.should_expand_messages:
-                    self.process_expanded_messages()  # This may block if there are a lot of messages
                 self.render_text_in_output()

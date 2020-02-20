@@ -16,3 +16,10 @@ def regex_test_generator(pattern: str) -> callable:
                                          re.sub(ANSI_COLOR_PATTERN,
                                                 '',
                                                 string)))
+
+
+def get_real_length(item: str) -> int:
+    """
+    Get the real length of a string without escape codes
+    """
+    return len(re.sub(ANSI_COLOR_PATTERN, '', item))
