@@ -141,6 +141,8 @@ class Logria():
             try:
                 command = int(command)
                 session = session_handler.load_session(command)
+                if not session:
+                    continue
                 commands = session.get('commands')
                 # Commands need a type
                 for command in commands:
@@ -170,6 +172,7 @@ class Logria():
         self.write_to_command_line(self.current_status)
 
         # Render immediately
+        self.prevous_render = None
 
         # Reset messages
         self.stderr_messages = []
