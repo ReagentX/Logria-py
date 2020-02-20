@@ -56,7 +56,7 @@ TERMINAL_COLOR_TO_CURSES = {
 }
 
 
-def _get_color(foreground, background):
+def _get_color(foreground: curses.A_COLOR, background: curses.A_COLOR):
     key = (foreground, background)
     if key not in COLOR_PAIRS_CACHE:
         # Use the pairs from 101 and after, so there's less chance they'll be overwritten by the user
@@ -67,7 +67,7 @@ def _get_color(foreground, background):
     return COLOR_PAIRS_CACHE[key]
 
 
-def _color_str_to_color_pair(color):
+def _color_str_to_color_pair(color: str):
     if color == TerminalColors.END:
         foreground = DEFAULT_COLOR
     else:
@@ -79,7 +79,7 @@ def _color_str_to_color_pair(color):
     return color_pair
 
 
-def _add_line(y_coord, x_coord, window, line):
+def _add_line(y_coord: int, x_coord: int, window: curses.window, line: str):
     # split but \033 which stands for a color change
     color_split = line.split('\033')
 
@@ -105,7 +105,7 @@ def _add_line(y_coord, x_coord, window, line):
             pass
 
 
-def _inner_addstr(window, string, y_coord=-1, x_coord=-1):
+def _inner_addstr(window: curses.window, string: str, y_coord=-1, x_coord=-1):
     assert curses.has_colors(
     ), "Curses wasn't configured to support colors. Call curses.start_color()"
 
