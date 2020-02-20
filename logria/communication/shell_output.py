@@ -618,6 +618,7 @@ class Logria():
                         self.insert_mode = True
                     self.build_command_line()
                 elif keypress == 's':
+                    self.prevous_render = None  # Force render
                     # Swap stdout and stderr
                     self.reset_parser()
                     self.reset_regex_status()
