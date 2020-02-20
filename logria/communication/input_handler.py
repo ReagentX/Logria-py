@@ -7,7 +7,8 @@ import time
 import multiprocessing
 from subprocess import PIPE, Popen
 from fcntl import fcntl, F_GETFL, F_SETFL
-from os import O_NONBLOCK, read
+from os import O_NONBLOCK
+from typing import List
 
 from logria.logger.default_logger import setup_default_logger
 
@@ -20,7 +21,7 @@ class InputStream():
     Spawns a process that will create queues we can read from to get input from a stream
     """
 
-    def __init__(self, args: list, poll_rate=0.001) -> None:
+    def __init__(self, args: List[str], poll_rate=0.001) -> None:
         # Poll processes for new messages at this rate
         self.poll_rate = poll_rate
 
@@ -39,7 +40,7 @@ class InputStream():
         """
         self.process.start()
 
-    def run(self, args: list, stdoutq: multiprocessing.Queue, stderrq: multiprocessing.Queue) -> None:
+    def run(self, args: List[str], stdoutq: multiprocessing.Queue, stderrq: multiprocessing.Queue) -> None:
         """
         Called by the process; should put data in stdoutq and/or stderrq
         """
@@ -58,7 +59,7 @@ class CommandInputStream(InputStream):
     Read a subprocess command as an input stream
     """
 
-    def run(self, args: list, stdoutq: multiprocessing.Queue, stderrq: multiprocessing.Queue) -> None:
+    def run(self, args: List[str], stdoutq: multiprocessing.Queue, stderrq: multiprocessing.Queue) -> None:
         """
         Given a command passed as an array ['python', 'script.py'], open a
         pipe to it and read the contents
@@ -93,7 +94,8 @@ class CommandInputStream(InputStream):
                 if stderr_output == '' and stdout_output == '' and proc.poll() is not None:
                     break
         except PermissionError:
-            stderrq.put(f'Permissions error opening handle to command: {"/".join(args)}')
+            stderrq.put(
+                f'Permissions error opening handle to command: {"/".join(args)}')
 
 
 class PipeInputStream(InputStream):
@@ -132,7 +134,8 @@ class FileInputStream(InputStream):
                 for line in f_in.readlines():
                     stdoutq.put(line)
         except PermissionError:
-            _.put(f'Permissions error opening file handle to: {"/".join(args)}')
+            _.put(
+                f'Permissions error opening file handle to: {"/".join(args)}')
 
 
 if __name__ == '__main__':
