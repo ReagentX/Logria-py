@@ -330,7 +330,7 @@ class Logria():
             self.current_end = end  # Save this row so we know where we are
             start = max(0, end - self.last_row - 1)
             # Don't do anything if nothing changed
-            if self.first_line_rendered == start:
+            if self.first_line_rendered == start and not self.analytics_enabled:
                 return
             self.first_line_rendered = start
             self.clear_output_window()
@@ -370,7 +370,7 @@ class Logria():
             self.current_end = end
             start = max(0, end - self.last_row - 1)
             # Don't do anything if nothing changed
-            if self.first_line_rendered == start:
+            if self.first_line_rendered == start and not self.analytics_enabled:
                 return
             self.first_line_rendered = start
             self.clear_output_window()
