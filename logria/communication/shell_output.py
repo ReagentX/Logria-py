@@ -9,6 +9,7 @@ import time
 from math import ceil
 from curses.textpad import Textbox, rectangle
 from os.path import isfile
+from typing import List
 
 from logria.communication.input_handler import (CommandInputStream,
                                                 FileInputStream, InputStream)
@@ -26,7 +27,7 @@ class Logria():
     Main app class that controls the logical flow of the app
     """
 
-    def __init__(self, stream: InputStream, poll_rate=0.005):
+    def __init__(self, stream: InputStream, poll_rate=0.001):
         # UI Elements initialized to None
         self.stdscr = None  # The entire window
         self.outwin: curses.window = None  # The output window
@@ -37,25 +38,27 @@ class Logria():
         self.poll_rate: float = poll_rate  # The rate at which we check for new messages
         self.height: int = None  # Window height
         self.width: int = None  # Window width
-        self.prevous_render: list = None  # Store the state of the previous render so we know if we need to refresh
+        # Store the state of the previous render so we know if we need to refresh
+        self.prevous_render: List[str] = None
         # Pointer to the previous non-parsed message list, which is continuously updated
-        self.previous_messages: list = []
+        self.previous_messages: List[str] = []
 
         # Message buffers
-        self.stderr_messages: list = []
-        self.stdout_messages: list = []
+        self.stderr_messages: List[str] = []
+        self.stdout_messages: List[str] = []
         self.messages: list = self.stderr_messages  # Default to watching stderr
 
         # Regex Handler information
         self.func_handle: callable = None  # Regex func that handles filtering
         self.regex_pattern: str = ''  # Current regex pattern
-        self.matched_rows: list = []  # Int array of matches when filtering is active
+        # Int array of matches when filtering is active
+        self.matched_rows: List[int] = []
         self.last_index_regexed: int = 0  # The last index the filtering function saw
 
         # Processor information
         self.parser: Parser = None  # Reference to the current parser
         self.parser_index: int = 0  # Index for the parser to look at
-        self.parsed_messages: list = []  # Array of parsed rows
+        self.parsed_messages: List[dict] = []  # Array of parsed rows
         self.analytics_enabled: bool = False  # Array for statistics messages
         self.last_index_processed: int = 0  # The last index the parsing function saw
 
@@ -73,10 +76,10 @@ class Logria():
 
         # If we do not have a stream yet, tell the user to set one up
         if stream is None:
-            self.streams: list = []
+            self.streams: List[InputStream] = []
         else:
             # Stream list to handle multiple streams
-            self.streams: list = [stream]
+            self.streams: List[InputStream] = [stream]
 
     def build_command_line(self) -> None:
         """
@@ -138,6 +141,8 @@ class Logria():
             try:
                 command = int(command)
                 session = session_handler.load_session(command)
+                if not session:
+                    continue
                 commands = session.get('commands')
                 # Commands need a type
                 for command in commands:
@@ -160,12 +165,14 @@ class Logria():
 
         # Launch the subprocess
         for stream in self.streams:
+            stream.poll_rate = self.poll_rate
             stream.start()
 
         # Set status back to what it was
         self.write_to_command_line(self.current_status)
 
         # Render immediately
+        self.prevous_render = None
 
         # Reset messages
         self.stderr_messages = []
@@ -335,7 +342,8 @@ class Logria():
                 item = self.messages[i]
                 # Instead of window.addstr, handle colors
                 color_handler.addstr(self.outwin, current_row, 0, item.strip())
-                current_row += ceil(get_real_length(item) / self.width) # Go to the next open line
+                # Go to the next open line
+                current_row += ceil(get_real_length(item) / self.width)
                 if current_row > self.last_row:
                     break
         elif self.matched_rows:
@@ -380,7 +388,8 @@ class Logria():
                         self.regex_pattern, f'\u001b[35m{self.regex_pattern}\u001b[0m', item.strip())
                 # Print to current row, 2 chars from right edge
                 color_handler.addstr(self.outwin, current_row, 0, item)
-                current_row += ceil(get_real_length(item) / self.width) # Go to the next open line
+                # Go to the next open line
+                current_row += ceil(get_real_length(item) / self.width)
                 if current_row > self.last_row:
                     break
         self.outwin.refresh()
@@ -603,7 +612,7 @@ class Logria():
                     if result == -1:  # Handle exiting application loop
                         return result
                 elif keypress == 'h':
-                    self.prevous_render = None  #  Force render
+                    self.prevous_render = None  # Force render
                     if self.func_handle and self.highlight_match:
                         self.highlight_match = False
                     elif self.func_handle and not self.highlight_match:
@@ -618,6 +627,7 @@ class Logria():
                         self.insert_mode = True
                     self.build_command_line()
                 elif keypress == 's':
+                    self.prevous_render = None  # Force render
                     # Swap stdout and stderr
                     self.reset_parser()
                     self.reset_regex_status()

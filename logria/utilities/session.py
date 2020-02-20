@@ -6,6 +6,7 @@ Classes to handle saving sessions
 import json
 import os
 from pathlib import Path
+from typing import List
 
 from logria.utilities.constants import SAVED_SESSIONS_PATH
 
@@ -43,7 +44,7 @@ class SessionHandler():
                 out_d = json.loads(f.read())
         return out_d
 
-    def save_session(self, name: str, commands: list, type_: str) -> None:
+    def save_session(self, name: str, commands: List[str], type_: str) -> None:
         """
         Save a session to the sessions directory
         """
