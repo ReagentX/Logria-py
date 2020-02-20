@@ -378,7 +378,7 @@ class Logria():
                         self.regex_pattern, f'\u001b[35m{self.regex_pattern}\u001b[0m', item.strip())
                 # Print to current row, 2 chars from right edge
                 color_handler.addstr(self.outwin, current_row, 0, item)
-                current_row += max(1, ceil(get_real_length(item) / self.width) - 1) # Go to the next open line
+                current_row += ceil(get_real_length(item) / self.width) # Go to the next open line
                 if current_row > self.last_row:
                     break
         self.outwin.refresh()
@@ -484,6 +484,7 @@ class Logria():
             self.current_status = f'Parsing with {self.parser.get_name()}, field {self.parser_index}'
         else:
             self.current_status = 'No filter applied'  # CLI message, rendered after
+        self.prevous_render = None  # Reset previous render
         self.func_handle = None  # Disable filter
         self.highlight_match = False  # Disable highlighting
         self.regex_pattern = ''  # Clear the current pattern
@@ -597,6 +598,7 @@ class Logria():
                     if result == -1:  # Handle exiting application loop
                         return result
                 elif keypress == 'h':
+                    self.prevous_render = None  #  Force render
                     if self.func_handle and self.highlight_match:
                         self.highlight_match = False
                     elif self.func_handle and not self.highlight_match:
