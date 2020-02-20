@@ -56,7 +56,7 @@ TERMINAL_COLOR_TO_CURSES = {
 }
 
 
-def _get_color(foreground, background):
+def _get_color(foreground: curses.A_COLOR, background: curses.A_COLOR):
     key = (foreground, background)
     if key not in COLOR_PAIRS_CACHE:
         # Use the pairs from 101 and after, so there's less chance they'll be overwritten by the user
@@ -67,7 +67,7 @@ def _get_color(foreground, background):
     return COLOR_PAIRS_CACHE[key]
 
 
-def _color_str_to_color_pair(color):
+def _color_str_to_color_pair(color: str):
     if color == TerminalColors.END:
         foreground = DEFAULT_COLOR
     else:
@@ -79,7 +79,7 @@ def _color_str_to_color_pair(color):
     return color_pair
 
 
-def _add_line(y_coord, x_coord, window, line):
+def _add_line(y_coord: int, x_coord: int, window: curses.window, line: str):
     # split but \033 which stands for a color change
     color_split = line.split('\033')
 
@@ -87,9 +87,10 @@ def _add_line(y_coord, x_coord, window, line):
     default_color_pair = _get_color(DEFAULT_COLOR, DEFAULT_COLOR)
     try:
         window.addstr(y_coord, x_coord, color_split[0], curses.color_pair(default_color_pair))
+        window.noutrefresh()
+        y_coord, x_coord = curses.getsyx()
     except curses.error:
         pass
-    x_coord += len(color_split[0])
 
     # Iterate over the rest of the line-parts and print them with their colors
     for substring in color_split[1:]:
@@ -98,12 +99,13 @@ def _add_line(y_coord, x_coord, window, line):
         color_pair = _color_str_to_color_pair(color_str)
         try:
             window.addstr(y_coord, x_coord, substring, curses.color_pair(color_pair))
+            window.noutrefresh()
+            y_coord, x_coord = curses.getsyx()
         except curses.error:
             pass
-        x_coord += len(substring)
 
 
-def _inner_addstr(window, string, y_coord=-1, x_coord=-1):
+def _inner_addstr(window: curses.window, string: str, y_coord=-1, x_coord=-1):
     assert curses.has_colors(
     ), "Curses wasn't configured to support colors. Call curses.start_color()"
 
