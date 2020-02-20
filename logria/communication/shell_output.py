@@ -481,6 +481,7 @@ class Logria():
         self.write_to_command_line(self.current_status)
 
         # Render the text
+        self.first_line_rendered = None  # Render immediately
         self.render_text_in_output()
         curses.curs_set(0)
 
@@ -606,6 +607,7 @@ class Logria():
                     if result == -1:  # Handle exiting application loop
                         return result
                 elif keypress == 'h':
+                    self.first_line_rendered = None  # Render immediately
                     if self.func_handle and self.highlight_match:
                         self.highlight_match = False
                     elif self.func_handle and not self.highlight_match:
