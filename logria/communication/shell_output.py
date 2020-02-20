@@ -6,6 +6,7 @@ Contains the main class that controls the state of the app
 import curses
 import re
 import time
+from math import ceil
 from curses.textpad import Textbox, rectangle
 from os.path import isfile
 import textwrap
@@ -45,12 +46,6 @@ class Logria():
         self.stderr_messages: list = []
         self.stdout_messages: list = []
         self.messages: list = self.stderr_messages  # Default to watching stderr
-
-        # Expanded message information
-        # Whether we should expand messages before render
-        self.should_expand_messages: bool = False
-        self.expanded_messages: list = []  # Buffer to hold expanded messages
-        self.last_index_expanded: int = 0  # The last index the expanding function saw
 
         # Regex Handler information
         self.func_handle: callable = None  # Regex func that handles filtering
@@ -171,6 +166,9 @@ class Logria():
         # Set status back to what it was
         self.write_to_command_line(self.current_status)
 
+        # Render immediately
+        self.first_line_rendered = None
+
         # Reset messages
         self.stderr_messages = []
         self.messages = self.stderr_messages
@@ -237,6 +235,9 @@ class Logria():
         # Put pointer back to new array
         self.messages = self.parsed_messages
 
+        # Render immediately
+        self.first_line_rendered = None
+
         # Stick to bottom again
         self.stick_to_bottom = True
         self.stick_to_top = False
@@ -261,6 +262,7 @@ class Logria():
         self.parser_index = 0  # Dump the pattern index
         self.last_index_processed = 0  # Reset the last searched index
         self.current_end = 0  # We now do not know where to end
+        self.first_line_rendered = None  # Render immediately
         self.stick_to_bottom = True  # Stay at the bottom for the next render
         self.write_to_command_line(self.current_status)
 
@@ -325,6 +327,7 @@ class Logria():
                 end = len(self.messages)
             self.current_end = end  # Save this row so we know where we are
             start = max(0, end - self.last_row - 1)
+            # Don't do anything if nothing changed
             if self.first_line_rendered == start:
                 return
             self.first_line_rendered = start
@@ -336,8 +339,8 @@ class Logria():
                 color_handler.addstr(self.outwin, current_row, 0, item)
                 self.outwin.noutrefresh()  # Update the window data but don't refresh the screen
                 current_row, _ = curses.getsyx()  # Get the current row
-                current_row += 1  # Go to the next line
-                if current_row >= self.last_row:
+                current_row += max(1, ceil(len(item) / self.width) - 1) # Go to the next open line
+                if current_row > self.last_row:
                     break
         elif self.matched_rows:
             # Handle where the bottom of the stream is
@@ -364,6 +367,7 @@ class Logria():
                 end = len(self.matched_rows)
             self.current_end = end
             start = max(0, end - self.last_row - 1)
+            # Don't do anything if nothing changed
             if self.first_line_rendered == start:
                 return
             self.first_line_rendered = start
@@ -382,8 +386,8 @@ class Logria():
                 color_handler.addstr(self.outwin, current_row, 0, item)
                 self.outwin.noutrefresh()  # Update the window data but don't refresh the screen
                 current_row, _ = curses.getsyx()  # Get the current row
-                current_row += 1  # Go to the next line
-                if current_row >= self.last_row:
+                current_row += max(1, ceil(len(item) / self.width)) # Go to the next open line
+                if current_row > self.last_row:
                     break
         curses.doupdate()
 
@@ -423,59 +427,6 @@ class Logria():
             if self.func_handle(self.messages[index]):
                 self.matched_rows.append(index)
         self.last_index_regexed = len(self.messages)
-        self.write_to_command_line(self.current_status)
-
-    def setup_expanded_mode(self) -> None:
-        """
-        Swap to expanded message buffer
-        """
-        # Reset any app state
-        self.reset_parser()
-        self.reset_regex_status()
-
-        # Store previous message pointer
-        if self.messages is self.stderr_messages:
-            self.previous_messages = self.stderr_messages
-        elif self.messages is self.stdout_messages:
-            self.previous_messages = self.stdout_messages
-
-        # Place new pointer
-        self.messages = self.expanded_messages
-
-        # Enable expanded messages
-        self.should_expand_messages = True
-
-        # Update status
-        self.current_status = 'Expanding messages, filtering and parsing disabled'
-        self.write_to_command_line(self.current_status)
-
-    def process_expanded_messages(self) -> None:
-        """
-        Fill expanded message buffer
-        """
-        self.write_to_command_line('Expanding messages...')
-        for index in range(self.last_index_expanded, len(self.previous_messages)):
-            message = self.previous_messages[index]
-            self.expanded_messages.extend(
-                self.split_message_for_width(message))
-        self.last_index_expanded = len(self.previous_messages)
-        self.write_to_command_line(self.current_status)
-
-    def reset_expanded_mode(self) -> None:
-        """
-        Go back to normal message buffer from expanded message buffer
-        """
-        if self.previous_messages:
-            # Move messages pointer to the previous state
-            if self.previous_messages is self.stderr_messages:
-                self.messages = self.stderr_messages
-            else:
-                self.messages = self.stdout_messages
-            self.previous_messages = []
-            self.expanded_messages = []  # Dump expanded messages
-        self.should_expand_messages = False
-        self.current_status = 'No filter applied'
-        self.last_index_expanded = 0
         self.write_to_command_line(self.current_status)
 
     def write_to_command_line(self, string: str) -> None:
@@ -548,16 +499,8 @@ class Logria():
         self.last_index_regexed = 0  # Reset the last searched index
         self.current_end = 0  # We now do not know where to end
         self.stick_to_bottom = True  # Stay at the bottom for the next render
+        self.first_line_rendered = None  # Render immediately
         self.write_to_command_line(self.current_status)  # Render status
-
-    def split_message_for_width(self, message: str) -> list:
-        """
-        Breaks a message to a list of parts if it is too long to fit on a line
-        """
-        if len(message) < self.width - 4:
-            return [message]
-        else:
-            return textwrap.wrap(message, self.width - 4)
 
     def handle_regex_mode(self) -> None:
         """
@@ -662,11 +605,6 @@ class Logria():
                     result = self.handle_command_mode()
                     if result == -1:  # Handle exiting application loop
                         return result
-                elif keypress == 'e':
-                    if self.should_expand_messages:
-                        self.reset_expanded_mode()
-                    else:
-                        self.setup_expanded_mode()
                 elif keypress == 'h':
                     if self.func_handle and self.highlight_match:
                         self.highlight_match = False
@@ -718,7 +656,7 @@ class Logria():
                     self.stick_to_top = False
                     self.stick_to_bottom = False
                     self.current_end = min(
-                        len(self.messages), self.current_end + 1)
+                        len(self.messages) + 5, self.current_end + 1)
                 elif keypress == 'KEY_RIGHT':
                     # Stick to bottom
                     self.stick_to_top = False
@@ -735,6 +673,4 @@ class Logria():
                     self.process_parser()  # This may block if there are a lot of messages
                 if self.func_handle:
                     self.process_matches()  # This may block if there are a lot of messages
-                if self.should_expand_messages:
-                    self.process_expanded_messages()  # This may block if there are a lot of messages
                 self.render_text_in_output()
