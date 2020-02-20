@@ -51,8 +51,7 @@ class InputStream():
         """
         Kills the process
         """
-        self.process.join()
-        self.process.close()
+        self.process.terminate()
 
 
 class CommandInputStream(InputStream):
