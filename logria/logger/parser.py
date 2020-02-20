@@ -109,10 +109,11 @@ class Parser():
         """
         Applies the analytics rules for each part of a message
         """
-        for index, part in enumerate(self.parse(message)):
-            if index not in self.analytics:
-                self.analytics[index] = None
-            self.apply_analytics(index, part)
+        if message:
+            for index, part in enumerate(self.parse(message)):
+                if index not in self.analytics:
+                    self.analytics[index] = None
+                self.apply_analytics(index, part)
 
     def analytics_to_list(self) -> list:
         """
