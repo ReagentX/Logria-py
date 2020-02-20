@@ -5,6 +5,7 @@ fully qualified names when spawning new shells
 
 
 import os
+from pathlib import Path
 
 from logria.logger.default_logger import setup_default_logger
 
@@ -20,6 +21,7 @@ class Resolver():
     def __init__(self):
         self._paths = {}
         self.resolve_paths()
+        self.user_home = str(Path.home())
 
     def resolve_paths(self) -> None:
         """
@@ -41,6 +43,16 @@ class Resolver():
         """
         return self._paths.get(program, program)
 
+    def resolve_home_dir(self, part: str) -> str:
+        """
+        Resolves the user's home directory
+        """
+        if '~' in part:
+            return part.replace('~', self.user_home)
+        elif '$HOME' in part:
+            return part.replace('$HOME', self.user_home)
+        return part
+
     def resolve_command_as_string(self, command: str) -> str:
         """
         Replace all programs on the path with their fully qualified counterparts as a string
@@ -49,6 +61,7 @@ class Resolver():
         new_command = ''
         for part in command_parts:
             resolved_part = self.get(part)
+            resolved_part = self.resolve_home_dir(resolved_part)
             new_command += ' ' + resolved_part
         return new_command
 
@@ -60,6 +73,7 @@ class Resolver():
         new_command = []
         for part in command_parts:
             resolved_part = self.get(part)
+            resolved_part = self.resolve_home_dir(resolved_part)
             new_command.append(resolved_part)
         return new_command
 
@@ -68,5 +82,5 @@ if __name__ == '__main__':
     r = Resolver()
     print('  path\t', r.get('tail'))
     print('nopath\t', r.get('tail23'))
-    print(r.resolve_command_as_string('tail -f file.txt | grep [^a-z](.*?)<'))
-    print(r.resolve_command_as_list('tail -f file.txt | grep [^a-z](.*?)<'))
+    print(r.resolve_command_as_string('tail -f $HOME/file.txt | grep [^a-z](.*?)<'))
+    print(r.resolve_command_as_list('tail -f ~/file.txt | grep [^a-z](.*?)<'))
