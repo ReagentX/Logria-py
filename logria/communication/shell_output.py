@@ -194,6 +194,7 @@ class Logria():
 
         # Overwrite the messages pointer
         self.messages = Parser().show_patterns()
+        self.first_line_rendered = None
         self.render_text_in_output()
         while True:
             self.activate_prompt()
@@ -211,6 +212,7 @@ class Logria():
 
         # Overwrite a different list this time, and reset it when done
         self.messages = parser.display_example()
+        self.first_line_rendered = None
         self.render_text_in_output()
         while True:
             self.activate_prompt()
@@ -633,6 +635,7 @@ class Logria():
                     # Enable parser
                     self.setup_parser()
                 elif keypress == 'a':
+                    self.first_line_rendered = None  # Render immediately
                     # Enable analytics engine
                     if self.parser is not None:
                         self.last_index_processed = 0
