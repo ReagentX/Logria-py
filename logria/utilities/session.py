@@ -27,6 +27,10 @@ class SessionHandler():
         Set workspace folder, create if nonexistent
         """
         home = str(Path.home())
+        if Path(home, 'logria').exists():
+            pass
+        else:
+            os.mkdir(Path(home, 'logria'))
         if Path(home, SAVED_SESSIONS_PATH).exists():
             pass
         else:
