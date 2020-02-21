@@ -113,10 +113,16 @@ class Parser():
         Applies the analytics rules for each part of a message
         """
         if message:
-            for index, part in enumerate(self.parse(message)):
-                if index not in self.analytics:
-                    self.analytics[index] = None
-                self.apply_analytics(index, part)
+            parsed_message = self.parse(message)
+            if parsed_message is not None:
+                for index, part in enumerate(self.parse(message)):
+                    if index not in self.analytics:
+                        self.analytics[index] = None
+                    try:
+                        self.apply_analytics(index, part)
+                    except KeyError:
+                        # If we matched too many fields, this message is invalid
+                        pass
 
     def analytics_to_list(self) -> list:
         """

@@ -79,7 +79,7 @@ def _color_str_to_color_pair(color: str):
     return color_pair
 
 
-def _add_line(y_coord: int, x_coord: int, window: curses.window, line: str):
+def _add_line(y_coord: int, x_coord: int, window, line: str):
     # split but \033 which stands for a color change
     color_split = line.split('\033')
 
@@ -105,7 +105,7 @@ def _add_line(y_coord: int, x_coord: int, window: curses.window, line: str):
             pass
 
 
-def _inner_addstr(window: curses.window, string: str, y_coord=-1, x_coord=-1):
+def _inner_addstr(window, string: str, y_coord=-1, x_coord=-1):
     assert curses.has_colors(
     ), "Curses wasn't configured to support colors. Call curses.start_color()"
 
