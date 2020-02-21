@@ -211,7 +211,8 @@ class Logria():
                     parser = Parser()
                     parser.load(Parser().patterns()[int(command)])
                     break
-                except ValueError:
+                except ValueError as e:
+                    self.messages.append(f'Invalid JSON: {e.msg} on line {e.lineno}, char {e.colno}')
                     pass
 
         # Overwrite a different list this time, and reset it when done
@@ -229,7 +230,7 @@ class Logria():
                     command = int(command)
                     assert command < len(self.messages)
                     self.parser_index = int(command)
-                    self.current_status = f'Parsing with {parser.get_name()}, field {parser.get_analytics_for_index(self.parser_index)}'
+                    self.current_status = f'Parsing with {parser.get_name()}, field {parser.get_analytics_for_index(command)}'
                     self.write_to_command_line(self.current_status)
                     break
                 except ValueError:
@@ -266,6 +267,7 @@ class Logria():
             self.previous_messages = []
             self.parsed_messages = []  # Dump parsed messages
         self.parser = None  # Dump the parser
+        self.analytics_enabled = False  # Disable analytics blocker
         self.parser_index = 0  # Dump the pattern index
         self.last_index_processed = 0  # Reset the last searched index
         self.current_end = 0  # We now do not know where to end
@@ -294,8 +296,8 @@ class Logria():
                     try:
                         self.parsed_messages.append(match[self.parser_index])
                     except IndexError:
-                        self.parsed_messages.append(
-                            f'Error parsing! {self.previous_messages[index]}')
+                        # If there was an error parsing, the message did not match the current pattern
+                        pass
                 self.last_index_processed = len(self.messages)
         self.write_to_command_line(self.current_status)
 
