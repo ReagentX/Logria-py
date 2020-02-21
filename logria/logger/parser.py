@@ -56,6 +56,9 @@ class Parser():
         self._example = example
         self._analytics_methods = analytics_methods
 
+    def reset_analytics(self) -> None:
+        self.analytics = {}
+
     def get_analytics_for_index(self, index: int) -> str:
         return self._analytics_map[index]
 

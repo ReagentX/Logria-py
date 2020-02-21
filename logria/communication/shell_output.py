@@ -229,7 +229,7 @@ class Logria():
                     command = int(command)
                     assert command < len(self.messages)
                     self.parser_index = int(command)
-                    self.current_status = f'Parsing with {parser.get_name()}, field {command}'
+                    self.current_status = f'Parsing with {parser.get_name()}, field {parser.get_analytics_for_index(self.parser_index)}'
                     self.write_to_command_line(self.current_status)
                     break
                 except ValueError:
@@ -242,8 +242,10 @@ class Logria():
         self.messages = self.parsed_messages
 
         # Render immediately
+        self.prevous_render = None
 
         # Stick to bottom again
+        self.last_index_processed = 0
         self.stick_to_bottom = True
         self.stick_to_top = False
 
@@ -340,7 +342,7 @@ class Logria():
             for i in range(start, end):
                 item = self.messages[i]
                 # Instead of window.addstr, handle colors
-                color_handler.addstr(self.outwin, current_row, 0, item.strip())
+                color_handler.addstr(self.outwin, current_row, 0, item.rstrip())
                 # Go to the next open line
                 current_row += ceil(get_real_length(item) / self.width)
                 if current_row > self.last_row:
@@ -384,7 +386,7 @@ class Logria():
                     # Remove all color codes
                     item = re.sub(ANSI_COLOR_PATTERN, '', item)
                     item = re.sub(
-                        self.regex_pattern, f'\u001b[35m{self.regex_pattern}\u001b[0m', item.strip())
+                        self.regex_pattern, f'\u001b[35m{self.regex_pattern}\u001b[0m', item.rstrip())
                 # Print to current row, 2 chars from right edge
                 color_handler.addstr(self.outwin, current_row, 0, item)
                 # Go to the next open line
@@ -636,11 +638,14 @@ class Logria():
                         self.messages = self.stderr_messages
                 elif keypress == 'p':
                     # Enable parser
+                    if self.parser is not None:
+                        self.reset_parser()
                     self.setup_parser()
                 elif keypress == 'a':
                     # Enable analytics engine
                     if self.parser is not None:
                         self.last_index_processed = 0
+                        self.parser.reset_analytics()
                         if self.analytics_enabled:
                             self.current_status = f'Parsing with {self.parser.get_name()}, field {self.parser.get_analytics_for_index(self.parser_index)}'
                             self.parsed_messages = []
