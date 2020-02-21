@@ -138,6 +138,9 @@ class FileInputStream(InputStream):
         except PermissionError:
             _.put(
                 f'Permissions error opening file handle to: {"/".join(args)}')
+        except FileNotFoundError:
+            stdoutq.put(
+                f'File not found error opening handle to command: {"/".join(args)}')
 
 
 if __name__ == '__main__':
