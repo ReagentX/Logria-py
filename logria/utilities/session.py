@@ -8,7 +8,7 @@ import os
 from pathlib import Path
 from typing import List
 
-from logria.utilities.constants import SAVED_SESSIONS_PATH
+from logria.utilities.constants import LOGRIA_ROOT, SAVED_SESSIONS_PATH
 
 
 class SessionHandler():
@@ -27,6 +27,10 @@ class SessionHandler():
         Set workspace folder, create if nonexistent
         """
         home = str(Path.home())
+        if Path(home, LOGRIA_ROOT).exists():
+            pass
+        else:
+            os.mkdir(Path(home, LOGRIA_ROOT))
         if Path(home, SAVED_SESSIONS_PATH).exists():
             pass
         else:
