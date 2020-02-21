@@ -96,7 +96,9 @@ class CommandInputStream(InputStream):
         except PermissionError:
             stderrq.put(
                 f'Permissions error opening handle to command: {"/".join(args)}')
-
+        except FileNotFoundError:
+            stderrq.put(
+                f'File not found error opening handle to command: {"/".join(args)}')
 
 class PipeInputStream(InputStream):
     """

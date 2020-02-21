@@ -53,7 +53,7 @@ There are a few main ways to invoke Logria:
 - ~~As a pipe:~~
   - ~~`tail -f log.txt | logria`~~ [See Todos with Caveats](#todos-with-caveats)
 
-It may also be imported invoked programmatically as part of other software:
+It may also be imported and invoked programmatically as part of other software:
 
 ```python
 from logria.communication.input_handler import CommandInputStream

@@ -111,7 +111,6 @@ class Logria():
                 self.outwin.addstr(i, 0, '\n')
             except curses.error:
                 pass
-        # self.outwin.refresh()
 
     def setup_streams(self) -> None:
         """
