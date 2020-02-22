@@ -55,6 +55,8 @@ class Parser():
         self._name = name
         self._example = example
         self._analytics_methods = analytics_methods
+        self._analytics_map = dict(
+            zip(range(len(analytics_methods.keys())), analytics_methods.keys()))
 
     def reset_analytics(self) -> None:
         """
@@ -121,7 +123,7 @@ class Parser():
         if message:
             parsed_message = self.parse(message)
             if parsed_message is not None:
-                for index, part in enumerate(self.parse(message)):
+                for index, part in enumerate(parsed_message):
                     if index not in self.analytics:
                         self.analytics[index] = None
                     try:
@@ -144,7 +146,7 @@ class Parser():
                 out_l += [f'  {item}: {count:,}' for item,
                           count in value.most_common(5)]
             elif isinstance(value, int) or isinstance(value, float):
-                out_l += f'  Total: {value:,}'
+                out_l += [f'  Total: {value:,}']
             elif isinstance(value, dict):
                 out_l += [f'  {key}:\t {value[key]:,.2f}' for key in value]
         return out_l
@@ -243,36 +245,3 @@ class Parser():
         """
         patterns = os.listdir(self.folder)
         return [f'{i}: {v}' for i, v in enumerate(patterns)]
-
-
-if __name__ == '__main__':
-    log_message = '2005-03-19 15:10:26,773 - simple_example - CRITICAL - critical message 34'
-    log_message_short = '200 - simp - CRI - critical message'
-    color_log_message = '\u001b[33m2020-02-04 19:06:52,852 \u001b[0m- \u001b[34m__main__.<module> \u001b[0m- \u001b[32mMainProcess \u001b[0m- \u001b[36mINFO \u001b[0m- I am a log! 91'
-    color_log_message2 = '\u001b[33m2020-02-04 19:06:52,852 \u001b[0m- \u001b[34m__main__.<module> \u001b[0m- \u001b[32mMainProcess \u001b[0m- \u001b[36mWARNING \u001b[0m- I am a log! 23'
-    std_log_message = '127.0.0.1 user-identifier frank [10/Oct/2000:13:55:36 -0700] "GET /apache_pb.gif HTTP/1.0" 200 2326'
-
-    p = Parser()
-
-    def parse_std_log():
-        # p.set_pattern(r'([^ ]*) ([^ ]*) ([^ ]*) \[([^]]*)\] "([^"]*)" ([^ ]*) ([^ ]*)', 'regex', 'Common Log Format', std_log_message)
-        # p.set_pattern(r'- ', 'split', 'Color + Hyphen Separated', color_log_message)
-        # p.set_pattern(r' - ', 'split', 'Hyphen Separated', log_message)
-        p.load('Color + Hyphen Separated')
-        # v = p.display_example()
-        # for i in v:
-        #     print(i)
-        # d = p.parse(log_message)
-        # for i in d:
-        #     print(f'{d.index(i)}:', i)
-        # p.save()
-        p.handle_analytics_for_message(color_log_message)
-        p.handle_analytics_for_message(color_log_message2)
-        for i in p.analytics_to_list():
-            print(i)
-    # parse_std_log()
-    # print(Parser().show_patterns())
-    print(Parser().patterns())
-    print(Parser().patterns()[0])
-    p.load(Parser().patterns()[0])
-    print(p.get_name())
