@@ -63,7 +63,7 @@ class Resolver():
             resolved_part = self.get(part)
             resolved_part = self.resolve_home_dir(resolved_part)
             new_command += ' ' + resolved_part
-        return new_command
+        return new_command.strip()
 
     def resolve_command_as_list(self, command: str) -> list:
         """
