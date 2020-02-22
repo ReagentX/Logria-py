@@ -63,7 +63,7 @@ class Resolver():
             resolved_part = self.get(part)
             resolved_part = self.resolve_home_dir(resolved_part)
             new_command += ' ' + resolved_part
-        return new_command
+        return new_command.strip()
 
     def resolve_command_as_list(self, command: str) -> list:
         """
@@ -76,11 +76,3 @@ class Resolver():
             resolved_part = self.resolve_home_dir(resolved_part)
             new_command.append(resolved_part)
         return new_command
-
-
-if __name__ == '__main__':
-    r = Resolver()
-    print('  path\t', r.get('tail'))
-    print('nopath\t', r.get('tail23'))
-    print(r.resolve_command_as_string('tail -f $HOME/file.txt | grep [^a-z](.*?)<'))
-    print(r.resolve_command_as_list('tail -f ~/file.txt | grep [^a-z](.*?)<'))
