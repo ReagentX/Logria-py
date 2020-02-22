@@ -42,6 +42,7 @@ class Logria():
         self.prevous_render: List[str] = None
         # Pointer to the previous non-parsed message list, which is continuously updated
         self.previous_messages: List[str] = []
+        self.exit_val = 0  # If exit_val is -1, the app dies
 
         # Message buffers
         self.stderr_messages: List[str] = []
@@ -534,9 +535,7 @@ class Logria():
         curses.curs_set(0)
         if command:
             if command == ':q':
-                for stream in self.streams:
-                    stream.exit()
-                return -1
+                self.stop()
             elif ':poll' in command:
                 try:
                     command = float(command.replace(':poll', ''))
@@ -552,6 +551,14 @@ class Logria():
         Starts the program
         """
         curses.wrapper(self.main)
+
+    def stop(self) -> None:
+        """
+        Die if we send an exit signal of -1
+        """
+        for stream in self.streams:
+            stream.exit()
+        self.exit_val = -1
 
     def main(self, stdscr) -> None:
         """
@@ -610,9 +617,7 @@ class Logria():
                 if keypress == '/':
                     self.handle_regex_mode()
                 if keypress == ':':
-                    result = self.handle_command_mode()
-                    if result == -1:  # Handle exiting application loop
-                        return result
+                    self.handle_command_mode()
                 elif keypress == 'h':
                     self.prevous_render = None  # Force render
                     if self.func_handle and self.highlight_match:
@@ -682,6 +687,8 @@ class Logria():
                     self.manually_controlled_line = False
             except curses.error:
                 # If we have an active filter, process it, always render
+                if self.exit_val == -1:
+                    return
                 if self.parser:
                     self.process_parser()  # This may block if there are a lot of messages
                 if self.func_handle:
