@@ -57,9 +57,15 @@ class Parser():
         self._analytics_methods = analytics_methods
 
     def reset_analytics(self) -> None:
+        """
+        Resets the current analytics dictionary
+        """
         self.analytics = {}
 
     def get_analytics_for_index(self, index: int) -> str:
+        """
+        Returns the name of the item that is the provided index
+        """
         return self._analytics_map[index]
 
     def extract_numbers_from_message(self, message: str) -> int or float:
