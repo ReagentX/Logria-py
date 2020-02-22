@@ -51,7 +51,7 @@ There are a few main ways to invoke Logria:
 - With args:
   - `logria -e 'tail -f log.txt'`
 - ~~As a pipe:~~
-  - ~~`tail -f log.txt | logria`~~ [See Todos with Caveats](#todos-with-caveats)
+  - ~~`tail -f log.txt | logria`~~ [See Todos with Caveats](docs/todo.md/#todos-with-caveats)
 
 It may also be imported and invoked programmatically as part of other software:
 
