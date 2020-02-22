@@ -50,6 +50,9 @@ class TestSessionHandler(unittest.TestCase):
         self.assertEqual(actual, expected)
 
     def test_session_parsing(self):
+        """
+        Test that we properly show sessions from the directory as a list
+        """
         s = session.SessionHandler()
         d = s.sessions()
         l = s.show_sessions()

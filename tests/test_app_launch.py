@@ -44,7 +44,7 @@ class TestCanLaunchApp(unittest.TestCase):
         """
         with self.assertRaises(error):
             os.environ['TERM'] = 'dumb'
-            stream = CommandInputStream(['readme.md'])
+            stream = FileInputStream(['readme.md'])
             app = Logria(stream)
             app.start()
             app.stop()
