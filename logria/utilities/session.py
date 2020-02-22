@@ -18,7 +18,7 @@ class SessionHandler():
 
     def __init__(self):
         self._commands: dict = {}
-        self._type: str = ''
+        self._type: str = ''  # One of {'command', 'file'}
         self.folder: Path = None
         self.setup_folder()
 
@@ -69,15 +69,3 @@ class SessionHandler():
         """
         sessions = os.listdir(self.folder)
         return [f'{i}: {v}' for i, v in enumerate(sessions)]
-
-
-if __name__ == '__main__':
-    s = SessionHandler()
-    print(s.sessions())
-    print(s.show_sessions())
-    print(s.load_session(0).get('commands')[0])
-    # from logria.utilities.command_parser import Resolver
-    # r = Resolver()
-    # command = 'python sample_streams/generate_test_logs.py'
-    # cmd = r.resolve_command_as_list(command)
-    # s.save_session('Generate Test Logs', [cmd])
