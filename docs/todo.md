@@ -3,7 +3,6 @@
 - New features
   - [ ] "Configuration" mode or "setup" mode to generate and save sessions/parsers
   - [ ] Add 'status bar' since we have an empty row so the user can see what we are currently doing
-  - [ ] Test suite
 - Enhancements
   - [ ] Explore PyInstaller for static binaries
   - [ ] Esc key to go back to previous state
@@ -22,6 +21,7 @@
 
 ## Completed
 
+- [x] Test suite
 - [x] Write docs
 - [x] Add contribution guidelines
 - [x] Refactor command handlers that are > 5 lines to method calls
