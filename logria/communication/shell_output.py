@@ -6,6 +6,7 @@ Contains the main class that controls the state of the app
 import curses
 import re
 import time
+import json
 from math import ceil
 from curses.textpad import Textbox, rectangle
 from os.path import isfile
@@ -150,6 +151,10 @@ class Logria():
                         self.streams.append(FileInputStream(command))
                     elif session.get('type') == 'command':
                         self.streams.append(CommandInputStream(command))
+            except json.JSONDecodeError as err:
+                self.messages.append(f'Invalid JSON: {err.msg} on line {err.lineno}, char {err.colno}')
+                self.render_text_in_output()
+                continue
             except ValueError:
                 if isfile(command):
                     self.streams.append(
@@ -212,8 +217,8 @@ class Logria():
                     parser = Parser()
                     parser.load(Parser().patterns()[int(command)])
                     break
-                except ValueError as e:
-                    self.messages.append(f'Invalid JSON: {e.msg} on line {e.lineno}, char {e.colno}')
+                except json.JSONDecodeError as err:
+                    self.messages.append(f'Invalid JSON: {err.msg} on line {err.lineno}, char {err.colno}')
 
         # Overwrite a different list this time, and reset it when done
         self.messages = parser.display_example()
