@@ -15,7 +15,8 @@ class TestFormattingFunctions(unittest.TestCase):
         """
         Ensure ANSI_COLOR_PATTERN is the expected value
         """
-        self.assertEqual(constants.ANSI_COLOR_PATTERN, r'(\x9B|\x1B\[)[0-?]*[ -\/]*[@-~]')
+        self.assertEqual(constants.ANSI_COLOR_PATTERN,
+                         r'(\x9B|\x1B\[)[0-?]*[ -\/]*[@-~]')
 
     def test_root_folder(self):
         """
