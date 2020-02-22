@@ -213,7 +213,6 @@ class Logria():
                     break
                 except ValueError as e:
                     self.messages.append(f'Invalid JSON: {e.msg} on line {e.lineno}, char {e.colno}')
-                    pass
 
         # Overwrite a different list this time, and reset it when done
         self.messages = parser.display_example()
