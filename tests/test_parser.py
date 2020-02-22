@@ -131,8 +131,9 @@ class TestPatternAnalytics(unittest.TestCase):
                       log_message, analytics_methods)
         p.handle_analytics_for_message(log_message)
         p.handle_analytics_for_message(log_message)
-        for i in p.analytics_to_list():
-            print(i)
+        expected = ['Caller', '  simple_example: 2', 'Level',
+                    '  CRITICAL: 2', 'Message', '  Total: 44']
+        self.assertEqual(p.analytics_to_list(), expected)
 
 
 class TestStringParserMethods(unittest.TestCase):
@@ -201,7 +202,6 @@ class TestStringParserMethods(unittest.TestCase):
         p.set_pattern("([^ ]*) ([^ ]*) ([^ ]*) \\[([^]]*)\\] \"([^\"]*)\" ([^ ]*) ([^ ]*)", 'regex', 'Common Log Format',
                       log_message, {})
         actual = p.regex_pattern(log_message)
-        print(actual)
         expected = [
             '127.0.0.1',
             'user-identifier',
@@ -245,7 +245,6 @@ class TestStringParserMethods(unittest.TestCase):
         p.set_pattern("([^ ]*) ([^ ]*) ([^ ]*) \\[([^]]*)\\] \"([^\"]*)\" ([^ ]*) ([^ ]*)", 'regex', 'Common Log Format',
                       log_message, {})
         actual = p.parse(log_message)
-        print(actual)
         expected = [
             '127.0.0.1',
             'user-identifier',
