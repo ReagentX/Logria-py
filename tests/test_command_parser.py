@@ -76,3 +76,25 @@ class TestFormattingFunctions(unittest.TestCase):
             '[^a-z](.*?)<'
         ]
         self.assertEqual(actual, expected)
+
+    def test_resolve_file_as_string(self):
+        """
+        Test that we properly resolve a file to a string
+        """
+        r = command_parser.Resolver()
+        actual = r.resolve_command_as_string('$HOME/file.txt')
+        expected = '/Users/chris/file.txt'
+        self.assertEqual(actual, expected)
+
+    def test_resolve_file_as_list(self):
+        """
+        Test that we properly resolve a file to a list
+        """
+        r = command_parser.Resolver()
+        actual = r.resolve_file_as_list(
+            '~/file.txt')
+        expected = [
+            '/Users/chris',
+            'file.txt'
+        ]
+        self.assertEqual(actual, expected)

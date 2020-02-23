@@ -45,7 +45,6 @@ class TestSessionHandler(unittest.TestCase):
         """
         s = session.SessionHandler()
         actual = s.show_sessions()
-        print(actual)
         expected = ['0: .DS_Store',
                     '1: File - readme',
                     '2: File - Sample Access Log',
@@ -69,7 +68,6 @@ class TestSessionHandler(unittest.TestCase):
         sessions = s.sessions()
         first_item = list(sessions.keys())[1]
         actual = s.load_session(first_item)
-        print(actual)
         expected = {'commands': [
             [
                 'Users',
@@ -92,3 +90,39 @@ class TestSessionHandler(unittest.TestCase):
         s = session.SessionHandler()
         s.save_session('Test', ['ls', '-l'], 'cmd')
         remove(s.folder / 'Test')
+
+
+class TestSessionBuilder(unittest.TestCase):
+    """
+    Tests the constructor methods of a SessionHander
+    """
+
+    def test_set_params(self):
+        s = session.SessionHandler()
+        command = ['ls', '-l']
+        type_ = 'command'
+        s.set_params(command, type_)
+        self.assertEqual(s._commands, [command])
+        self.assertEqual(s._type, type_)
+
+    def test_as_list_command(self):
+        s = session.SessionHandler()
+        command = ['ls', '-l']
+        command_2 = ['grep', '-nr', 'code', '.']
+        type_ = 'command'
+        s.set_params(command, type_)
+        s.add_command(command_2)
+        expected = ['Type:', '  command',
+                    'Commands:', '  ls -l', '  grep -nr code .']
+        self.assertEqual(s.as_list(), expected)
+
+    def test_as_list_file(self):
+        s = session.SessionHandler()
+        command = ['usr', 'log', 'cloud-init.log']
+        command_2 = ['usr', 'log', 'cloud-init-output.log']
+        type_ = 'file'
+        s.set_params(command, type_)
+        s.add_command(command_2)
+        expected = ['Type:', '  file', 'Files:',
+                    '  usr/log/cloud-init.log', '  usr/log/cloud-init-output.log']
+        self.assertEqual(s.as_list(), expected)
