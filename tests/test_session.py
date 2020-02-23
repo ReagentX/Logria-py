@@ -45,7 +45,6 @@ class TestSessionHandler(unittest.TestCase):
         """
         s = session.SessionHandler()
         actual = s.show_sessions()
-        print(actual)
         expected = ['0: .DS_Store',
                     '1: File - readme',
                     '2: File - Sample Access Log',
@@ -69,7 +68,6 @@ class TestSessionHandler(unittest.TestCase):
         sessions = s.sessions()
         first_item = list(sessions.keys())[1]
         actual = s.load_session(first_item)
-        print(actual)
         expected = {'commands': [
             [
                 'Users',
