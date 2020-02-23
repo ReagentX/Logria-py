@@ -1,7 +1,6 @@
 # Todo
 
 - New features
-  - [ ] "Configuration" mode or "setup" mode to generate and save sessions/parsers
   - [ ] Custom textbox implementation that respects poll_rate
   - [ ] Add 'status bar' since we have an empty row so the user can see what we are currently doing
 - Enhancements
@@ -21,6 +20,7 @@
 
 ## Completed
 
+- [x] "Configuration" mode or "setup" mode to generate and save sessions/parsers
 - [x] Add example folder for sessions and parsers
 - [x] Test suite
 - [x] Write docs
