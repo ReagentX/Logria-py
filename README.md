@@ -21,7 +21,7 @@ There are several options to install this app.
 
 ### Development
 
-See [Advanced Installation](docs/README.md/#advanced_installation).
+See [Advanced Installation](docs/README.md#advanced_installation).
 
 ## Usage
 
@@ -32,7 +32,7 @@ There are a few main ways to invoke Logria:
 - With args:
   - `logria -e 'tail -f log.txt'`
 - ~~As a pipe:~~
-  - ~~`tail -f log.txt | logria`~~ [See rejected todos](docs/todo.md/#rejected)
+  - ~~`tail -f log.txt | logria`~~ [See rejected todos](docs/todo.md#rejected)
 
 It may also be imported and invoked programmatically as part of other software:
 
