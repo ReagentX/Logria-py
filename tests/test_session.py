@@ -35,8 +35,8 @@ class TestSessionHandler(unittest.TestCase):
         """
         s = session.SessionHandler()
         actual = s.sessions()
-        expected = {0: '.DS_Store', 1: 'File: sample_streams|accesslog',
-                    2: 'Generate Test Logs', 3: 'File: readme.md'}
+        expected = {0: '.DS_Store', 1: 'File - readme',
+                    2: 'File - Sample Access Log', 3: 'Cmd - Generate Test Logs'}
         self.assertEqual(actual, expected)
 
     def test_show_sessions(self):
@@ -45,8 +45,11 @@ class TestSessionHandler(unittest.TestCase):
         """
         s = session.SessionHandler()
         actual = s.show_sessions()
-        expected = ['0: .DS_Store', '1: File: sample_streams|accesslog',
-                    '2: Generate Test Logs', '3: File: readme.md']
+        print(actual)
+        expected = ['0: .DS_Store',
+                    '1: File - readme',
+                    '2: File - Sample Access Log',
+                    '3: Cmd - Generate Test Logs']
         self.assertEqual(actual, expected)
 
     def test_session_parsing(self):
@@ -66,9 +69,21 @@ class TestSessionHandler(unittest.TestCase):
         sessions = s.sessions()
         first_item = list(sessions.keys())[1]
         actual = s.load_session(first_item)
-        expeted = {'commands': [
-            ['/Users', 'chris', 'Logria', 'sample_streams', 'accesslog']], 'type': 'file'}
-        self.assertEqual(actual, expeted)
+        print(actual)
+        expected = {'commands': [
+            [
+                'Users',
+                'me',
+                'Documents',
+                'Code',
+                'Python',
+                'logria',
+                'README.md'
+            ]
+        ],
+            'type': 'file'
+        }
+        self.assertEqual(actual, expected)
 
     def test_save_session(self):
         """
