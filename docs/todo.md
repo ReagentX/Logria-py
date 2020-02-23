@@ -2,6 +2,7 @@
 
 - New features
   - [ ] "Configuration" mode or "setup" mode to generate and save sessions/parsers
+  - [ ] Custom textbox implementation that respects poll_rate
   - [ ] Add 'status bar' since we have an empty row so the user can see what we are currently doing
 - Enhancements
   - [ ] Explore PyInstaller for static binaries
@@ -9,7 +10,6 @@
   - [ ] Spawn a subprocess to find all the matches in the list of messages
 - Clerical
   - [ ] Deeper instructions for sessions and parsers
-  - [ ] Add example folder for sessions and parsers
   - [ ] Update contribution guidelines with concrete rules about what PRs will be accepted
 
 ## Todos with Caveats
@@ -21,6 +21,7 @@
 
 ## Completed
 
+- [x] Add example folder for sessions and parsers
 - [x] Test suite
 - [x] Write docs
 - [x] Add contribution guidelines
