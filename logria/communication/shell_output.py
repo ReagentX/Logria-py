@@ -142,7 +142,8 @@ class Logria():
                     elif session.get('type') == 'command':
                         self.streams.append(CommandInputStream(command))
             except JSONDecodeError as err:
-                self.messages.append(f'Invalid JSON: {err.msg} on line {err.lineno}, char {err.colno}')
+                self.messages.append(
+                    f'Invalid JSON: {err.msg} on line {err.lineno}, char {err.colno}')
                 self.render_text_in_output()
                 continue
             except ValueError:
@@ -214,7 +215,8 @@ class Logria():
                     parser.load(Parser().patterns()[int(command)])
                     break
                 except JSONDecodeError as err:
-                    self.messages.append(f'Invalid JSON: {err.msg} on line {err.lineno}, char {err.colno}')
+                    self.messages.append(
+                        f'Invalid JSON: {err.msg} on line {err.lineno}, char {err.colno}')
 
         # Overwrite a different list this time, and reset it when done
         self.messages = parser.display_example()
@@ -353,7 +355,8 @@ class Logria():
         else:
             end = len(messages_pointer)
         self.current_end = end  # Save this row so we know where we are
-        start = max(-1, end - self.last_row - 1)  # Last index of a list is length - 1
+        # Last index of a list is length - 1
+        start = max(-1, end - self.last_row - 1)
         return start, end
 
     def render_text_in_output(self) -> None:
@@ -377,7 +380,7 @@ class Logria():
             return
         self.previous_render = messages_pointer[max(start, 0):end]
         self.outwin.erase()
-        current_row = self.last_row # The row we are currently rendering
+        current_row = self.last_row  # The row we are currently rendering
         for i in range(end, start, -1):
             if messages_pointer is self.messages:
                 # No processing needed for normal messages
@@ -603,6 +606,71 @@ class Logria():
                 raise ValueError(f'{choice} not one of ("file", "command")')
         self.setup_streams()
 
+    def handle_create_parser(self) -> None:
+        temp_parser = Parser()
+
+        # Render text
+        self.current_end = 0
+        self.messages = constants.CREATE_PARSER_MESSAGES
+        self.previous_render = None  # Force render
+        self.render_text_in_output()
+        # Get type
+        self.activate_prompt()
+        parser_type = None
+        while parser_type not in {'regex', 'split'}:
+            self.activate_prompt()
+            parser_type = self.box.gather().strip()
+
+        # Handle next step
+        self.messages = [f'Parser type {parser_type}']
+        self.messages.append(constants.PARSER_SET_NAME)
+        self.previous_render = None  # Force render
+        self.render_text_in_output()
+        # Get name
+        self.activate_prompt()
+        parser_name = self.box.gather().strip()
+
+        # Handle next step
+        self.messages.append(f'Parser name {parser_name}')
+        self.messages.append(constants.PARSER_SET_EXAMPLE)
+        self.previous_render = None  # Force render
+        self.render_text_in_output()
+        # Get example
+        self.activate_prompt()
+        parser_example = self.box.gather().strip()
+
+        # Handle next step
+        self.messages.append(f'Parser example {parser_example}')
+        self.messages.append(constants.PARSER_SET_PATTERN)
+        self.previous_render = None  # Force render
+        self.render_text_in_output()
+        # Get pattern
+        self.activate_prompt()
+        parser_pattern = self.box.gather()
+
+        # Set the parser's data
+        temp_parser.set_pattern(
+            parser_pattern, parser_type, parser_name, parser_example, {})
+
+        # Determine the analytics dict
+        parts = temp_parser.parse(parser_example)
+        analytics = {part: 'count' for part in parts}
+
+        # Set the parser's data with analytics
+        temp_parser.set_pattern(
+            parser_pattern, parser_type, parser_name, parser_example, analytics)
+
+        self.messages = temp_parser.as_list()
+        self.messages.append(constants.SAVE_CURRENT_PATTERN)
+        self.previous_render = None  # Force render
+        self.render_text_in_output()
+        self.activate_prompt()
+        final_res = self.box.gather().strip()
+        if final_res == ':q':
+            return
+        temp_parser.save()
+        self.messages = []
+
     def config_mode(self) -> None:
         """
         Start the configuration setup
@@ -622,7 +690,6 @@ class Logria():
             self.handle_create_session()
         elif choice == 'parser':
             self.handle_create_parser()
-
 
     def handle_regex_mode(self) -> None:
         """
