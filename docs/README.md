@@ -59,22 +59,22 @@ Enter `:q` to quit.
 0: File - readme
 1: File - Sample Access Log
 2: Cmd - Generate Test Logs
-┌───────────────────────────────────────────────────────────────────────────────────────────────────┐
+┌────────────────────────────────────────────────────────────────────────────────────────────────┐
 │_
-└───────────────────────────────────────────────────────────────────────────────────────────────────┘
+└────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 Entering `2` will load and open handles to the commands in `Cmd - Generate Test Logs`:
 
 ```log
-2020-02-23 16:56:10,786 - __main__.<module> - MainProcess - INFO - I am the first log in the list! 0
+2020-02-23 16:56:10,786 - __main__.<module> - MainProcess - INFO - I am the first log in the list
 2020-02-23 16:56:10,997 - __main__.<module> - MainProcess - INFO - I am a first log! 21
 2020-02-23 16:56:10,997 - __main__.<module> - MainProcess - INFO - I am a second log! 71
 2020-02-23 16:56:11,100 - __main__.<module> - MainProcess - INFO - I am a first log! 43
 2020-02-23 16:56:11,100 - __main__.<module> - MainProcess - INFO - I am a second log! 87
-┌───────────────────────────────────────────────────────────────────────────────────────────────────┐
+┌────────────────────────────────────────────────────────────────────────────────────────────────┐
 │No filter applied
-└───────────────────────────────────────────────────────────────────────────────────────────────────┘
+└────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 Typing `/` and entering `100` will filter our stream down to only lines that match that pattern:
@@ -82,35 +82,35 @@ Typing `/` and entering `100` will filter our stream down to only lines that mat
 ```log
 2020-02-23 16:56:11,100 - __main__.<module> - MainProcess - INFO - I am a first log! 43
 2020-02-23 16:56:11,100 - __main__.<module> - MainProcess - INFO - I am a second log! 87
-┌───────────────────────────────────────────────────────────────────────────────────────────────────┐
+┌────────────────────────────────────────────────────────────────────────────────────────────────┐
 │Regex with pattern /100/
-└───────────────────────────────────────────────────────────────────────────────────────────────────┘
+└────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 Typing `/` and entering `:q` will reset the filter:
 
 ```log
-2020-02-23 16:56:10,786 - __main__.<module> - MainProcess - INFO - I am the first log in the list! 0
+2020-02-23 16:56:10,786 - __main__.<module> - MainProcess - INFO - I am the first log in the list
 2020-02-23 16:56:10,997 - __main__.<module> - MainProcess - INFO - I am a first log! 21
 2020-02-23 16:56:10,997 - __main__.<module> - MainProcess - INFO - I am a second log! 71
 2020-02-23 16:56:11,100 - __main__.<module> - MainProcess - INFO - I am a first log! 43
 2020-02-23 16:56:11,100 - __main__.<module> - MainProcess - INFO - I am a second log! 87
-┌───────────────────────────────────────────────────────────────────────────────────────────────────┐
+┌────────────────────────────────────────────────────────────────────────────────────────────────┐
 │No filter applied
-└───────────────────────────────────────────────────────────────────────────────────────────────────┘
+└────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 Typing `/` and entering `:q` will reset the filter:
 
 ```log
-2020-02-23 16:56:10,786 - __main__.<module> - MainProcess - INFO - I am the first log in the list! 0
+2020-02-23 16:56:10,786 - __main__.<module> - MainProcess - INFO - I am the first log in the list
 2020-02-23 16:56:10,997 - __main__.<module> - MainProcess - INFO - I am a first log! 21
 2020-02-23 16:56:10,997 - __main__.<module> - MainProcess - INFO - I am a second log! 71
 2020-02-23 16:56:11,100 - __main__.<module> - MainProcess - INFO - I am a first log! 43
 2020-02-23 16:56:11,100 - __main__.<module> - MainProcess - INFO - I am a second log! 87
-┌───────────────────────────────────────────────────────────────────────────────────────────────────┐
+┌────────────────────────────────────────────────────────────────────────────────────────────────┐
 │No filter applied
-└───────────────────────────────────────────────────────────────────────────────────────────────────┘
+└────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 Typing `:` and entering `:q` will exit the app.
