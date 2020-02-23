@@ -305,9 +305,6 @@ class Logria():
         Determine the start and end positions for a screen render
         """
         if self.stick_to_top:
-            # When iterating backwards, we need to end at 0, so we must create a range
-            # object like range(10, -1, -1) to generate a list that ends at 0
-            start = -1
             end = 0
             rows = 0
             for i in messages_pointer:
@@ -321,13 +318,16 @@ class Logria():
                 msg_lines = ceil(get_real_length(item) / self.width)
                 rows += msg_lines
                 # If we can fit, increment the last row number
-                if rows < self.last_row and rows < len(messages_pointer):
+                if rows < self.last_row and end < len(messages_pointer) - 1:
                     end += 1
                 else:
                     break
             self.current_end = end  # Save this row so we know where we are
-            # raise ValueError(len(messages_pointer), start, end)
-            return start, end  # Early escape
+            # When iterating backwards, we need to end at 0, so we must create a range
+            # object like range(10, -1, -1) to generate a list that ends at 0
+            # If there are no messages, we want to not iterate later, so we change the
+            # -1 to 0 so that we do not iterate at all
+            return -1 if messages_pointer else 0, end  # Early escape
         elif self.stick_to_bottom:
             end = len(messages_pointer) - 1
         elif self.manually_controlled_line:
@@ -570,7 +570,7 @@ class Logria():
 
         # Save these values
         self.height = height
-        self.width = width
+        self.width = width - 1
 
         # Setup Output window
         output_start_row = 0  # Leave space for top border
