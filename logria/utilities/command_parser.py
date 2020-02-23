@@ -57,13 +57,7 @@ class Resolver():
         """
         Replace all programs on the path with their fully qualified counterparts as a string
         """
-        command_parts = command.split(' ')
-        new_command = ''
-        for part in command_parts:
-            resolved_part = self.get(part)
-            resolved_part = self.resolve_home_dir(resolved_part)
-            new_command += ' ' + resolved_part
-        return new_command.strip()
+        return ' '.join(self.resolve_command_as_list(command))
 
     def resolve_command_as_list(self, command: str) -> list:
         """
@@ -76,3 +70,13 @@ class Resolver():
             resolved_part = self.resolve_home_dir(resolved_part)
             new_command.append(resolved_part)
         return new_command
+
+    def resolve_file_as_list(self, filepath: str) -> list:
+        path_parts = filepath.split('/')
+        new_path = []
+        for part in path_parts:
+            new_path.append(self.resolve_home_dir(part))
+        return new_path
+
+    def resolve_file_as_str(self, filepath: str) -> str:
+        return '/'.join(self.resolve_file_as_list(filepath))

@@ -197,6 +197,18 @@ class Parser():
                 'analytics': self._analytics_methods
                 }
 
+    def as_list(self):
+        """
+        List representation
+        """
+        return [
+            f'Pattern: {self._pattern}',
+            f'Type: {self._type}',
+            f'Name: {self._name}',
+            f'Example: {self._example}',
+            f'Analytics: {self._analytics_methods}'
+        ]
+
     def save(self) -> None:
         """
         Save current pattern
