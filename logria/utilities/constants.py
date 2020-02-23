@@ -31,5 +31,5 @@ CREATE_SESSION_START_MESSAGES = [
 SESSION_ADD_COMMAND = 'Enter a command to open pipes to:'
 SESSION_SHOULD_CONTINUE_COMMAND = 'Enter :s to save or press enter to add another command'
 SESSION_ADD_FILE = 'Enter a path to a file:'
-SESSION_SHOULD_CONTINUE_FILE = 'Enter :s to save or press enter to add another command'
+SESSION_SHOULD_CONTINUE_FILE = 'Enter :s to save or press enter to add another file'
 SAVE_CURRENT_SESSION = 'Enter a name to save the session:'
