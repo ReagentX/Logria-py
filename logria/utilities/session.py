@@ -61,6 +61,12 @@ class SessionHandler():
                 out_d = json.loads(f.read())
         return out_d
 
+    def save_current_session(self, name: str) -> None:
+        """
+        Saves the current session
+        """
+        self.save_session(name, self._commands, self._type)
+
     def save_session(self, name: str, commands: List[str], type_: str) -> None:
         """
         Save a session to the sessions directory
@@ -76,7 +82,6 @@ class SessionHandler():
         out_l = []
         out_l.append('Type:')
         out_l.append(f'  {self._type}')
-        out_l.append('Commands:' if self._type == 'command' else 'Files:')
         if self._type == 'command':
             out_l.append('Commands:')
             for command in self._commands:
