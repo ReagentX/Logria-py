@@ -306,6 +306,36 @@ class Logria():
                 self.last_index_processed = len(self.messages)
         self.write_to_command_line(self.current_status)
 
+    def determine_render_position(self, messages_pointer: List[str]) -> (int, int):
+        """
+        Determine the start and end positions for a screen render
+        """
+        # Handle where the bottom of the stream should be
+        if self.stick_to_bottom:
+            end = len(messages_pointer)
+        elif self.stick_to_top:
+            end = min(self.last_row + 1, len(messages_pointer))
+        elif self.manually_controlled_line:
+            if len(messages_pointer) < self.last_row:
+                # If have fewer messages than lines, just render it all
+                end = len(messages_pointer)
+            elif self.current_end < self.last_row:
+                end = self.last_row
+            elif self.current_end < len(messages_pointer):
+                # If we are looking at a valid line, render ends there
+                end = self.current_end
+            else:
+                # If we have over-scrolled, go back
+                if self.current_end > len(messages_pointer):
+                    self.current_end = len(messages_pointer)
+                # Since current_end can be zero, we have to use the number of messages
+                end = len(messages_pointer)
+        else:
+            end = len(messages_pointer)
+        self.current_end = end  # Save this row so we know where we are
+        start = max(0, end - self.last_row - 1)
+        return start, end
+
     def render_text_in_output(self) -> None:
         """
         Renders stream content in the output window
@@ -314,92 +344,37 @@ class Logria():
 
         We write the whole message, regardless of length, because slicing a string allocates a new string
         """
-        # If filters are disabled
         if self.func_handle is None:
-            # Handle where the bottom of the stream should be
-            if self.stick_to_bottom:
-                end = len(self.messages)
-            elif self.stick_to_top:
-                end = min(self.last_row + 1, len(self.messages))
-            elif self.manually_controlled_line:
-                if len(self.messages) < self.last_row:
-                    # If have fewer messages than lines, just render it all
-                    end = len(self.messages)
-                elif self.current_end < self.last_row:
-                    end = self.last_row
-                elif self.current_end < len(self.messages):
-                    # If we are looking at a valid line, render ends there
-                    end = self.current_end
-                else:
-                    # If we have over-scrolled, go back
-                    if self.current_end > len(self.messages):
-                        self.current_end = len(self.messages)
-                    # Since current_end can be zero, we have to use the number of messages
-                    end = len(self.messages)
-            else:
-                end = len(self.messages)
-            self.current_end = end  # Save this row so we know where we are
-            start = max(0, end - self.last_row - 1)
-            # Don't do anything if nothing changed
-            if self.prevous_render == self.messages[start:end]:
-                return
-            self.prevous_render = self.messages[start:end]
-            self.clear_output_window()
-            current_row = 0  # The row we are currently rendering
-            for i in range(start, end):
-                item = self.messages[i]
-                # Instead of window.addstr, handle colors
-                color_handler.addstr(self.outwin, current_row, 0, item.rstrip())
-                # Go to the next open line
-                current_row += ceil(get_real_length(item) / self.width)
-                if current_row > self.last_row:
-                    break
-        elif self.matched_rows:
-            # Handle where the bottom of the stream is
-            if self.stick_to_bottom:
-                end = len(self.matched_rows)
-            elif self.stick_to_top:
-                end = min(self.last_row + 1, len(self.matched_rows))
-            elif self.manually_controlled_line:
-                if len(self.matched_rows) < self.last_row:
-                    # If have fewer matched rows than lines, just render it all
-                    end = len(self.matched_rows)
-                elif self.current_end < self.last_row:
-                    end = self.last_row
-                elif self.current_end < len(self.matched_rows):
-                    # If the current end is larger
-                    end = self.current_end
-                else:
-                    # If we have over-scrolled, go back
-                    if self.current_end > len(self.matched_rows):
-                        self.current_end = len(self.matched_rows)
-                    # Since current_end can be zero, we have to use the number of matched rows
-                    end = len(self.matched_rows)
-            else:
-                end = len(self.matched_rows)
-            self.current_end = end
-            start = max(0, end - self.last_row - 1)
-            # Don't do anything if nothing changed
-            if self.prevous_render == self.matched_rows[start:end]:
-                return
-            self.prevous_render = self.matched_rows[start:end]
-            self.clear_output_window()
-            current_row = 0  # The row we are currently rendering
-            for i in range(start, end):
+            messages_pointer = self.messages
+        else:
+            messages_pointer = self.matched_rows
+
+        start, end = self.determine_render_position(messages_pointer)
+        # Don't do anything if nothing changed
+        if self.prevous_render == messages_pointer[start:end]:
+            return
+        self.prevous_render = messages_pointer[start:end]
+        self.clear_output_window()
+        current_row = 0  # The row we are currently rendering
+        for i in range(start, end):
+            if messages_pointer is self.messages:
+                # No processing needed for normal messages
+                item = messages_pointer[i]
+            elif messages_pointer is self.matched_rows:
+                # Grab the matched message and optionally highlight it
                 messages_idx = self.matched_rows[i]
                 item = self.messages[messages_idx]
-                # Instead of window.addstr, handle colors, also handle regex highlighter
                 if self.highlight_match:
-                    # Remove all color codes
+                    # Remove all color codes before applying highlighter
                     item = re.sub(ANSI_COLOR_PATTERN, '', item)
                     item = re.sub(
                         self.regex_pattern, f'\u001b[35m{self.regex_pattern}\u001b[0m', item.rstrip())
-                # Print to current row, 2 chars from right edge
-                color_handler.addstr(self.outwin, current_row, 0, item)
-                # Go to the next open line
-                current_row += ceil(get_real_length(item) / self.width)
-                if current_row > self.last_row:
-                    break
+            # Instead of window.addstr, handle colors
+            color_handler.addstr(self.outwin, current_row, 0, item.rstrip())
+            # Go to the next open line
+            current_row += ceil(get_real_length(item) / self.width)
+            if current_row > self.last_row:
+                break
         self.outwin.refresh()
 
     def process_matches(self) -> None:
