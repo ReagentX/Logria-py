@@ -6,9 +6,9 @@ Contains the main class that controls the state of the app
 import curses
 import re
 import time
+from curses.textpad import Textbox, rectangle
 from json import JSONDecodeError
 from math import ceil
-from curses.textpad import Textbox, rectangle
 from os.path import isfile
 from typing import List
 
@@ -16,10 +16,11 @@ from logria.communication.input_handler import (CommandInputStream,
                                                 FileInputStream, InputStream)
 from logria.interface import color_handler
 from logria.logger.parser import Parser
+from logria.utilities import constants
 from logria.utilities.command_parser import Resolver
-from logria.utilities.constants import ANSI_COLOR_PATTERN
 from logria.utilities.keystrokes import validator
-from logria.utilities.regex_generator import regex_test_generator, get_real_length
+from logria.utilities.regex_generator import (get_real_length,
+                                              regex_test_generator)
 from logria.utilities.session import SessionHandler
 
 
@@ -40,7 +41,7 @@ class Logria():
         self.height: int = None  # Window height
         self.width: int = None  # Window width
         # Store the state of the previous render so we know if we need to refresh
-        self.prevous_render: List[str] = None
+        self.previous_render: List[str] = None
         # Pointer to the previous non-parsed message list, which is continuously updated
         self.previous_messages: List[str] = []
         self.exit_val = 0  # If exit_val is -1, the app dies
@@ -111,8 +112,7 @@ class Logria():
         # Setup a SessionHandler and get the existing saved sessions
         session_handler = SessionHandler()
         # Tell the user what we are doing
-        self.messages.append(
-            'Enter a new command to open a stream or choose a saved one from the list:')
+        self.messages.append(constants.START_MESSAGE)
         self.messages.extend(session_handler.show_sessions())
         self.render_text_in_output()
 
@@ -146,7 +146,12 @@ class Logria():
                 self.render_text_in_output()
                 continue
             except ValueError:
-                if isfile(command):
+                if command == ':config':
+                    self.config_mode()
+                    return
+                elif command == ':q':
+                    self.stop()
+                elif isfile(command):
                     self.streams.append(
                         FileInputStream(command.split('/')))
                     session_handler.save_session(
@@ -167,7 +172,7 @@ class Logria():
         self.write_to_command_line(self.current_status)
 
         # Render immediately
-        self.prevous_render = None
+        self.previous_render = None
 
         # Reset messages
         self.stderr_messages = []
@@ -194,7 +199,7 @@ class Logria():
 
         # Overwrite the messages pointer
         self.messages = Parser().show_patterns()
-        self.prevous_render = None
+        self.previous_render = None
         self.render_text_in_output()
         while True:
             time.sleep(self.poll_rate)
@@ -213,7 +218,7 @@ class Logria():
 
         # Overwrite a different list this time, and reset it when done
         self.messages = parser.display_example()
-        self.prevous_render = None
+        self.previous_render = None
         self.render_text_in_output()
         while True:
             time.sleep(self.poll_rate)
@@ -242,7 +247,7 @@ class Logria():
         self.messages = self.parsed_messages
 
         # Render immediately
-        self.prevous_render = None
+        self.previous_render = None
 
         # Stick to bottom again
         self.last_index_processed = 0
@@ -279,7 +284,6 @@ class Logria():
 
         # TODO: Same as process_matches
         """
-        self.write_to_command_line('Handling message parsing...')
         for index in range(self.last_index_processed, len(self.previous_messages)):
             if self.analytics_enabled:
                 self.parser.handle_analytics_for_message(
@@ -298,7 +302,6 @@ class Logria():
                         # If there was an error parsing, the message did not match the current pattern
                         pass
                 self.last_index_processed = len(self.messages)
-        self.write_to_command_line(self.current_status)
 
     def determine_render_position(self, messages_pointer: List[str]) -> (int, int):
         """
@@ -370,9 +373,9 @@ class Logria():
         # Determine the start and end position of the render
         start, end = self.determine_render_position(messages_pointer)
         # Don't do anything if nothing changed; start at index 0
-        if self.prevous_render == messages_pointer[max(start, 0):end]:
+        if self.previous_render == messages_pointer[max(start, 0):end]:
             return
-        self.prevous_render = messages_pointer[max(start, 0):end]
+        self.previous_render = messages_pointer[max(start, 0):end]
         self.outwin.erase()
         current_row = self.last_row # The row we are currently rendering
         for i in range(end, start, -1):
@@ -385,7 +388,7 @@ class Logria():
                 item = self.messages[messages_idx]
                 if self.highlight_match:
                     # Remove all color codes before applying highlighter
-                    item = re.sub(ANSI_COLOR_PATTERN, '', item)
+                    item = re.sub(constants.ANSI_COLOR_PATTERN, '', item)
                     item = re.sub(
                         self.regex_pattern, f'\u001b[35m{self.regex_pattern}\u001b[0m', item.rstrip())
             # Find the correct start position
@@ -427,12 +430,10 @@ class Logria():
 
         # For each message, add its index to the list of matches; this is more efficient than
         # Storing a second copy of each match
-        self.write_to_command_line('Searching messages...')
         for index in range(self.last_index_regexed, len(self.messages)):
             if self.func_handle(self.messages[index]):
                 self.matched_rows.append(index)
         self.last_index_regexed = len(self.messages)
-        self.write_to_command_line(self.current_status)
 
     def write_to_command_line(self, string: str) -> None:
         """
@@ -496,7 +497,7 @@ class Logria():
             self.current_status = f'Parsing with {self.parser.get_name()}, field {self.parser_index}'
         else:
             self.current_status = 'No filter applied'  # CLI message, rendered after
-        self.prevous_render = None  # Reset previous render
+        self.previous_render = None  # Reset previous render
         self.func_handle = None  # Disable filter
         self.highlight_match = False  # Disable highlighting
         self.regex_pattern = ''  # Clear the current pattern
@@ -505,6 +506,95 @@ class Logria():
         self.current_end = 0  # We now do not know where to end
         self.stick_to_bottom = True  # Stay at the bottom for the next render
         self.write_to_command_line(self.current_status)  # Render status
+
+    def handle_create_session_file(self, session: SessionHandler) -> bool:
+        cmd_resolver = Resolver()  # The resolver we use to add commands
+
+        self.messages.append(constants.SESSION_ADD_FILE)
+        self.previous_render = None  # Force render
+        self.render_text_in_output()
+        session.set_type('file')
+        self.activate_prompt()
+        file_path = self.box.gather().strip()
+        file_path = cmd_resolver.resolve_file_as_list(file_path)
+        if isfile('/'.join(file_path)):
+            session.add_command(file_path)
+            self.messages = session.as_list()
+            self.messages.append(constants.SESSION_SHOULD_CONTINUE_FILE)
+            self.previous_render = None  # Force render
+            self.render_text_in_output()
+            self.activate_prompt()
+            user_done = self.box.gather().strip()
+            if user_done == ':s':
+                self.messages = [constants.SAVE_CURRENT_SESSION]
+                self.previous_render = None  # Force render
+                self.render_text_in_output()
+                self.activate_prompt()
+                filename = self.box.gather().strip()
+                session.save_current_session(filename)
+                return True
+        elif file_path == ':q':
+            self.stop()
+        else:
+            self.messages.append(f'Cannot resolve path: {"/".join(file_path)}')
+            self.previous_render = None  # Force render
+            self.render_text_in_output()
+        return False
+
+    def handle_create_session(self) -> None:
+        """
+        Handle the creation of new sessions
+        """
+        # Render text
+        self.current_end = 0
+        self.messages = constants.CREATE_SESSION_START_MESSAGES
+        self.previous_render = None  # Force render
+        self.render_text_in_output()
+
+        # Get the user choice
+        choice = None
+        while choice not in {'file', 'command'}:
+            self.activate_prompt()
+            choice = self.box.gather().strip()
+            if choice == ':q':
+                self.stop()
+                break
+
+        done = False
+        self.messages = []
+        temp_session = SessionHandler()  # The session object we build
+        while not done:
+            if choice == 'file':
+                done = self.handle_create_session_file(temp_session)
+            elif choice == 'command':
+                pass
+            elif choice == ':q':
+                self.stop()
+                break
+            else:
+                raise ValueError(f'{choice} not one of ("file", "command")')
+        self.setup_streams()
+
+    def config_mode(self) -> None:
+        """
+        Start the configuration setup
+        """
+        self.current_end = 0
+        self.messages = constants.CONFIG_START_MESSAGES
+        self.previous_render = None  # Force render
+        self.render_text_in_output()
+        choice = None
+        while choice not in {'session', 'parser'}:
+            self.activate_prompt()
+            choice = self.box.gather().strip()
+            if choice == ':q':
+                self.stop()
+                break
+        if choice == 'session':
+            self.handle_create_session()
+        elif choice == 'parser':
+            self.handle_create_parser()
+
 
     def handle_regex_mode(self) -> None:
         """
@@ -543,6 +633,8 @@ class Logria():
                         stream.poll_rate = command
                 except ValueError:
                     pass
+            elif ':config' in command:
+                self.config_mode()
         self.reset_command_line()
 
     def start(self) -> None:
@@ -617,7 +709,7 @@ class Logria():
                 if keypress == ':':
                     self.handle_command_mode()
                 elif keypress == 'h':
-                    self.prevous_render = None  # Force render
+                    self.previous_render = None  # Force render
                     if self.func_handle and self.highlight_match:
                         self.highlight_match = False
                     elif self.func_handle and not self.highlight_match:
@@ -632,7 +724,7 @@ class Logria():
                         self.insert_mode = True
                     self.build_command_line()
                 elif keypress == 's':
-                    self.prevous_render = None  # Force render
+                    self.previous_render = None  # Force render
                     # Swap stdout and stderr
                     self.reset_parser()
                     self.reset_regex_status()
@@ -666,7 +758,7 @@ class Logria():
                     self.stick_to_top = False
                     self.stick_to_bottom = False
                     self.current_end = max(0, self.current_end - 1)
-                    self.prevous_render = None  # Force render
+                    self.previous_render = None  # Force render
                 elif keypress == 'KEY_DOWN':
                     # Scroll down
                     self.manually_controlled_line = True
@@ -678,7 +770,7 @@ class Logria():
                     else:
                         self.current_end = min(
                             len(self.messages) - 1, self.current_end + 1)
-                    self.prevous_render = None  # Force render
+                    self.previous_render = None  # Force render
                 elif keypress == 'KEY_RIGHT':
                     # Stick to bottom
                     self.stick_to_top = False
