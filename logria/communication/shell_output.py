@@ -104,16 +104,6 @@ class Logria():
         self.write_to_command_line(
             self.current_status)  # Update current status
 
-    def clear_output_window(self) -> None:
-        """
-        Clears the text rendered in the output window
-        """
-        for i in range(self.last_row + 1):
-            try:
-                self.outwin.addstr(i, 0, '\n')
-            except curses.error:
-                pass
-
     def setup_streams(self) -> None:
         """
         When launched without a stream, allow the user to define them for us
@@ -199,11 +189,12 @@ class Logria():
 
         # Stick to top to show options
         self.manually_controlled_line = False
-        self.stick_to_bottom = False
-        self.stick_to_top = True
+        self.stick_to_bottom = True
+        self.stick_to_top = False
 
         # Overwrite the messages pointer
         self.messages = Parser().show_patterns()
+        self.prevous_render = None
         self.render_text_in_output()
         while True:
             time.sleep(self.poll_rate)
@@ -222,6 +213,7 @@ class Logria():
 
         # Overwrite a different list this time, and reset it when done
         self.messages = parser.display_example()
+        self.prevous_render = None
         self.render_text_in_output()
         while True:
             time.sleep(self.poll_rate)
@@ -239,6 +231,8 @@ class Logria():
                     self.write_to_command_line(self.current_status)
                     break
                 except ValueError:
+                    pass
+                except AssertionError:
                     pass
 
         # Set parser
@@ -310,18 +304,40 @@ class Logria():
         """
         Determine the start and end positions for a screen render
         """
-        if self.stick_to_bottom:
-            end = len(messages_pointer)
-        elif self.stick_to_top:
-            end = min(self.last_row + 1, len(messages_pointer))
+        if self.stick_to_top:
+            # When iterating backwards, we need to end at 0, so we must create a range
+            # object like range(10, -1, -1) to generate a list that ends at 0
+            start = -1
+            end = 0
+            rows = 0
+            for i in messages_pointer:
+                if messages_pointer is self.messages:
+                    # No processing needed for normal messages
+                    item = i
+                elif messages_pointer is self.matched_rows:
+                    # Grab the matched message
+                    item = self.messages[i]
+                # Determine if the message will fit in the window
+                msg_lines = ceil(get_real_length(item) / self.width)
+                rows += msg_lines
+                # If we can fit, increment the last row number
+                if rows < self.last_row and rows < len(messages_pointer):
+                    end += 1
+                else:
+                    break
+            self.current_end = end  # Save this row so we know where we are
+            # raise ValueError(len(messages_pointer), start, end)
+            return start, end  # Early escape
+        elif self.stick_to_bottom:
+            end = len(messages_pointer) - 1
         elif self.manually_controlled_line:
             if len(messages_pointer) < self.last_row:
                 # If have fewer messages than lines, just render it all
-                end = len(messages_pointer)
+                end = len(messages_pointer) - 1
             elif self.current_end < self.last_row:
                 # If the last row we rendered comes before the last row we can render,
                 # use all of the available rows
-                end = self.last_row
+                end = self.current_end
             elif self.current_end < len(messages_pointer):
                 # If we are looking at a valid line, render ends there
                 end = self.current_end
@@ -334,7 +350,7 @@ class Logria():
         else:
             end = len(messages_pointer)
         self.current_end = end  # Save this row so we know where we are
-        start = max(0, end - self.last_row - 1)  # Last index of a list is length - 1
+        start = max(-1, end - self.last_row - 1)  # Last index of a list is length - 1
         return start, end
 
     def render_text_in_output(self) -> None:
@@ -345,19 +361,21 @@ class Logria():
 
         We write the whole message, regardless of length, because slicing a string allocates a new string
         """
+        # Store a pointer to the buffer of messages
         if self.func_handle is None:
             messages_pointer = self.messages
         else:
             messages_pointer = self.matched_rows
 
+        # Determine the start and end position of the render
         start, end = self.determine_render_position(messages_pointer)
-        # Don't do anything if nothing changed
-        if self.prevous_render == messages_pointer[start:end]:
+        # Don't do anything if nothing changed; start at index 0
+        if self.prevous_render == messages_pointer[max(start, 0):end]:
             return
-        self.prevous_render = messages_pointer[start:end]
-        self.clear_output_window()
-        current_row = 0  # The row we are currently rendering
-        for i in range(start, end):
+        self.prevous_render = messages_pointer[max(start, 0):end]
+        self.outwin.erase()
+        current_row = self.last_row # The row we are currently rendering
+        for i in range(end, start, -1):
             if messages_pointer is self.messages:
                 # No processing needed for normal messages
                 item = messages_pointer[i]
@@ -370,12 +388,12 @@ class Logria():
                     item = re.sub(ANSI_COLOR_PATTERN, '', item)
                     item = re.sub(
                         self.regex_pattern, f'\u001b[35m{self.regex_pattern}\u001b[0m', item.rstrip())
+            # Find the correct start position
+            current_row -= ceil(get_real_length(item) / self.width)
+            if current_row < 0:
+                break
             # Instead of window.addstr, handle colors
             color_handler.addstr(self.outwin, current_row, 0, item.rstrip())
-            # Go to the next open line
-            current_row += ceil(get_real_length(item) / self.width)
-            if current_row > self.last_row:
-                break
         self.outwin.refresh()
 
     def process_matches(self) -> None:
@@ -557,8 +575,7 @@ class Logria():
         # Setup Output window
         output_start_row = 0  # Leave space for top border
         output_height = height - 3  # Leave space for command line
-        self.last_row = output_height - output_start_row - \
-            1  # The last row we can write to
+        self.last_row = output_height - output_start_row  # The last row we can write to
         # Create the window with these sizes
         self.outwin = curses.newwin(
             output_height, width - 1, output_start_row, 0)
@@ -649,13 +666,19 @@ class Logria():
                     self.stick_to_top = False
                     self.stick_to_bottom = False
                     self.current_end = max(0, self.current_end - 1)
+                    self.prevous_render = None  # Force render
                 elif keypress == 'KEY_DOWN':
                     # Scroll down
                     self.manually_controlled_line = True
                     self.stick_to_top = False
                     self.stick_to_bottom = False
-                    self.current_end = min(
-                        len(self.messages), self.current_end + 1)
+                    if self.matched_rows:
+                        self.current_end = min(
+                            len(self.matched_rows) - 1, self.current_end + 1)
+                    else:
+                        self.current_end = min(
+                            len(self.messages) - 1, self.current_end + 1)
+                    self.prevous_render = None  # Force render
                 elif keypress == 'KEY_RIGHT':
                     # Stick to bottom
                     self.stick_to_top = False
