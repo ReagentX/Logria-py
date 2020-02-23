@@ -541,6 +541,34 @@ class Logria():
             self.render_text_in_output()
         return False
 
+    def handle_create_session_command(self, session: SessionHandler) -> bool:
+        cmd_resolver = Resolver()  # The resolver we use to add commands
+        self.messages.append(constants.SESSION_ADD_COMMAND)
+        self.previous_render = None  # Force render
+        self.render_text_in_output()
+        session.set_type('command')
+        self.activate_prompt()
+        command = self.box.gather().strip()
+        command = cmd_resolver.resolve_command_as_list(command)
+        session.add_command(command)
+        self.messages = session.as_list()
+        self.messages.append(constants.SESSION_SHOULD_CONTINUE_COMMAND)
+        self.previous_render = None  # Force render
+        self.render_text_in_output()
+        self.activate_prompt()
+        user_done = self.box.gather().strip()
+        if user_done == ':s':
+            self.messages = [constants.SAVE_CURRENT_SESSION]
+            self.previous_render = None  # Force render
+            self.render_text_in_output()
+            self.activate_prompt()
+            filename = self.box.gather().strip()
+            session.save_current_session(filename)
+            return True
+        elif command == ':q':
+            self.stop()
+        return False
+
     def handle_create_session(self) -> None:
         """
         Handle the creation of new sessions
@@ -567,7 +595,7 @@ class Logria():
             if choice == 'file':
                 done = self.handle_create_session_file(temp_session)
             elif choice == 'command':
-                pass
+                done = self.handle_create_session_command(temp_session)
             elif choice == ':q':
                 self.stop()
                 break
