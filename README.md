@@ -21,26 +21,7 @@ There are several options to install this app.
 
 ### Development
 
-#### Installing as a standalone app
-
-- `clone` the repository
-- `cd` to the repository
-- (Optional) Create a virtual environment (3.6+)
-  - `python -m venv venv`
-  - `source venv/bin/activate`
-- (Optional) install requirements
-  - These are only for some development tools and are not needed to run the app
-  - `pip install -r requirements.txt`
-- Install self
-  - `deactivate` if we want to install globally, otherwise leave your `venv` active
-  - `python setup.py develop` or `python setup.py install` depending on whether you are actively developing this app
-
-#### Installing as part of another app
-
-- `clone` the repository to your `venv` folder
-  - Be sure your virtual environment is active
-- Install Logria
-  - `python setup.py install`
+See [Advanced Installation](docs/README.md/#advanced_installation).
 
 ## Usage
 
