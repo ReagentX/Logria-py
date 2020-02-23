@@ -114,7 +114,7 @@ class TestSessionBuilder(unittest.TestCase):
         type_ = 'command'
         s.set_params(command, type_)
         s.add_command(command_2)
-        expected = ['Type:', '  command', 'Commands:',
+        expected = ['Type:', '  command',
                     'Commands:', '  ls -l', '  grep -nr code .']
         self.assertEqual(s.as_list(), expected)
 
@@ -125,6 +125,6 @@ class TestSessionBuilder(unittest.TestCase):
         type_ = 'file'
         s.set_params(command, type_)
         s.add_command(command_2)
-        expected = ['Type:', '  file', 'Files:', 'Files:',
+        expected = ['Type:', '  file', 'Files:',
                     '  usr/log/cloud-init.log', '  usr/log/cloud-init-output.log']
         self.assertEqual(s.as_list(), expected)
