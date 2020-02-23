@@ -14,7 +14,13 @@ SAVED_PATTERNS_PATH = f'{LOGRIA_ROOT}/patterns'
 SAVED_SESSIONS_PATH = f'{LOGRIA_ROOT}/sessions'
 
 # Messages
-START_MESSAGE = 'Enter a new command to open a stream, choose a saved one from the list, or enter `:config` to configure. Enter `:q` to quit.'
+START_MESSAGE = [
+    'Enter a new command to open and save a new stream,',
+    'or enter a number to choose a saved session from the list,',
+    'or enter `:config` to configure.',
+    'Enter `:q` to quit.',
+    ' '
+]
 
 # Config messages
 CONFIG_START_MESSAGES = [

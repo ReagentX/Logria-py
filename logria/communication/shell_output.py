@@ -112,7 +112,7 @@ class Logria():
         # Setup a SessionHandler and get the existing saved sessions
         session_handler = SessionHandler()
         # Tell the user what we are doing
-        self.messages.append(constants.START_MESSAGE)
+        self.messages.extend(constants.START_MESSAGE)
         self.messages.extend(session_handler.show_sessions())
         self.render_text_in_output()
 
