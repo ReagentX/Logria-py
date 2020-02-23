@@ -1,12 +1,16 @@
 # Todo
 
+- New features
+  - [ ] "Configuration" mode or "setup" mode to generate and save sessions/parsers
+  - [ ] Add 'status bar' since we have an empty row so the user can see what we are currently doing
 - Enhancements
+  - [ ] Explore PyInstaller for static binaries
   - [ ] Esc key to go back to previous state
   - [ ] Spawn a subprocess to find all the matches in the list of messages
-- New features
-  - [ ] Add 'status bar' since we have an empty row so the user can see what we are currently doing
 - Clerical
-  - None
+  - [ ] Deeper instructions for sessions and parsers
+  - [ ] Add example folder for sessions and parsers
+  - [ ] Update contribution guidelines with concrete rules about what PRs will be accepted
 
 ## Todos with Caveats
 
@@ -17,6 +21,7 @@
 
 ## Completed
 
+- [x] Test suite
 - [x] Write docs
 - [x] Add contribution guidelines
 - [x] Refactor command handlers that are > 5 lines to method calls
