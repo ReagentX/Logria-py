@@ -21,7 +21,7 @@ There are several options to install this app.
 
 ### Development
 
-See [Advanced Installation](docs/README.md#advanced_installation).
+See [Advanced Installation](docs/README.md#advanced-installation).
 
 ## Usage
 
