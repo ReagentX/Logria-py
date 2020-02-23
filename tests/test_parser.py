@@ -291,6 +291,29 @@ class TestPatternInteraction(unittest.TestCase):
         }
         self.assertEqual(actual, expected)
 
+    def test_as_list(self):
+        """
+        Test that the dictionary representation is accurate
+        """
+        p = parser.Parser()
+        log_message = '2005-03-19 15:10:26,773 - simple_example - CRITICAL - critical message 22'
+        analytics_methods = {
+            "Date": "date",
+            "Caller": "count",
+            "Level": "count",
+            "Message": "sum"
+        }
+        p.set_pattern(' - ', 'split', 'Hyphen Separated',
+                      log_message, analytics_methods)
+        actual = p.as_list()
+        expected = [
+            'Pattern:  - ',
+            'Type: split',
+            'Name: Hyphen Separated',
+            'Example: 2005-03-19 15:10:26,773 - simple_example - CRITICAL - critical message 22',
+            "Analytics: {'Date': 'date', 'Caller': 'count', 'Level': 'count', 'Message': 'sum'}"]
+        self.assertEqual(actual, expected)
+
     def test_save_load(self):
         """
         Test that we can successfully save and load items
