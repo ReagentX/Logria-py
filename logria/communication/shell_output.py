@@ -310,7 +310,6 @@ class Logria():
         """
         Determine the start and end positions for a screen render
         """
-        # Handle where the bottom of the stream should be
         if self.stick_to_bottom:
             end = len(messages_pointer)
         elif self.stick_to_top:
@@ -320,6 +319,8 @@ class Logria():
                 # If have fewer messages than lines, just render it all
                 end = len(messages_pointer)
             elif self.current_end < self.last_row:
+                # If the last row we rendered comes before the last row we can render,
+                # use all of the available rows
                 end = self.last_row
             elif self.current_end < len(messages_pointer):
                 # If we are looking at a valid line, render ends there
@@ -333,7 +334,7 @@ class Logria():
         else:
             end = len(messages_pointer)
         self.current_end = end  # Save this row so we know where we are
-        start = max(0, end - self.last_row - 1)
+        start = max(0, end - self.last_row - 1)  # Last index of a list is length - 1
         return start, end
 
     def render_text_in_output(self) -> None:
@@ -654,7 +655,7 @@ class Logria():
                     self.stick_to_top = False
                     self.stick_to_bottom = False
                     self.current_end = min(
-                        len(self.messages) + 5, self.current_end + 1)
+                        len(self.messages), self.current_end + 1)
                 elif keypress == 'KEY_RIGHT':
                     # Stick to bottom
                     self.stick_to_top = False
