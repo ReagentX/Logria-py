@@ -217,6 +217,8 @@ class Logria():
                 except JSONDecodeError as err:
                     self.messages.append(
                         f'Invalid JSON: {err.msg} on line {err.lineno}, char {err.colno}')
+                except ValueError:
+                    pass
 
         # Overwrite a different list this time, and reset it when done
         self.messages = parser.display_example()
