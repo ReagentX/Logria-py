@@ -17,10 +17,23 @@ class SessionHandler():
     """
 
     def __init__(self):
-        self._commands: dict = {}
+        self._commands: List[str] = []
         self._type: str = ''  # One of {'command', 'file'}
         self.folder: Path = None
         self.setup_folder()
+
+    def set_params(self, command: List[str], type_: str) -> None:
+        """
+        Update the commands and parameters
+        """
+        self.add_command(command)
+        self.set_type(type_)
+
+    def set_type(self, type_str):
+        self._type = type_str
+
+    def add_command(self, command: List[str]):
+        self._commands.append(command)
 
     def setup_folder(self):
         """
@@ -55,6 +68,24 @@ class SessionHandler():
         out_json = {'commands': commands, 'type': type_}
         with open(self.folder / name, 'w') as f:
             f.write(json.dumps(out_json, indent=4))
+
+    def as_list(self) -> list:
+        """
+        Returns a list representation of the current session
+        """
+        out_l = []
+        out_l.append('Type:')
+        out_l.append(f'  {self._type}')
+        out_l.append('Commands:' if self._type == 'command' else 'Files:')
+        if self._type == 'command':
+            out_l.append('Commands:')
+            for command in self._commands:
+                out_l.append(f'  {" ".join(command)}')
+        elif self._type == 'file':
+            out_l.append('Files:')
+            for file in self._commands:
+                out_l.append(f'  {"/".join(file)}')
+        return out_l
 
     def sessions(self) -> dict:
         """
