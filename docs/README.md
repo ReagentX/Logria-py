@@ -125,7 +125,6 @@ from logria.communication.input_handler import PipeInputStream
 from logria.communication.shell_output import Logria
 
 
-process_to_read = ['python', 'sample_streams/generate_test_logs.py']
 stream = PipeInputStream(os.pipe())
 app = Logria(stream)  # Capture output from `process_to_read`
 app.start()
