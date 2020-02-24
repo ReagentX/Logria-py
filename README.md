@@ -30,23 +30,12 @@ There are a few main ways to invoke Logria:
 
 - Directly:
   - `logria`
+  - Opens to the setup screen
 - With args:
   - `logria -e 'tail -f log.txt'`
-- ~~As a pipe:~~
-  - ~~`tail -f log.txt | logria`~~ [See rejected todos](docs/todo.md#rejected)
+  - Opens a pipe to 'tail -f log.txt'` and skips setup
 
-It may also be imported and invoked programmatically as part of other software:
-
-```python
-from logria.communication.input_handler import CommandInputStream
-from logria.communication.shell_output import Logria
-
-
-process_to_read = ['python', 'sample_streams/generate_test_logs.py']
-stream = CommandInputStream(process_to_read)
-app = Logria(stream)  # Capture output from `process_to_read`
-app.start()
-```
+For more details, see [Sample Usage Session](docs/README.md#sample-usage-session).
 
 ## Key Commands
 

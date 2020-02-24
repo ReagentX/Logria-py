@@ -115,6 +115,22 @@ Typing `/` and entering `:q` will reset the filter:
 
 Typing `:` and entering `:q` will exit the app.
 
+## Advanced Usage
+
+Logria may also be imported and invoked programmatically as part of other software:
+
+```python
+import os
+from logria.communication.input_handler import PipeInputStream
+from logria.communication.shell_output import Logria
+
+
+process_to_read = ['python', 'sample_streams/generate_test_logs.py']
+stream = PipeInputStream(os.pipe())
+app = Logria(stream)  # Capture output from `process_to_read`
+app.start()
+```
+
 ## Profiling
 
 Profiling a 40 second sample with `python -m cProfile -s time logria/__main__.py` with two streams yields the following data:
