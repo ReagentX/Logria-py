@@ -102,7 +102,7 @@ class CommandInputStream(InputStream):
 
 class PipeInputStream(InputStream):
     """
-    Read in a file as a stream
+    Read in a pipe as a stream
     """
 
     def run(self, pipe: PIPE, stdoutq: multiprocessing.Queue, _: multiprocessing.Queue) -> None:

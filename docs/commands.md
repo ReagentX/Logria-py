@@ -5,6 +5,7 @@
 | `:` | enter command mode |
 | `:q` | exit the program |
 | `:poll #` | update [poll rate](#poll-rate) to #, where # is a number |
+| `:config` | enter configuration mode to create sessions or patterns |
 
 ## Notes
 
