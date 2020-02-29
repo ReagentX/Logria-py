@@ -33,6 +33,8 @@ class TerminalColors(object):
     BRIGHT_RED = '[91'
     BRIGHT_BLACK = '[97'
     END = '[0'
+    DEFAULT_FOREGROUND = '[39'
+    DEFAULT_BACKGROUND = '[49'
 
 
 TERMINAL_COLOR_TO_CURSES = {
@@ -52,7 +54,9 @@ TERMINAL_COLOR_TO_CURSES = {
     TerminalColors.BRIGHT_YELLOW: curses.COLOR_YELLOW,
     TerminalColors.BRIGHT_RED: curses.COLOR_RED,
     TerminalColors.BRIGHT_BLACK: curses.COLOR_BLACK,
-    TerminalColors.END: curses.COLOR_WHITE
+    TerminalColors.END: DEFAULT_COLOR,
+    TerminalColors.DEFAULT_FOREGROUND: DEFAULT_COLOR,
+    TerminalColors.DEFAULT_BACKGROUND: DEFAULT_COLOR
 }
 
 
