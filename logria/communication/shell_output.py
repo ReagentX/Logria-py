@@ -733,6 +733,7 @@ class Logria():
             elif ':config' in command:
                 self.config_mode()
         self.reset_command_line()
+        self.write_to_command_line(self.current_status)
 
     def start(self) -> None:
         """
