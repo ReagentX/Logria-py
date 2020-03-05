@@ -513,6 +513,9 @@ class Logria():
         self.write_to_command_line(self.current_status)  # Render status
 
     def handle_create_session_file(self, session: SessionHandler) -> bool:
+        """
+        Handle manual session file creation
+        """
         cmd_resolver = Resolver()  # The resolver we use to add commands
 
         self.messages.append(constants.SESSION_ADD_FILE)
@@ -547,6 +550,9 @@ class Logria():
         return False
 
     def handle_create_session_command(self, session: SessionHandler) -> bool:
+        """
+        Get user input to create a session
+        """
         cmd_resolver = Resolver()  # The resolver we use to add commands
         self.messages.append(constants.SESSION_ADD_COMMAND)
         self.previous_render = None  # Force render
@@ -609,6 +615,9 @@ class Logria():
         self.setup_streams()
 
     def handle_create_parser(self) -> None:
+        """
+        Get user input to create a session
+        """
         temp_parser = Parser()
 
         # Render text
