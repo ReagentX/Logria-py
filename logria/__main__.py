@@ -5,6 +5,7 @@ Main app loop
 import argparse
 import os
 
+from logria import APP_NAME, VERSION
 from logria.communication.input_handler import CommandInputStream
 from logria.communication.shell_output import Logria
 
@@ -21,6 +22,7 @@ def main():
         parser = argparse.ArgumentParser(
             description='A powerful CLI tool that puts log analytics at your fingertips.'
         )
+        parser.add_argument('-v', '--version', action='version', version=f'{APP_NAME} {VERSION}')
         parser.add_argument('-e', action='append', type=str,
                             help='Command to pass through that will stream into this program, ex: logria -e \'tail -f log.txt\'')
 

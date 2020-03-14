@@ -1,11 +1,12 @@
 from setuptools import setup, find_packages
+from logria import APP_NAME, VERSION
 
 with open("README.md", "r") as fh:
     LONG_DESCRIPTION = fh.read()
 
 setup(
-    name='logria',
-    version='0.6.2',
+    name=APP_NAME,
+    version=VERSION,
     description='A powerful CLI tool that puts log analytics at your fingertips.',
     long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
