@@ -16,7 +16,7 @@ class Parser():
     Handles setting up of log message parsing
     """
 
-    def __init__(self, pattern=None, type_=None, name=None, example=None, analytics_methods=None):
+    def __init__(self, pattern=None, type_=None, name=None, example=None, analytics_methods=None, num_to_print=5):
         self._pattern: str = pattern  # The raw pattern
         # The type of pattern to parse, string {'split', 'regex'}
         self._type: str = type_
@@ -25,6 +25,7 @@ class Parser():
         # Analytics methods to use when parsing
         self._analytics_methods: dict = analytics_methods
         # Stores the map of the message index to the analytics method names
+        self.num_to_print = num_to_print  # Number of items to print in analytics output
         self._analytics_map: dict = {}
         self.analytics: dict = {}  # Analytics the main script can access
         self.setup_folder()
@@ -71,7 +72,7 @@ class Parser():
         return self._analytics_map[index]
 
     def extract_numbers_from_message(self, message: str) -> int or float:
-        r"""
+        """
         We do not use regex replacement here because...
 
         chris ~ % python -m timeit '"".join(c for c in "sdkjh987978asd098as0980a98sd" if c.isdigit() or c == ".")'
@@ -144,7 +145,7 @@ class Parser():
             out_l += [f'{self.get_analytics_for_index(stat)}']
             if isinstance(value, Counter):
                 out_l += [f'  {item}: {count:,}' for item,
-                          count in value.most_common(5)]
+                          count in value.most_common(self.num_to_print)]
             elif isinstance(value, int) or isinstance(value, float):
                 out_l += [f'  Total: {value:,}']
             elif isinstance(value, dict):
