@@ -1,2 +1,2 @@
-app_name = 'Logria'
-version = 0.1
+APP_NAME = 'Logria'
+VERSION = '0.6.2'
