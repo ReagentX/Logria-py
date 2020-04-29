@@ -75,7 +75,7 @@ class SessionHandler():
         with open(self.folder / name, 'w') as f:
             f.write(json.dumps(out_json, indent=4))
 
-    def as_list(self) -> list:
+    def as_list(self) -> List[str]:
         """
         Returns a list representation of the current session
         """

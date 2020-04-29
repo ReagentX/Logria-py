@@ -7,6 +7,7 @@ import os
 import re
 from collections import Counter
 from pathlib import Path
+from typing import List
 
 from logria.utilities.constants import ANSI_COLOR_PATTERN, SAVED_PATTERNS_PATH
 
@@ -133,7 +134,7 @@ class Parser():
                         # If we matched too many fields, this message is invalid
                         pass
 
-    def analytics_to_list(self) -> list:
+    def analytics_to_list(self) -> List[str]:
         """
         Return the existing parsed analytics as a list
         """
@@ -176,7 +177,7 @@ class Parser():
         matches = re.match(self._pattern, message)
         return list(matches.groups()) if matches is not None else None
 
-    def parse(self, message: str) -> list:
+    def parse(self, message: str) -> List[str]:
         """
         Parse a log message
         """
@@ -252,7 +253,7 @@ class Parser():
         patterns = os.listdir(self.folder)
         return dict(zip(range(0, len(patterns)), patterns))
 
-    def show_patterns(self) -> list:
+    def show_patterns(self) -> List[str]:
         """
         Get the existing patterns as a list
         """
