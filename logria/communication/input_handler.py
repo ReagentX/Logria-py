@@ -126,7 +126,7 @@ class FileInputStream(InputStream):
     Read in a file as a stream
     """
 
-    def run(self, args: list, stdoutq: multiprocessing.Queue, _: multiprocessing.Queue) -> None:
+    def run(self, args: List[str], stdoutq: multiprocessing.Queue, _: multiprocessing.Queue) -> None:
         """
         Given a filename, open the file and read the contents
         args: a list of folders to be joined ['Docs', 'file.py'] -> 'Docs/file.py'

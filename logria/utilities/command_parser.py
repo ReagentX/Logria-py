@@ -6,6 +6,7 @@ fully qualified names when spawning new shells
 
 import os
 from pathlib import Path
+from typing import List
 
 from logria.logger.default_logger import setup_default_logger
 
@@ -59,7 +60,7 @@ class Resolver():
         """
         return ' '.join(self.resolve_command_as_list(command))
 
-    def resolve_command_as_list(self, command: str) -> list:
+    def resolve_command_as_list(self, command: str) -> List[str]:
         """
         Replace all programs on the path with their fully qualified counterparts as a list
         """
@@ -71,7 +72,7 @@ class Resolver():
             new_command.append(resolved_part)
         return new_command
 
-    def resolve_file_as_list(self, filepath: str) -> list:
+    def resolve_file_as_list(self, filepath: str) -> List[str]:
         path_parts = filepath.split('/')
         new_path = []
         for part in path_parts:

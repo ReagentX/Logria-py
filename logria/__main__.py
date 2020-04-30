@@ -22,7 +22,8 @@ def main():
         parser = argparse.ArgumentParser(
             description='A powerful CLI tool that puts log analytics at your fingertips.'
         )
-        parser.add_argument('-v', '--version', action='version', version=f'{APP_NAME} {VERSION}')
+        parser.add_argument('-v', '--version', action='version',
+                            version=f'{APP_NAME} {VERSION}')
         parser.add_argument('-e', action='append', type=str,
                             help='Command to pass through that will stream into this program, ex: logria -e \'tail -f log.txt\'')
 
@@ -35,7 +36,8 @@ def main():
             stream = None
 
     # Start the app
-    app = Logria(stream)   # If the stream is None, the app will ask the user to init
+    # If the stream is None, the app will ask the user to init
+    app = Logria(stream)
     app.start()
 
 

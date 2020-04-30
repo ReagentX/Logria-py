@@ -49,7 +49,7 @@ class Logria():
         # Message buffers
         self.stderr_messages: List[str] = []
         self.stdout_messages: List[str] = []
-        self.messages: list = self.stderr_messages  # Default to watching stderr
+        self.messages: List[str] = self.stderr_messages  # Default to watching stderr
 
         # Regex Handler information
         self.func_handle: callable = None  # Regex func that handles filtering
