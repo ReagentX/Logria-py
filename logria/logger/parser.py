@@ -7,6 +7,7 @@ import os
 import re
 from collections import Counter
 from pathlib import Path
+from typing import List
 
 from logria.utilities.constants import ANSI_COLOR_PATTERN, SAVED_PATTERNS_PATH
 
@@ -16,7 +17,7 @@ class Parser():
     Handles setting up of log message parsing
     """
 
-    def __init__(self, pattern=None, type_=None, name=None, example=None, analytics_methods=None):
+    def __init__(self, pattern=None, type_=None, name=None, example=None, analytics_methods=None, num_to_print=5):
         self._pattern: str = pattern  # The raw pattern
         # The type of pattern to parse, string {'split', 'regex'}
         self._type: str = type_
@@ -25,6 +26,7 @@ class Parser():
         # Analytics methods to use when parsing
         self._analytics_methods: dict = analytics_methods
         # Stores the map of the message index to the analytics method names
+        self.num_to_print = num_to_print  # Number of items to print in analytics output
         self._analytics_map: dict = {}
         self.analytics: dict = {}  # Analytics the main script can access
         self.setup_folder()
@@ -71,7 +73,7 @@ class Parser():
         return self._analytics_map[index]
 
     def extract_numbers_from_message(self, message: str) -> int or float:
-        r"""
+        """
         We do not use regex replacement here because...
 
         chris ~ % python -m timeit '"".join(c for c in "sdkjh987978asd098as0980a98sd" if c.isdigit() or c == ".")'
@@ -132,7 +134,7 @@ class Parser():
                         # If we matched too many fields, this message is invalid
                         pass
 
-    def analytics_to_list(self) -> list:
+    def analytics_to_list(self) -> List[str]:
         """
         Return the existing parsed analytics as a list
         """
@@ -144,7 +146,7 @@ class Parser():
             out_l += [f'{self.get_analytics_for_index(stat)}']
             if isinstance(value, Counter):
                 out_l += [f'  {item}: {count:,}' for item,
-                          count in value.most_common(5)]
+                          count in value.most_common(self.num_to_print)]
             elif isinstance(value, int) or isinstance(value, float):
                 out_l += [f'  Total: {value:,}']
             elif isinstance(value, dict):
@@ -175,7 +177,7 @@ class Parser():
         matches = re.match(self._pattern, message)
         return list(matches.groups()) if matches is not None else None
 
-    def parse(self, message: str) -> list:
+    def parse(self, message: str) -> List[str]:
         """
         Parse a log message
         """
@@ -251,7 +253,7 @@ class Parser():
         patterns = os.listdir(self.folder)
         return dict(zip(range(0, len(patterns)), patterns))
 
-    def show_patterns(self) -> list:
+    def show_patterns(self) -> List[str]:
         """
         Get the existing patterns as a list
         """

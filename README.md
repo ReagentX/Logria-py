@@ -6,8 +6,8 @@ A powerful CLI tool that puts log analytics at your fingertips.
 
 ## tl;dr
 
-- Live filtering of data from other executed processes, replacing `grep`
-- Use shell commands or files as input, save sessions and come back to them later
+- Live filtering of data from other processes, replacing `grep`
+- Use shell commands or files as input, save sessions and come back later
 - Replace regex/filter without killing the process or losing the stream's history
 - Parse logs using user-defined rules, apply analytics methods on top
 - Pure Python, fully type hinted, zero dependencies
