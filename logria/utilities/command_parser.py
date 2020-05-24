@@ -34,7 +34,10 @@ class Resolver():
             return None
         # Iterate in reverse so we resolve tools in local paths after system paths
         for path in paths.split(':')[::-1]:
-            programs = os.listdir(path)
+            try:
+                programs = os.listdir(path)
+            except FileNotFoundError:
+                continue
             self._paths.update(
                 dict([(programs, f'{path}/{programs}') for programs in programs]))
 
