@@ -21,8 +21,8 @@ class Resolver():
 
     def __init__(self):
         self._paths = {}
-        self.resolve_paths()
         self.user_home = str(Path.home())
+        self.resolve_paths()
 
     def resolve_paths(self) -> None:
         """
@@ -34,7 +34,11 @@ class Resolver():
             return None
         # Iterate in reverse so we resolve tools in local paths after system paths
         for path in paths.split(':')[::-1]:
-            programs = os.listdir(path)
+            try:
+                programs = os.listdir(self.resolve_home_dir(path))
+            except FileNotFoundError:
+                print(f'{path} listed in PATH environment variable, but does not exist!')
+                continue
             self._paths.update(
                 dict([(programs, f'{path}/{programs}') for programs in programs]))
 
