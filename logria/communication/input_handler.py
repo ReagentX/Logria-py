@@ -59,6 +59,10 @@ class CommandInputStream(InputStream):
     Read a subprocess command as an input stream
     """
 
+    def __init__(self, args, poll_rate=0.001):
+        super().__init__(args, poll_rate=poll_rate)
+        self.proc = None
+
     def run(self, args: List[str], stdoutq: multiprocessing.Queue, stderrq: multiprocessing.Queue) -> None:
         """
         Given a command passed as an array ['python', 'script.py'], open a
@@ -68,30 +72,30 @@ class CommandInputStream(InputStream):
           this can be enabled with `print('', flush=True)`
         """
         try:
-            proc = Popen(args, stdout=PIPE, stderr=PIPE, bufsize=1,
-                         universal_newlines=True)
+            self.proc = Popen(args, stdout=PIPE, stderr=PIPE, bufsize=1,
+                              universal_newlines=True)
 
             # Un-buffer streams
-            stdout_flag = fcntl(proc.stdout, F_GETFL)
-            fcntl(proc.stdout, F_SETFL, stdout_flag | O_NONBLOCK)
+            stdout_flag = fcntl(self.proc.stdout, F_GETFL)
+            fcntl(self.proc.stdout, F_SETFL, stdout_flag | O_NONBLOCK)
 
-            stderr_flag = fcntl(proc.stderr, F_GETFL)
-            fcntl(proc.stderr, F_SETFL, stderr_flag | O_NONBLOCK)
+            stderr_flag = fcntl(self.proc.stderr, F_GETFL)
+            fcntl(self.proc.stderr, F_SETFL, stderr_flag | O_NONBLOCK)
 
             while True:
                 time.sleep(self.poll_rate)
                 # stdout
-                stdout_output = proc.stdout.readline()
+                stdout_output = self.proc.stdout.readline()
                 if stdout_output:
                     stdoutq.put(stdout_output)
 
                 # stderr
-                stderr_output = proc.stderr.readline()
+                stderr_output = self.proc.stderr.readline()
                 if stderr_output:
                     stderrq.put(stderr_output)
 
                 # Kill condition
-                if stderr_output == '' and stdout_output == '' and proc.poll() is not None:
+                if stderr_output == '' and stdout_output == '' and self.proc.poll() is not None:
                     break
         except PermissionError:
             stderrq.put(
@@ -99,6 +103,17 @@ class CommandInputStream(InputStream):
         except FileNotFoundError:
             stderrq.put(
                 f'File not found error opening handle to command: {"/".join(args)}')
+
+    def exit(self):
+        """
+        Kills the process
+        """
+        if self.proc is not None:
+            # Proc may be dead already when we get here
+            self.proc.kill()  # Kill piped process
+            self.proc.communicate()  # Make sure any final data is not left in the pipe
+        self.process.terminate()  # Kill Python process
+
 
 class PipeInputStream(InputStream):
     """
