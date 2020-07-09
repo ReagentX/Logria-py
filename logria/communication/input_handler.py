@@ -26,8 +26,8 @@ class InputStream():
         self.poll_rate = poll_rate
 
         # Use separate queues for stdout/stderr so we can parse separately
-        self.stdout = multiprocessing.Queue()
-        self.stderr = multiprocessing.Queue()
+        self.stdout: multiprocessing.Queue = multiprocessing.Queue()
+        self.stderr: multiprocessing.Queue = multiprocessing.Queue()
 
         # Create the child process, have it run in the background
         self.process = multiprocessing.Process(
@@ -120,7 +120,7 @@ class PipeInputStream(InputStream):
     Read in a pipe as a stream
     """
 
-    def run(self, pipe: PIPE, stdoutq: multiprocessing.Queue, _: multiprocessing.Queue) -> None:
+    def run(self, pipe, stdoutq: multiprocessing.Queue, _: multiprocessing.Queue) -> None:
         """
         Given a filename, open the file and read the contents
         args: a list of folders to be joined ['Docs', 'file.py'] -> 'Docs/file.py'
