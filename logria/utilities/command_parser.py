@@ -38,12 +38,14 @@ class Resolver():
             if os.path.isfile(path):
                 path = '/'.join(path.split('/')[:-1])
                 if os.path.isfile(path):
-                    print(f'{path} listed in PATH environment variable, refers to file!')
+                    print(
+                        f'{path} listed in PATH environment variable, refers to file!')
                     continue
             try:
                 programs = os.listdir(self.resolve_home_dir(path))
             except FileNotFoundError:
-                print(f'{path} listed in PATH environment variable, but does not exist!')
+                print(
+                    f'{path} listed in PATH environment variable, but does not exist!')
                 continue
             self._paths.update(
                 {programs: f'{path}/{programs}' for programs in programs}
@@ -84,6 +86,9 @@ class Resolver():
         return new_command
 
     def resolve_file_as_list(self, filepath: str) -> List[str]:
+        """
+        Resolve a file path as a list of folders
+        """
         path_parts = filepath.split('/')
         new_path = []
         for part in path_parts:
@@ -91,4 +96,7 @@ class Resolver():
         return new_path
 
     def resolve_file_as_str(self, filepath: str) -> str:
+        """
+        Resolve a file path as a slash-separated string
+        """
         return '/'.join(self.resolve_file_as_list(filepath))
