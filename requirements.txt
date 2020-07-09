@@ -1,14 +1,6 @@
-altgraph==0.17
-astroid==2.3.3
-autopep8==1.5
-fuzzyfinder==2.1.0
-isort==4.3.21
-lazy-object-proxy==1.4.3
-macholib==1.14
-mccabe==0.6.1
-pycallgraph==1.0.1
-pycodestyle==2.5.0
-PyInstaller==3.6
-pylint==2.4.4
-six==1.14.0
-wrapt==1.11.2
+# Required for development only
+# Run `python setup.py develop` to install without dev reqs
+autopep8
+mypy
+pylint
+rope

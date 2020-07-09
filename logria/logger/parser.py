@@ -7,7 +7,7 @@ import os
 import re
 from collections import Counter
 from pathlib import Path
-from typing import List
+from typing import List, Union
 
 from logria.utilities.constants import ANSI_COLOR_PATTERN, SAVED_PATTERNS_PATH
 
@@ -72,7 +72,7 @@ class Parser():
         """
         return self._analytics_map[index]
 
-    def extract_numbers_from_message(self, message: str) -> int or float:
+    def extract_numbers_from_message(self, message: str) -> Union[int, float]:
         """
         We do not use regex replacement here because...
 
@@ -87,7 +87,7 @@ class Parser():
             return int(out_num)
         return out_num
 
-    def apply_analytics(self, index: str, part: str) -> None:
+    def apply_analytics(self, index: int, part: str) -> None:
         """
         Applies an analytics rule to a message
         """
@@ -159,7 +159,7 @@ class Parser():
         """
         return re.sub(ANSI_COLOR_PATTERN, '', string)
 
-    def split_pattern(self, message: str) -> str:
+    def split_pattern(self, message: str) -> List[str]:
         """
         Split a log message based on a delimiter
         """
@@ -168,14 +168,14 @@ class Parser():
         parts = re.split(self._pattern, message)
         return parts
 
-    def regex_pattern(self, message: str) -> str:
+    def regex_pattern(self, message: str) -> List[str]:
         """
         Split a log message based on matches to a regex pattern
         """
         if self._pattern is None:
             raise ValueError('Parsing pattern when pattern not set!')
         matches = re.match(self._pattern, message)
-        return list(matches.groups()) if matches is not None else None
+        return list(matches.groups()) if matches is not None else []
 
     def parse(self, message: str) -> List[str]:
         """
