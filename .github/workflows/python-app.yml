@@ -35,4 +35,3 @@ jobs:
     - name: Test with stdlib unittest
       run: |
         python -m unittest discover -v
-      continue-on-error: true
