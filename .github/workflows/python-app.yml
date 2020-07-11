@@ -27,9 +27,12 @@ jobs:
     - name: Lint with pylint
       run: |
         pylint logria
+      continue-on-error: true
     - name: Static Analysis with mypy
       run: |
         mypy . --ignore-missing-imports
+      continue-on-error: true
     - name: Test with stdlib unittest
       run: |
         python -m unittest logria
+      continue-on-error: true
