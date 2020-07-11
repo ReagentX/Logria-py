@@ -6,7 +6,7 @@ Classes to handle saving sessions
 import json
 import os
 from pathlib import Path
-from typing import List
+from typing import List, Union
 
 from logria.utilities.constants import LOGRIA_ROOT, SAVED_SESSIONS_PATH
 
@@ -17,7 +17,7 @@ class SessionHandler():
     """
 
     def __init__(self):
-        self._commands: List[str] = []
+        self._commands: List[List[str]] = []
         self._type: str = ''  # One of {'command', 'file'}
         self.folder: Path = None
         self.setup_folder()
@@ -67,7 +67,7 @@ class SessionHandler():
         """
         self.save_session(name, self._commands, self._type)
 
-    def save_session(self, name: str, commands: List[str], type_: str) -> None:
+    def save_session(self, name: str, commands: Union[List[List[str]], List[str]], type_: str) -> None:
         """
         Save a session to the sessions directory
         """
@@ -99,7 +99,7 @@ class SessionHandler():
         sessions = os.listdir(self.folder)
         return dict(zip(range(0, len(sessions)), sessions))
 
-    def show_sessions(self) -> dict:
+    def show_sessions(self) -> List[str]:
         """
         Get the existing sessions as a list for output
         """

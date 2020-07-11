@@ -6,15 +6,15 @@ Contains the main class that controls the state of the app
 import curses
 import re
 import time
-from curses.textpad import Textbox, rectangle
 from json import JSONDecodeError
 from math import ceil
 from os.path import isfile
-from typing import List
+from typing import Callable, List, Optional, Tuple
 
 from logria.communication.input_handler import (CommandInputStream,
                                                 FileInputStream, InputStream)
 from logria.interface import color_handler
+from logria.interface.textbox import Textbox, rectangle
 from logria.logger.parser import Parser
 from logria.utilities import constants
 from logria.utilities.command_parser import Resolver
@@ -31,17 +31,17 @@ class Logria():
 
     def __init__(self, stream: InputStream, poll_rate=0.001):
         # UI Elements initialized to None
-        self.stdscr = None  # The entire window
+        self.stdscr: curses.window = None  # The entire window
         self.outwin: curses.window = None  # The output window
         self.command_line: curses.window = None  # The command line
-        self.box: Textbox = None  # The text box inside the command line
+        self.box: Textbox  # The text box inside the command line
 
         # App state
         self.poll_rate: float = poll_rate  # The rate at which we check for new messages
-        self.height: int = None  # Window height
-        self.width: int = None  # Window width
+        self.height: int = 0  # Window height
+        self.width: int = 0  # Window width
         # Store the state of the previous render so we know if we need to refresh
-        self.previous_render: List[str] = None
+        self.previous_render: Optional[List[str]] = None
         # Pointer to the previous non-parsed message list, which is continuously updated
         self.previous_messages: List[str] = []
         self.exit_val = 0  # If exit_val is -1, the app dies
@@ -49,17 +49,19 @@ class Logria():
         # Message buffers
         self.stderr_messages: List[str] = []
         self.stdout_messages: List[str] = []
-        self.messages: List[str] = self.stderr_messages  # Default to watching stderr
+        # Default to watching stderr
+        self.messages: List[str] = self.stderr_messages
 
         # Regex Handler information
-        self.func_handle: callable = None  # Regex func that handles filtering
+        # Regex func that handles filtering
+        self.func_handle: Optional[Callable] = None
         self.regex_pattern: str = ''  # Current regex pattern
         # Int array of matches when filtering is active
         self.matched_rows: List[int] = []
         self.last_index_regexed: int = 0  # The last index the filtering function saw
 
         # Processor information
-        self.parser: Parser = None  # Reference to the current parser
+        self.parser: Optional[Parser] = None  # Reference to the current parser
         self.parser_index: int = 0  # Index for the parser to look at
         self.parsed_messages: List[dict] = []  # Array of parsed rows
         self.analytics_enabled: bool = False  # Array for statistics messages
@@ -75,14 +77,14 @@ class Logria():
         # Whether we should stick to the top and not render new lines
         self.stick_to_top: bool = False
         self.manually_controlled_line: bool = False  # Whether manual scroll is active
-        self.current_end: bool = 0  # Current last row we have rendered
+        self.current_end: int = 0  # Current last row we have rendered
 
         # If we do not have a stream yet, tell the user to set one up
         if stream is None:
             self.streams: List[InputStream] = []
         else:
             # Stream list to handle multiple streams
-            self.streams: List[InputStream] = [stream]
+            self.streams = [stream]
 
     def build_command_line(self) -> None:
         """
@@ -101,7 +103,7 @@ class Logria():
         rectangle(self.stdscr, height - 3, 0, height - 1, width - 2)
         self.stdscr.refresh()
         # Editable text box element
-        self.box = Textbox(self.command_line, insert_mode=self.insert_mode)
+        self.box = Textbox(self.command_line, insert_mode=self.insert_mode, poll_rate=self.poll_rate)
         self.write_to_command_line(
             self.current_status)  # Update current status
 
@@ -130,17 +132,22 @@ class Logria():
             if not command:
                 continue
             try:
-                command = int(command)
-                session = session_handler.load_session(command)
+                chosen_item = int(command)
+                session = session_handler.load_session(chosen_item)
                 if not session:
                     continue
-                commands = session.get('commands')
+                stored_commands = session['commands']
                 # Commands need a type
-                for command in commands:
+                for stored_command in stored_commands:
                     if session.get('type') == 'file':
-                        self.streams.append(FileInputStream(command))
+                        self.streams.append(FileInputStream(stored_command))
                     elif session.get('type') == 'command':
-                        self.streams.append(CommandInputStream(command))
+                        self.streams.append(CommandInputStream(stored_command))
+            except KeyError as err:
+                self.messages.append(
+                    f'Data missing from configuration: {err}')
+                self.render_text_in_output()
+                continue
             except JSONDecodeError as err:
                 self.messages.append(
                     f'Invalid JSON: {err.msg} on line {err.lineno}, char {err.colno}')
@@ -156,12 +163,12 @@ class Logria():
                     self.streams.append(
                         FileInputStream(command.split('/')))
                     session_handler.save_session(
-                        'File - ' + command.replace('/', '|'), [command.split('/')], 'file')
+                        'File - ' + command.replace('/', '|'), command.split('/'), 'file')
                 else:
                     cmd = resolver.resolve_command_as_list(command)
                     self.streams.append(CommandInputStream(cmd))
                     session_handler.save_session(
-                        'Cmd - ' + command.replace('/', '|'), [cmd], 'command')
+                        'Cmd - ' + command.replace('/', '|'), cmd, 'command')
             break
 
         # Launch the subprocess
@@ -307,7 +314,7 @@ class Logria():
                         pass
                 self.last_index_processed = len(self.messages)
 
-    def determine_render_position(self, messages_pointer: List[str]) -> (int, int):
+    def determine_render_position(self, messages_pointer: List[str]) -> Tuple[int, int]:
         """
         Determine the start and end positions for a screen render
         """
@@ -317,7 +324,7 @@ class Logria():
             for i in messages_pointer:
                 if messages_pointer is self.messages:
                     # No processing needed for normal messages
-                    item = i
+                    item: str = i
                 elif messages_pointer is self.matched_rows:
                     # Grab the matched message
                     item = self.messages[i]
@@ -411,7 +418,7 @@ class Logria():
 
         # TODO: Fix this method
         """
-        # def add_to_list(result: multiprocessing.Queue, messages: list, last_idx_searched: int, func_handle: callable):
+        # def add_to_list(result: multiprocessing.Queue, messages: list, last_idx_searched: int, func_handle: Callable):
         #     """
         #     Main loop will create this separate process to find matches while the main loop runs
         #     """
@@ -436,7 +443,7 @@ class Logria():
         # For each message, add its index to the list of matches; this is more efficient than
         # Storing a second copy of each match
         for index in range(self.last_index_regexed, len(self.messages)):
-            if self.func_handle(self.messages[index]):
+            if self.func_handle and self.func_handle(self.messages[index]):
                 self.matched_rows.append(index)
         self.last_index_regexed = len(self.messages)
 
@@ -524,9 +531,9 @@ class Logria():
         session.set_type('file')
         self.activate_prompt()
         file_path = self.box.gather().strip()
-        file_path = cmd_resolver.resolve_file_as_list(file_path)
-        if isfile('/'.join(file_path)):
-            session.add_command(file_path)
+        resolved_file_path = cmd_resolver.resolve_file_as_list(file_path)
+        if isfile('/'.join(resolved_file_path)):
+            session.add_command(resolved_file_path)
             self.messages = session.as_list()
             self.messages.append(constants.SESSION_SHOULD_CONTINUE_FILE)
             self.previous_render = None  # Force render
@@ -560,8 +567,8 @@ class Logria():
         session.set_type('command')
         self.activate_prompt()
         command = self.box.gather().strip()
-        command = cmd_resolver.resolve_command_as_list(command)
-        session.add_command(command)
+        resolved_command = cmd_resolver.resolve_command_as_list(command)
+        session.add_command(resolved_command)
         self.messages = session.as_list()
         self.messages.append(constants.SESSION_SHOULD_CONTINUE_COMMAND)
         self.previous_render = None  # Force render
@@ -627,7 +634,7 @@ class Logria():
         self.render_text_in_output()
         # Get type
         self.activate_prompt()
-        parser_type = None
+        parser_type: str = ''
         while parser_type not in {'regex', 'split'}:
             self.activate_prompt()
             parser_type = self.box.gather().strip()
@@ -733,12 +740,17 @@ class Logria():
                 self.stop()
             elif ':poll' in command:
                 try:
-                    command = float(command.replace(':poll', ''))
-                    self.poll_rate = command
-                    for stream in self.streams:
-                        stream.poll_rate = command
+                    new_poll_rate = float(command.replace(':poll', ''))
                 except ValueError:
                     pass
+                else:
+                    # Update Logria's poll rate
+                    self.poll_rate = new_poll_rate
+                    # Update stream poll rates
+                    for stream in self.streams:
+                        stream.poll_rate = new_poll_rate
+                    # Update command line poll rate
+                    self.box.poll_rate = new_poll_rate
             elif ':config' in command:
                 self.config_mode()
         self.reset_command_line()

@@ -7,8 +7,9 @@ Adapted from https://github.com/spellr/culour/blob/master/culour/culour.py
 
 import os
 import curses
+from typing import Dict, Tuple
 
-COLOR_PAIRS_CACHE = {}
+COLOR_PAIRS_CACHE: Dict[Tuple[int, int], int] = {}
 DEFAULT_COLOR = -1
 
 
