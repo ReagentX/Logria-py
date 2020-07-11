@@ -103,7 +103,7 @@ class Logria():
         rectangle(self.stdscr, height - 3, 0, height - 1, width - 2)
         self.stdscr.refresh()
         # Editable text box element
-        self.box = Textbox(self.command_line, insert_mode=self.insert_mode)
+        self.box = Textbox(self.command_line, insert_mode=self.insert_mode, poll_rate=self.poll_rate)
         self.write_to_command_line(
             self.current_status)  # Update current status
 
@@ -741,9 +741,13 @@ class Logria():
             elif ':poll' in command:
                 try:
                     new_poll_rate = float(command.replace(':poll', ''))
+                    # Update Logria's poll rate
                     self.poll_rate = new_poll_rate
+                    # Update stream poll rates
                     for stream in self.streams:
                         stream.poll_rate = new_poll_rate
+                    # Update command line poll rate
+                    self.box.poll_rate = new_poll_rate
                 except ValueError:
                     pass
             elif ':config' in command:
