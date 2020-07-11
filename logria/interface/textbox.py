@@ -39,12 +39,9 @@ class Textbox():
     Ctrl-J      Terminate if the window is 1 line, otherwise insert newline.
     Ctrl-K      If line is blank, delete it, otherwise clear to end of line.
     Ctrl-L      Refresh screen.
-    Ctrl-N      Cursor down; move down one line.
     Ctrl-O      Insert a blank line at cursor location.
-    Ctrl-P      Cursor up; move up one line.
-
-    KEY_UP      Scroll up history tape (like KEY_UP in the shell)
-    KEY_DOWN    Scroll down history tape (like KEY_DOWN in the shell)
+    Ctrl-P      Scroll up history tape (like KEY_UP in the shell)
+    Ctrl-N    Scroll down history tape (like KEY_DOWN in the shell)
 
     Move operations do nothing if the cursor is at an edge where the movement
     is not possible.  The following synonyms are supported where possible:
@@ -169,17 +166,33 @@ class Textbox():
         elif ch == curses.ascii.FF:                            # ^l
             self.win.refresh()
         elif ch in (curses.ascii.SO, curses.KEY_DOWN):         # ^n
-            if y < self.maxy:
-                self.win.move(y+1, x)
-                if x > self._end_of_line(y+1):
-                    self.win.move(y+1, self._end_of_line(y+1))
+            if x == 0 and self._end_of_line(y) == 0:
+                self.win.deleteln()
+            else:
+                # first undo the effect of self._end_of_line
+                self.win.move(0, 0)
+                self.win.clrtoeol()
+            new_cmd = self.history_tape.scroll_forward()
+            # Write the new command from the tape to the command line
+            for char in new_cmd:
+                if curses.ascii.isprint(char):
+                    if y < self.maxy or x < self.maxx:
+                        self._insert_printable_char(char)
         elif ch == curses.ascii.SI:                            # ^o
             self.win.insertln()
         elif ch in (curses.ascii.DLE, curses.KEY_UP):          # ^p
-            if y > 0:
-                self.win.move(y-1, x)
-                if x > self._end_of_line(y-1):
-                    self.win.move(y-1, self._end_of_line(y-1))
+            if x == 0 and self._end_of_line(y) == 0:
+                self.win.deleteln()
+            else:
+                # first undo the effect of self._end_of_line
+                self.win.move(0, 0)
+                self.win.clrtoeol()
+            new_cmd = self.history_tape.scroll_back()
+            # Write the new command from the tape to the command line
+            for char in new_cmd:
+                if curses.ascii.isprint(char):
+                    if y < self.maxy or x < self.maxx:
+                        self._insert_printable_char(char)
         return 1
 
     def gather(self):
@@ -199,6 +212,7 @@ class Textbox():
                 result = result + chr(curses.ascii.ascii(self.win.inch(y, x)))
             if self.maxy > 0:
                 result = result + "\n"
+        self.history_tape.add_item(result)
         return result
 
     def edit(self, validate: Optional[Callable] = None):
