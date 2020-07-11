@@ -741,6 +741,9 @@ class Logria():
             elif ':poll' in command:
                 try:
                     new_poll_rate = float(command.replace(':poll', ''))
+                except ValueError:
+                    pass
+                else:
                     # Update Logria's poll rate
                     self.poll_rate = new_poll_rate
                     # Update stream poll rates
@@ -748,8 +751,6 @@ class Logria():
                         stream.poll_rate = new_poll_rate
                     # Update command line poll rate
                     self.box.poll_rate = new_poll_rate
-                except ValueError:
-                    pass
             elif ':config' in command:
                 self.config_mode()
         self.reset_command_line()
