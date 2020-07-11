@@ -35,12 +35,11 @@ class Parser():
         """
         Set workspace folder, create if nonexistent
         """
-        home = str(Path.home())
-        if Path(home, SAVED_PATTERNS_PATH).exists():
+        if Path(SAVED_PATTERNS_PATH).exists():
             pass
         else:
-            os.mkdir(Path(home, SAVED_PATTERNS_PATH))
-        self.folder = Path(home, SAVED_PATTERNS_PATH)
+            os.mkdir(Path(SAVED_PATTERNS_PATH))
+        self.folder = Path(SAVED_PATTERNS_PATH)
 
     def get_name(self):
         """

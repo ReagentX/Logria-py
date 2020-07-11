@@ -9,9 +9,9 @@ ANSI_COLOR_PATTERN = r'(\x9B|\x1B\[)[0-?]*[ -\/]*[@-~]'
 
 # Paths
 USER_HOME = str(Path.home())
-LOGRIA_ROOT = 'logria'
-SAVED_PATTERNS_PATH = f'{LOGRIA_ROOT}/patterns'
-SAVED_SESSIONS_PATH = f'{LOGRIA_ROOT}/sessions'
+LOGRIA_ROOT = '.logria'
+SAVED_PATTERNS_PATH = f'{USER_HOME}/{LOGRIA_ROOT}/patterns'
+SAVED_SESSIONS_PATH = f'{USER_HOME}/{LOGRIA_ROOT}/sessions'
 
 # Messages
 START_MESSAGE = [
@@ -19,7 +19,7 @@ START_MESSAGE = [
     'or enter a number to choose a saved session from the list,',
     'or enter `:config` to configure.',
     'Enter `:q` to quit.',
-    ' '
+    ' '  # Not an empty string so Curses knows to not use this line
 ]
 
 # Config messages
