@@ -12,6 +12,9 @@ class HistoryTape():
     def __init__(self):
         self.history_tape: List[str] = []  # Not a real queue
         self.current_index: int = -1  # The index we are at in the tape
+        self.should_scroll_back: bool = False
+        # TODO: write/read from file
+        # TODO: in UI, allow user to search the tape!!!
 
     def size(self) -> int:
         """
@@ -47,25 +50,38 @@ class HistoryTape():
             return []
         return self.history_tape[-last_n:]
 
+    def at_end(self) -> bool:
+        """
+        Determine if we are at the end of the list
+        """
+        return self.current_index == len(self.history_tape) - 1
+
     def add_item(self, item: str) -> None:
         """
-        Add's the current item to the end of the queue and update the index
+        Adds `item` to the end of the queue and update the index
         """
-        self.history_tape.append(item)
-        self.current_index = len(self.history_tape) - 1
+        if not self.history_tape or item != self.history_tape[-1]:
+            self.history_tape.append(item)
+            self.current_index = len(self.history_tape) - 1
+            self.should_scroll_back = False
 
     def scroll_back_n(self, num_to_scroll: int) -> str:
         """
         Scroll back one item in the tape
         """
         if self.history_tape:
-            self.current_index = max(0, self.current_index - num_to_scroll)
+            if self.should_scroll_back:
+                self.current_index = max(0, self.current_index - num_to_scroll)
+            else:
+                self.should_scroll_back = True
         return self.get_current_item()
 
     def scroll_forward_n(self, num_to_scroll: int) -> str:
         """
-        Scroll forward one item in the tape
+        Scroll forward one item in the tape; if we are at the end return nothing
         """
+        if self.at_end():
+            return ''
         if self.history_tape:
             self.current_index = min(
                 len(self.history_tape) - 1, self.current_index + num_to_scroll)
