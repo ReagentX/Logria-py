@@ -40,6 +40,10 @@ This folder contains the documentation on how to interact with Logria programmat
 - Install Logria
   - `python setup.py install`
 
+### Configuration Directory
+
+By default, Logria will create `~/.logria` to store configuration files in. If you want to specify a different path, either set `LOGRIA_ROOT` to replace the `.logria` directory or set `LOGRIA_DISABLE_USER_HOME` to move the directory away from the default `~`.
+
 ## Sample Usage Session
 
 Start Logria by invoking it as a command line application:
