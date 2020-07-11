@@ -6,7 +6,6 @@ Contains the main class that controls the state of the app
 import curses
 import re
 import time
-from curses.textpad import Textbox, rectangle
 from json import JSONDecodeError
 from math import ceil
 from os.path import isfile
@@ -15,6 +14,7 @@ from typing import Callable, List, Optional, Tuple
 from logria.communication.input_handler import (CommandInputStream,
                                                 FileInputStream, InputStream)
 from logria.interface import color_handler
+from logria.interface.textbox import Textbox, rectangle
 from logria.logger.parser import Parser
 from logria.utilities import constants
 from logria.utilities.command_parser import Resolver
@@ -103,7 +103,7 @@ class Logria():
         rectangle(self.stdscr, height - 3, 0, height - 1, width - 2)
         self.stdscr.refresh()
         # Editable text box element
-        self.box = Textbox(self.command_line, insert_mode=self.insert_mode)
+        self.box = Textbox(self.command_line, insert_mode=self.insert_mode, poll_rate=self.poll_rate)
         self.write_to_command_line(
             self.current_status)  # Update current status
 
@@ -741,11 +741,16 @@ class Logria():
             elif ':poll' in command:
                 try:
                     new_poll_rate = float(command.replace(':poll', ''))
-                    self.poll_rate = new_poll_rate
-                    for stream in self.streams:
-                        stream.poll_rate = new_poll_rate
                 except ValueError:
                     pass
+                else:
+                    # Update Logria's poll rate
+                    self.poll_rate = new_poll_rate
+                    # Update stream poll rates
+                    for stream in self.streams:
+                        stream.poll_rate = new_poll_rate
+                    # Update command line poll rate
+                    self.box.poll_rate = new_poll_rate
             elif ':config' in command:
                 self.config_mode()
         self.reset_command_line()
