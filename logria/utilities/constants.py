@@ -2,6 +2,7 @@
 Constants used throughout the application
 """
 
+import os
 from pathlib import Path
 
 # Patterns
@@ -9,7 +10,7 @@ ANSI_COLOR_PATTERN = r'(\x9B|\x1B\[)[0-?]*[ -\/]*[@-~]'
 
 # Paths
 USER_HOME = str(Path.home())
-LOGRIA_ROOT = '.logria'
+LOGRIA_ROOT = os.environ.get('LOGRIA_ROOT', '.logria')
 SAVED_PATTERNS_PATH = f'{USER_HOME}/{LOGRIA_ROOT}/patterns'
 SAVED_SESSIONS_PATH = f'{USER_HOME}/{LOGRIA_ROOT}/sessions'
 
