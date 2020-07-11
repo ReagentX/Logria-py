@@ -6,7 +6,6 @@ Contains the main class that controls the state of the app
 import curses
 import re
 import time
-from curses.textpad import Textbox, rectangle
 from json import JSONDecodeError
 from math import ceil
 from os.path import isfile
@@ -15,6 +14,7 @@ from typing import Callable, List, Optional, Tuple
 from logria.communication.input_handler import (CommandInputStream,
                                                 FileInputStream, InputStream)
 from logria.interface import color_handler
+from logria.interface.textbox import Textbox, rectangle
 from logria.logger.parser import Parser
 from logria.utilities import constants
 from logria.utilities.command_parser import Resolver
