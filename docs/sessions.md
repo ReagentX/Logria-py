@@ -22,7 +22,7 @@ Sessions are stored as `JSON` in `~/.logria/sessions` and do not have file exten
 }
 ```
 
-If `~/sessions` does not exist, Logira will create it.
+If `~/.logria/sessions` does not exist, Logira will create it.
 
 ## Elements
 
@@ -36,7 +36,7 @@ All sessions have two keys:
 
 ## Interpreting Sessions at Runtime
 
-If Logria is launched without `-e`, it will default to listing the contents of `/sessions` and allow the user to select one. Users can also enter a new command to follow, and that command will be saved as a new session.
+If Logria is launched without `-e`, it will default to listing the contents of `~/.logria/sessions` and allow the user to select one. Users can also enter a new command to follow, and that command will be saved as a new session.
 
 ```zsh
   Enter a new command to open a stream or choose a saved one from the list:
