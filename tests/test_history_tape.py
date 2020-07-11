@@ -140,7 +140,9 @@ class TestHistoryTapeFunctions(unittest.TestCase):
         for item in range(10):
             tape.add_item(f'Test {item}')
         self.assertEqual(
-            tape.tail(), [f'Test {x + (tape.size() - num_to_get)}' for x in range(5)])
+            tape.tail(),
+            [f'Test {x + (tape.size() - num_to_get)}' for x in range(5)]
+        )
 
     def test_can_tail_custom_end(self):
         """
@@ -150,5 +152,7 @@ class TestHistoryTapeFunctions(unittest.TestCase):
         num_to_get = 7
         for item in range(10):
             tape.add_item(f'Test {item}')
-        self.assertEqual(tape.tail(num_to_get), [
-                         f'Test {x + (tape.size() - num_to_get)}' for x in range(num_to_get)])
+        self.assertEqual(
+            tape.tail(num_to_get),
+            [f'Test {x + (tape.size() - num_to_get)}' for x in range(num_to_get)]
+        )
