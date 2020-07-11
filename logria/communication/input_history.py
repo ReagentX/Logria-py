@@ -11,7 +11,7 @@ class HistoryTape():
 
     def __init__(self):
         self.history_tape: List[str] = []  # Not a real queue
-        self.current_index: int = -1  # The index we are at in the queue
+        self.current_index: int = -1  # The index we are at in the tape
 
     def size(self) -> int:
         """
