@@ -9,7 +9,7 @@ from pathlib import Path
 ANSI_COLOR_PATTERN = r'(\x9B|\x1B\[)[0-?]*[ -\/]*[@-~]'
 
 # Paths
-USER_HOME = str(Path.home())
+USER_HOME = '' if os.environ.get('LOGRIA_DISABLE_USER_HOME') else str(Path.home())
 LOGRIA_ROOT = os.environ.get('LOGRIA_ROOT', '.logria')
 SAVED_PATTERNS_PATH = f'{USER_HOME}/{LOGRIA_ROOT}/patterns'
 SAVED_SESSIONS_PATH = f'{USER_HOME}/{LOGRIA_ROOT}/sessions'
