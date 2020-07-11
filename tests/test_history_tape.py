@@ -34,6 +34,35 @@ class TestHistoryTapeFunctions(unittest.TestCase):
         tape.add_item('Test')
         self.assertEqual(tape.get_current_item(), 'Test')
 
+    def test_at_end(self):
+        """
+        Test that we correctly report when we are at the end
+        """
+        tape = input_history.HistoryTape()
+        tape.add_item('Test')
+        self.assertTrue(tape.at_end())
+
+    def test_not_at_end(self):
+        """
+        Test that we correctly report when we are not at the end
+        """
+        tape = input_history.HistoryTape()
+        tape.add_item('Test 1')
+        tape.add_item('Test 2')
+        tape.add_item('Test 3')
+        tape.scroll_back()
+        tape.scroll_back()
+        self.assertFalse(tape.at_end())
+
+    def test_cant_add_item_twice(self):
+        """
+        Test that we can add and retrieve the current item
+        """
+        tape = input_history.HistoryTape()
+        tape.add_item('Test')
+        tape.add_item('Test')
+        self.assertEqual(tape.size(), 1)
+
     def test_can_scroll_backward_in_bounds(self):
         """
         Ensure we can scroll back
@@ -42,6 +71,7 @@ class TestHistoryTapeFunctions(unittest.TestCase):
         tape.add_item('Test 1')
         tape.add_item('Test 2')
         tape.add_item('Test 3')
+        tape.scroll_back()
         tape.scroll_back()
         self.assertEqual(tape.get_current_item(), 'Test 2')
 
@@ -69,7 +99,7 @@ class TestHistoryTapeFunctions(unittest.TestCase):
         tape.scroll_back()
         tape.scroll_back()
         tape.scroll_forward()
-        self.assertEqual(tape.get_current_item(), 'Test 2')
+        self.assertEqual(tape.get_current_item(), 'Test 3')
 
     def test_can_scroll_forward_in_bounds(self):
         """
