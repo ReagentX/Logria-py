@@ -5,6 +5,8 @@ Adapted to work for a single line since we only use this for the Logria command 
 """
 import curses
 import curses.ascii
+import time
+from typing import Callable, Optional
 
 from logria.communication.input_history import HistoryTape
 
@@ -23,7 +25,7 @@ def rectangle(win, uly, ulx, lry, lrx):
     win.addch(lry, ulx, curses.ACS_LLCORNER)
 
 
-class Textbox:
+class Textbox():
     """Editing widget using the interior of a window object.
      Supports the following Emacs-like key bindings:
 
@@ -51,23 +53,29 @@ class Textbox:
     KEY_BACKSPACE = Ctrl-h
     """
 
-    def __init__(self, win, insert_mode=False):
+    def __init__(self, win, insert_mode: bool = False, poll_rate: float = 0.001):
         self.win = win
         self.insert_mode = insert_mode
         self._update_max_yx()
         self.stripspaces = 1
         self.lastcmd = None
         self.history_tape = HistoryTape()
+        self.poll_rate = poll_rate
         win.keypad(1)
 
     def _update_max_yx(self):
+        """
+        Get the useable area of the textbox container
+        """
         maxy, maxx = self.win.getmaxyx()
         self.maxy = maxy - 1
         self.maxx = maxx - 1
 
-    def _end_of_line(self, y):
-        """Go to the location of the first blank on the given line,
-        returning the index of the last non-blank character."""
+    def _end_of_line(self, y: int):
+        """
+        Go to the location of the first blank on the given line,
+        returning the index of the last non-blank character.
+        """
         self._update_max_yx()
         last = self.maxx
         while True:
@@ -79,7 +87,10 @@ class Textbox:
             last = last - 1
         return last
 
-    def _insert_printable_char(self, ch):
+    def _insert_printable_char(self, ch: str):
+        """
+        Insert a character to the textbox
+        """
         self._update_max_yx()
         (y, x) = self.win.getyx()
         backyx = None
@@ -104,8 +115,10 @@ class Textbox:
         if backyx is not None:
             self.win.move(*backyx)
 
-    def do_command(self, ch):
-        "Process a single editing command."
+    def do_command(self, ch: str):
+        """
+        Process a single editing command.
+        """
         self._update_max_yx()
         (y, x) = self.win.getyx()
         self.lastcmd = ch
@@ -170,7 +183,9 @@ class Textbox:
         return 1
 
     def gather(self):
-        "Collect and return the contents of the window."
+        """
+        Collect and return the contents of the window.
+        """
         result = ""
         self._update_max_yx()
         for y in range(self.maxy+1):
@@ -186,9 +201,14 @@ class Textbox:
                 result = result + "\n"
         return result
 
-    def edit(self, validate=None):
-        "Edit in the widget window and collect the results."
-        while 1:
+    def edit(self, validate: Optional[Callable] = None):
+        """
+        Edit in the widget window and collect the results.
+
+        TODO: Async, not blocking
+        """
+        while True:
+            time.sleep(self.poll_rate)
             ch = self.win.getch()
             if validate:
                 ch = validate(ch)
@@ -198,17 +218,3 @@ class Textbox:
                 break
             self.win.refresh()
         return self.gather()
-
-
-if __name__ == '__main__':
-    def test_editbox(stdscr):
-        ncols, nlines = 9, 4
-        uly, ulx = 15, 20
-        stdscr.addstr(uly-2, ulx, "Use Ctrl-G to end editing.")
-        win = curses.newwin(nlines, ncols, uly, ulx)
-        rectangle(stdscr, uly-1, ulx-1, uly + nlines, ulx + ncols)
-        stdscr.refresh()
-        return Textbox(win).edit()
-
-    str = curses.wrapper(test_editbox)
-    print('Contents of text box:', repr(str))
