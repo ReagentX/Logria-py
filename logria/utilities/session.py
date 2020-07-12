@@ -102,12 +102,12 @@ class SessionHandler():
         """
         Get the existing sessions as a dict
         """
-        sessions = os.listdir(self.folder)
+        sessions = sorted(os.listdir(self.folder))
         return dict(zip(range(0, len(sessions)), sessions))
 
     def show_sessions(self) -> List[str]:
         """
         Get the existing sessions as a list for output
         """
-        sessions = os.listdir(self.folder)
+        sessions = sorted(os.listdir(self.folder))
         return [f'{i}: {v}' for i, v in enumerate(sessions)]
