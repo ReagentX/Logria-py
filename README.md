@@ -46,6 +46,7 @@ For more details, see [Sample Usage Session](docs/README.md#sample-usage-session
 | `/` | regex search |
 | `h` | if regex active, toggle highlighting of matches |
 | `i` | toggle insert mode (default off) |
+| `s` | swap reading `stdin` and `stdout` |
 | `p` | activate parser |
 | `a` | toggle analytics mode when parser is active |
 | `z` | deactivate parser |
