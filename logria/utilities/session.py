@@ -63,7 +63,6 @@ class SessionHandler():
         out_d = {}
         if item in SessionHandler().sessions():
             name = SessionHandler().sessions()[item]
-            print(f'{self.folder}/{name}')
             with open(self.folder / name, 'r') as f:
                 out_d = json.loads(f.read())
         return out_d

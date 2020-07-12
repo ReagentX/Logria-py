@@ -44,6 +44,7 @@ jobs:
         touch ~/.logria/sessions/File\ -\ readme
         touch ~/.logria/sessions/File\ -\ Sample\ Access\ Log
         touch ~/.logria/patterns/.DS_Store
+        touch ~/.logria/patterns/test
         echo '{
           "commands": [
               [
@@ -56,6 +57,5 @@ jobs:
               ]
           ],
           "type": "command"
-        }' > ~/.logria/patterns/test
-        cat ~/.logria/patterns/test
+        }' > ~/.logria/sessions/Cmd\ -\ Generate\ Test\ Logs
         python -m unittest discover -v
