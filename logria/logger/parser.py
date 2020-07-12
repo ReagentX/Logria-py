@@ -76,9 +76,9 @@ class Parser():
         r"""
         We do not use regex replacement here because...
 
-        chris ~ % python -m timeit '"".join(c for c in "sdkjh987978asd098as0980a98sd" if c.isdigit() or c == ".")'
+        % python -m timeit '"".join(c for c in "sdkjh987978asd098as0980a98sd" if c.isdigit() or c == ".")'
         100000 loops, best of 3: 3.47 usec per loop
-        chris ~ % python -m timeit 'import re; re.sub(r"[^\d\.]", "", "sdkjh987978asd098as0980a98sd")'
+        % python -m timeit 'import re; re.sub(r"[^\d\.]", "", "sdkjh987978asd098as0980a98sd")'
         100000 loops, best of 3: 4.67 usec per loop
         """
         digits = "".join(c for c in message if c.isdigit() or c == ".")
