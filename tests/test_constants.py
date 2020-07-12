@@ -22,16 +22,16 @@ class TestFormattingFunctions(unittest.TestCase):
         """
         Ensure LOGRIA_ROOT is the expected value
         """
-        self.assertEqual(constants.LOGRIA_ROOT, 'logria')
+        self.assertEqual(constants.LOGRIA_ROOT, '.logria')
 
     def test_saved_patterns_path(self):
         """
         Ensure SAVED_PATTERNS_PATH is the expected value
         """
-        self.assertEqual(constants.SAVED_PATTERNS_PATH, 'logria/patterns')
+        self.assertEqual(constants.SAVED_PATTERNS_PATH, f'{constants.USER_HOME}/.logria/patterns')
 
     def test_saved_sessions_path(self):
         """
         Ensure SAVED_SESSIONS_PATH is the expected value
         """
-        self.assertEqual(constants.SAVED_SESSIONS_PATH, 'logria/sessions')
+        self.assertEqual(constants.SAVED_SESSIONS_PATH, f'{constants.USER_HOME}/.logria/sessions')

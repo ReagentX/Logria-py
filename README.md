@@ -55,7 +55,7 @@ For more details, see [Sample Usage Session](docs/README.md#sample-usage-session
 
 ## Features
 
-Here are some of ways you can leverage Logria
+Here are some of the ways you can leverage Logria:
 
 ### Live stream of log data
 

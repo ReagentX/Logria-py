@@ -1,7 +1,6 @@
 # Todo
 
 - New features
-  - [ ] Custom textbox implementation that respects poll_rate
   - [ ] Add 'status bar' since we have an empty row so the user can see what we are currently doing
 - Enhancements
   - [ ] Explore PyInstaller for static binaries
@@ -11,15 +10,9 @@
   - [ ] Deeper instructions for sessions and parsers
   - [ ] Update contribution guidelines with concrete rules about what PRs will be accepted
 
-## Todos with Caveats
-
-- [x] Highlight match in log - requires rework of regex method
-  - We cannot just add ANSI codes as we might overwrite/alter existing ones
-  - We also cannot just use a reset code after we insert a new code because it may reset what was already in the message
-  - Current workaround is to regex out all color codes before inserting a highlighter and toggle
-
 ## Completed
 
+- [x] Custom textbox implementation that respects poll_rate
 - [x] "Configuration" mode or "setup" mode to generate and save sessions/parsers
 - [x] Add example folder for sessions and parsers
 - [x] Test suite
@@ -42,6 +35,10 @@
 - [x] Move `regex_test_generator` to a separate class/module
 - [x] Toggle insert mode (default off)
 - [x] Add app entry method to `setup.py`
+- [x] Highlight match in log - requires rework of regex method
+  - We cannot just add ANSI codes as we might overwrite/alter existing ones
+  - We also cannot just use a reset code after we insert a new code because it may reset what was already in the message
+  - Current workaround is to regex out all color codes before inserting a highlighter and toggle
 - [x] Regex searches through pre-formatted string, not color formatted string - requires rework of regex method
 - [x] Make window scroll
 - [x] Move with arrow keys
@@ -52,7 +49,7 @@
 ## Rejected
 
 - [ ] Multiprocessing manager dict for `{stdout: [], stdin: []}`
-  - This is not possible because to access the data in the array we must wait for the subprocess to complete, which defeats the purpose of this app. See branch `test/cs/multiprocessing-dict` for more info.
+  - This is not possible because to access the data in the array we must wait for the subprocess to complete, which defeats the purpose of this app.
 - [ ] Support optional piping as input stream - [SO Link](https://stackoverflow.com/questions/1450393/how-do-you-read-from-stdin)
   - Not possible to implement
   - stdin gets taken over by whatever we pipe to this program, and we cannot move that pipe away from stdin until the pipe finishes

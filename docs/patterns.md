@@ -4,7 +4,7 @@ A pattern is a regex patter with associated meta that Logria uses to parse log m
 
 ## Storage
 
-Patterns are stored as `JSON` in `~/patterns` and do not have file extensions. A pattern is defined like so:
+Patterns are stored as `JSON` in `~/.logria/patterns` and do not have file extensions. A pattern is defined like so:
 
 ```json
 {

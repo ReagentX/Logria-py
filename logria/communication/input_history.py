@@ -13,8 +13,6 @@ class HistoryTape():
         self.history_tape: List[str] = []  # Not a real queue
         self.current_index: int = -1  # The index we are at in the tape
         self.should_scroll_back: bool = False
-        # TODO: write/read from file
-        # TODO: in UI, allow user to search the tape!!!
 
     def size(self) -> int:
         """
@@ -34,12 +32,12 @@ class HistoryTape():
         """
         Go to a specific point in time, bound by the size of the tape
         """
-        if index >= 0 and index < len(self.history_tape) - 1:
-            self.current_index = index
-        elif index > len(self.history_tape):
-            self.current_index = len(self.history_tape) - 1
-        elif index < 0:
+        if index < 0:
             self.current_index = 0
+        elif index < len(self.history_tape) - 1:
+            self.current_index = index
+        elif index >= len(self.history_tape):
+            self.current_index = len(self.history_tape) - 1
         return self.get_current_item()
 
     def tail(self, last_n: int = 5) -> List[str]:

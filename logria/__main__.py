@@ -14,6 +14,7 @@ def main():
     """
     Main app loop, handles parsing args and starting the app
     """
+    # pylint: disable=no-else-raise
     if not os.isatty(0):
         # If we are getting piped to, use that input stream only
         raise ValueError('Piping is not supported!')
