@@ -30,9 +30,15 @@ class SessionHandler():
         self.set_type(type_)
 
     def set_type(self, type_str):
+        """
+        Sets the type of command
+        """
         self._type = type_str
 
     def add_command(self, command: List[str]):
+        """
+        Adds the command to the list of commands
+        """
         self._commands.append(command)
 
     def setup_folder(self):
