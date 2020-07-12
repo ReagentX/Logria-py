@@ -18,6 +18,12 @@ SAVED_HISTORY_PATH = f'{USER_HOME}/{LOGRIA_ROOT}/history'
 # Filenames
 HISTORY_TAPE_NAME = 'tape'
 
+# Text to exclude from message history
+HISTORY_EXCLUDES = {
+    ':history',
+    ':history off'
+}
+
 # Messages
 START_MESSAGE = [
     'Enter a new command to open and save a new stream,',
