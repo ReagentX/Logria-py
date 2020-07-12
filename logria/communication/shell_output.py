@@ -88,7 +88,7 @@ class Logria():
 
     def build_command_line(self) -> None:
         """
-        Creates a textbox object that has insert mode set to the passed value
+        Creates a textbox object that represents the command line
         """
         if self.command_line:
             del self.command_line
@@ -103,7 +103,8 @@ class Logria():
         rectangle(self.stdscr, height - 3, 0, height - 1, width - 2)
         self.stdscr.refresh()
         # Editable text box element
-        self.box = Textbox(self.command_line, insert_mode=self.insert_mode, poll_rate=self.poll_rate)
+        self.box = Textbox(
+            self.command_line, insert_mode=self.insert_mode, poll_rate=self.poll_rate)
         self.write_to_command_line(
             self.current_status)  # Update current status
 
@@ -756,6 +757,18 @@ class Logria():
         self.reset_command_line()
         self.write_to_command_line(self.current_status)
 
+    def handle_resize(self):
+        """
+        Resize curses elements when window size changes
+        """
+        self.height, self.width = self.stdscr.getmaxyx()
+        curses.resizeterm(self.height, self.width)
+        self.build_command_line()  # Rebuild the command line
+        self.current_status = 'Resize handler'
+        self.write_to_command_line(self.current_status)
+        self.previous_render = None  # Force render
+        self.render_text_in_output()
+
     def start(self) -> None:
         """
         Starts the program
@@ -825,7 +838,7 @@ class Logria():
                 keypress = self.command_line.getkey()  # Get keypress
                 if keypress == '/':
                     self.handle_regex_mode()
-                if keypress == ':':
+                elif keypress == ':':
                     self.handle_command_mode()
                 elif keypress == 'h':
                     self.previous_render = None  # Force render
@@ -871,6 +884,8 @@ class Logria():
                 elif keypress == 'z':
                     # Tear down parser
                     self.reset_parser()
+                elif keypress == 'KEY_RESIZE':
+                    self.handle_resize()
                 elif keypress == 'KEY_UP':
                     # Scroll up
                     self.manually_controlled_line = True

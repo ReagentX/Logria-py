@@ -2,9 +2,10 @@
 Unit Tests for sessions
 """
 
+import unittest
 from os import remove
 from pathlib import Path
-import unittest
+
 from logria.utilities import session
 from logria.utilities.constants import SAVED_SESSIONS_PATH
 
@@ -100,6 +101,9 @@ class TestSessionBuilder(unittest.TestCase):
     """
 
     def test_set_params(self):
+        """
+        Test that we can set a command's params
+        """
         s = session.SessionHandler()
         command = ['ls', '-l']
         type_ = 'command'
@@ -108,6 +112,9 @@ class TestSessionBuilder(unittest.TestCase):
         self.assertEqual(s._type, type_)
 
     def test_as_list_command(self):
+        """
+        Test that we can resolve a list of commands
+        """
         s = session.SessionHandler()
         command = ['ls', '-l']
         command_2 = ['grep', '-nr', 'code', '.']
@@ -119,6 +126,9 @@ class TestSessionBuilder(unittest.TestCase):
         self.assertEqual(s.as_list(), expected)
 
     def test_as_list_file(self):
+        """
+        Test that we can resolve a list of files
+        """
         s = session.SessionHandler()
         command = ['usr', 'log', 'cloud-init.log']
         command_2 = ['usr', 'log', 'cloud-init-output.log']
