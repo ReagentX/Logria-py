@@ -13,12 +13,14 @@ class HistoryTape():
     Class to keep track of user's input history
     """
 
-    def __init__(self):
+    def __init__(self, use_cache: bool = True):
         self.history_tape: List[str] = []  # Not a real queue
         self.current_index: int = -1  # The index we are at in the tape
         self.should_scroll_back: bool = False
         self.history_tape_file = f'{SAVED_HISTORY_PATH}/{HISTORY_TAPE_NAME}'
-        self.load_history_from_file()
+        self.use_cache = use_cache
+        if self.use_cache:
+            self.load_history_from_file()
 
     def load_history_from_file(self) -> None:
         """
@@ -95,7 +97,8 @@ class HistoryTape():
         Adds `item` to the end of the queue and update the index
         """
         if not self.history_tape or item != self.history_tape[-1]:
-            self.write_to_history_file(item)
+            if self.use_cache:
+                self.write_to_history_file(item)
             self.history_tape.append(item)
             self.current_index = len(self.history_tape) - 1
             self.should_scroll_back = False
