@@ -119,7 +119,7 @@ class PipeInputStream(InputStream):
     """
     Read in a pipe as a stream
     """
-
+    # pylint: disable=arguments-differ
     def run(self, pipe, stdoutq: multiprocessing.Queue, _: multiprocessing.Queue) -> None:
         """
         Given a filename, open the file and read the contents
@@ -132,6 +132,7 @@ class PipeInputStream(InputStream):
                 pipe_input = pipe.readline()
                 if pipe_input:
                     stdoutq.put(pipe_input)
+            # pylint: disable=bare-except
             except:
                 break
 

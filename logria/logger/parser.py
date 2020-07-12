@@ -71,8 +71,9 @@ class Parser():
         """
         return self._analytics_map[index]
 
+    # pylint: disable=no-self-use
     def extract_numbers_from_message(self, message: str) -> Union[int, float]:
-        """
+        r"""
         We do not use regex replacement here because...
 
         chris ~ % python -m timeit '"".join(c for c in "sdkjh987978asd098as0980a98sd" if c.isdigit() or c == ".")'
@@ -146,7 +147,7 @@ class Parser():
             if isinstance(value, Counter):
                 out_l += [f'  {item}: {count:,}' for item,
                           count in value.most_common(self.num_to_print)]
-            elif isinstance(value, int) or isinstance(value, float):
+            elif isinstance(value, (int, float)):
                 out_l += [f'  Total: {value:,}']
             elif isinstance(value, dict):
                 out_l += [f'  {key}:\t {value[key]:,.2f}' for key in value]
@@ -184,8 +185,7 @@ class Parser():
             return self.split_pattern(message)
         elif self._type == 'regex':
             return self.regex_pattern(message)
-        else:
-            raise ValueError(f'{self._type} is not a valid Parser type!')
+        raise ValueError(f'{self._type} is not a valid Parser type!')
 
     def as_dict(self):
         """

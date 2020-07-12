@@ -13,7 +13,7 @@ COLOR_PAIRS_CACHE: Dict[Tuple[int, int], int] = {}
 DEFAULT_COLOR = -1
 
 
-class TerminalColors(object):
+class TerminalColors():
     """
     Dataclass to store the replacement colors
     """
