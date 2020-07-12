@@ -103,7 +103,8 @@ class Logria():
         rectangle(self.stdscr, height - 3, 0, height - 1, width - 2)
         self.stdscr.refresh()
         # Editable text box element
-        self.box = Textbox(self.command_line, insert_mode=self.insert_mode, poll_rate=self.poll_rate)
+        self.box = Textbox(
+            self.command_line, insert_mode=self.insert_mode, poll_rate=self.poll_rate)
         self.write_to_command_line(
             self.current_status)  # Update current status
 
@@ -825,7 +826,7 @@ class Logria():
                 keypress = self.command_line.getkey()  # Get keypress
                 if keypress == '/':
                     self.handle_regex_mode()
-                if keypress == ':':
+                elif keypress == ':':
                     self.handle_command_mode()
                 elif keypress == 'h':
                     self.previous_render = None  # Force render
