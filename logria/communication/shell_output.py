@@ -293,6 +293,8 @@ class Logria():
         self.last_index_processed = 0  # Reset the last searched index
         self.current_end = 0  # We now do not know where to end
         self.stick_to_bottom = True  # Stay at the bottom for the next render
+        self.stick_to_top = False  # Do not stick to the top
+        self.manually_controlled_line = False  # Do not stop rendering new messages
         self.write_to_command_line(self.current_status)
 
     def process_parser(self):
@@ -733,6 +735,19 @@ class Logria():
                 self.reset_regex_status()
                 self.reset_command_line()
 
+    def start_history_mode(self, last_n: int) -> None:
+        """
+        Swap message pointer to history tape
+        """
+        # Store previous message pointer
+        if self.messages is self.stderr_messages:
+            self.previous_messages = self.stderr_messages
+        elif self.messages is self.stdout_messages:
+            self.previous_messages = self.stdout_messages
+
+        # Set new message pointer
+        self.messages = self.box.history_tape.tail(last_n=last_n)
+
     def handle_command_mode(self) -> None:
         """
         Handle when user activates command mode, including parsing textbox message
@@ -759,6 +774,15 @@ class Logria():
                     self.box.poll_rate = new_poll_rate
             elif ':config' in command:
                 self.config_mode()
+            elif ':history' in command:
+                if command == ':history off':
+                    self.reset_parser()
+                else:
+                    try:
+                        num_to_get = int(command.replace(':history', ''))
+                    except ValueError:
+                        num_to_get = self.height  # Default to screen height if no info given
+                    self.start_history_mode(num_to_get)
         self.reset_command_line()
         self.write_to_command_line(self.current_status)
 
