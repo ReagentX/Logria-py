@@ -43,6 +43,5 @@ jobs:
         touch ~/.logria/sessions/File\ -\ readme
         touch ~/.logria/sessions/File\ -\ Sample\ Access\ Log
         touch ~/.logria/sessions/Cmd\ -\ Generate\ Test\ Logs
-        echo '{}' > ~/.logria/sessions/test
-        ls -R ~/.logria
+        echo '{}' > ~/.logria/patterns/test
         python -m unittest discover -v
