@@ -1,7 +1,11 @@
 """
 Class to handle keeping track of input history
 """
+import os
+from pathlib import Path
 from typing import List
+
+from logria.utilities.constants import HISTORY_TAPE_NAME, SAVED_HISTORY_PATH
 
 
 class HistoryTape():
@@ -9,10 +13,44 @@ class HistoryTape():
     Class to keep track of user's input history
     """
 
-    def __init__(self):
+    def __init__(self, use_cache: bool = True):
         self.history_tape: List[str] = []  # Not a real queue
         self.current_index: int = -1  # The index we are at in the tape
         self.should_scroll_back: bool = False
+        self.history_tape_file = f'{SAVED_HISTORY_PATH}/{HISTORY_TAPE_NAME}'
+        self.use_cache = use_cache
+        if self.use_cache:
+            self.load_history_from_file()
+
+    def load_history_from_file(self) -> None:
+        """
+        Load the history tape from the disk if it exists
+        """
+        # Create history folder if it is missing
+        if Path(SAVED_HISTORY_PATH).exists():
+            pass
+        else:
+            os.mkdir(Path(SAVED_HISTORY_PATH))
+
+        # Read the file into memory
+        if os.path.isfile(self.history_tape_file):
+            with open(self.history_tape_file) as history_cache:
+                self.history_tape = [line.rstrip(
+                    '\n') for line in history_cache]
+                self.current_index = len(self.history_tape) - 1
+        else:
+            with open(self.history_tape_file, 'w+') as history_cache:
+                history_cache.write('')
+
+    def write_to_history_file(self, message) -> None:
+        """
+        Write a new message to the history tape
+        """
+        if Path(SAVED_HISTORY_PATH).exists():
+            if os.path.isfile(self.history_tape_file):
+                with open(self.history_tape_file, 'a') as history_cache:
+                    history_cache.write(message)
+                    history_cache.write('\n')
 
     def size(self) -> int:
         """
@@ -59,6 +97,8 @@ class HistoryTape():
         Adds `item` to the end of the queue and update the index
         """
         if not self.history_tape or item != self.history_tape[-1]:
+            if self.use_cache:
+                self.write_to_history_file(item)
             self.history_tape.append(item)
             self.current_index = len(self.history_tape) - 1
             self.should_scroll_back = False

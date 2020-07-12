@@ -13,6 +13,10 @@ USER_HOME = '' if os.environ.get('LOGRIA_DISABLE_USER_HOME') else str(Path.home(
 LOGRIA_ROOT = os.environ.get('LOGRIA_ROOT', '.logria')
 SAVED_PATTERNS_PATH = f'{USER_HOME}/{LOGRIA_ROOT}/patterns'
 SAVED_SESSIONS_PATH = f'{USER_HOME}/{LOGRIA_ROOT}/sessions'
+SAVED_HISTORY_PATH = f'{USER_HOME}/{LOGRIA_ROOT}/history'
+
+# Filenames
+HISTORY_TAPE_NAME = 'tape'
 
 # Messages
 START_MESSAGE = [

@@ -29,7 +29,7 @@ class Logria():
     Main app class that controls the logical flow of the app
     """
 
-    def __init__(self, stream: InputStream, poll_rate=0.001):
+    def __init__(self, stream: InputStream, history_tape_cache: bool, poll_rate=0.001):
         # UI Elements initialized to None
         self.stdscr: curses.window = None  # The entire window
         self.outwin: curses.window = None  # The output window
@@ -37,6 +37,8 @@ class Logria():
         self.box: Textbox  # The text box inside the command line
 
         # App state
+        # Wether we save command history
+        self.history_tape_cache: bool = history_tape_cache
         self.poll_rate: float = poll_rate  # The rate at which we check for new messages
         self.height: int = 0  # Window height
         self.width: int = 0  # Window width
@@ -104,7 +106,10 @@ class Logria():
         self.stdscr.refresh()
         # Editable text box element
         self.box = Textbox(
-            self.command_line, insert_mode=self.insert_mode, poll_rate=self.poll_rate)
+            self.command_line,
+            insert_mode=self.insert_mode,
+            poll_rate=self.poll_rate,
+            history_cache=self.history_tape_cache)
         self.write_to_command_line(
             self.current_status)  # Update current status
 

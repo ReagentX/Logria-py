@@ -50,13 +50,13 @@ class Textbox():
     KEY_BACKSPACE = Ctrl-h
     """
 
-    def __init__(self, win, insert_mode: bool = False, poll_rate: float = 0.001):
+    def __init__(self, win, insert_mode: bool = False, poll_rate: float = 0.001, history_cache: bool = True):
         self.win = win
         self.insert_mode: bool = insert_mode
         self._update_max_yx()
         self.stripspaces = 1
         self.lastcmd: str = ''
-        self.history_tape = HistoryTape()
+        self.history_tape = HistoryTape(use_cache=history_cache)
         self.poll_rate: float = poll_rate
         win.keypad(1)
 
