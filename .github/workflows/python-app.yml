@@ -40,8 +40,9 @@ jobs:
         mkdir ~/.logria/sessions
         echo 'Creating sample files'
         touch ~/.logria/sessions/.DS_Store
+        touch ~/.logria/sessions/Cmd\ -\ Generate\ Test\ Logs
         touch ~/.logria/sessions/File\ -\ readme
         touch ~/.logria/sessions/File\ -\ Sample\ Access\ Log
-        touch ~/.logria/sessions/Cmd\ -\ Generate\ Test\ Logs
         echo '{}' > ~/.logria/patterns/test
+        cat ~/.logria/patterns/test
         python -m unittest discover -v
