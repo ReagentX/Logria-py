@@ -42,6 +42,15 @@ class TestHistoryTapeFunctions(unittest.TestCase):
         tape.add_item('Test')
         self.assertEqual(tape.get_current_item(), 'Test')
 
+    def test_cant_add_excluded_item(self):
+        """
+        Test that we can add and retrieve the current item
+        """
+        tape = input_history.HistoryTape(use_cache=False)
+        tape.add_item(':history')
+        tape.add_item(':history off')
+        self.assertEqual(tape.size(), 0)
+
     def test_at_end(self):
         """
         Test that we correctly report when we are at the end

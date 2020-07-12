@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 from typing import List
 
-from logria.utilities.constants import HISTORY_TAPE_NAME, SAVED_HISTORY_PATH
+from logria.utilities.constants import HISTORY_TAPE_NAME, SAVED_HISTORY_PATH, HISTORY_EXCLUDES
 
 
 class HistoryTape():
@@ -96,12 +96,13 @@ class HistoryTape():
         """
         Adds `item` to the end of the queue and update the index
         """
-        if not self.history_tape or item != self.history_tape[-1]:
-            if self.use_cache:
-                self.write_to_history_file(item)
-            self.history_tape.append(item)
-            self.current_index = len(self.history_tape) - 1
-            self.should_scroll_back = False
+        if item not in HISTORY_EXCLUDES:
+            if not self.history_tape or item != self.history_tape[-1]:
+                if self.use_cache:
+                    self.write_to_history_file(item)
+                self.history_tape.append(item)
+                self.current_index = len(self.history_tape) - 1
+                self.should_scroll_back = False
 
     def scroll_back_n(self, num_to_scroll: int) -> str:
         """

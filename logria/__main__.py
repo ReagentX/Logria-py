@@ -27,7 +27,7 @@ def main():
                             version=f'{APP_NAME} {VERSION}')
         parser.add_argument('-e', action='append', type=str,
                             help='Command to pass through that will stream into this program, ex: logria -e \'tail -f log.txt\'')
-        parser.add_argument('--no-cache', dest='no_cache', default=False, action='store_true',
+        parser.add_argument('--no-cache', dest='no_cache', default=True, action='store_false',
                             help='Disable command history disk cache')
 
         args = parser.parse_args()

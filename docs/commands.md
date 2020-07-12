@@ -6,6 +6,9 @@
 | `:q` | exit the program |
 | `:poll #` | update [poll rate](#poll-rate) to #, where # is a number |
 | `:config` | enter configuration mode to create sessions or patterns |
+| `:history` | view and search the history tape |
+| `:history #` | view and search the history tape's last # (integer) items |
+| `:history off` | go back to the main app from history mode |
 
 ## Notes
 
