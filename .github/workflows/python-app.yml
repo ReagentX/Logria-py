@@ -57,4 +57,5 @@ jobs:
           ],
           "type": "command"
         }' > ~/.logria/patterns/test
+        cat ~/.logria/patterns/test
         python -m unittest discover -v
