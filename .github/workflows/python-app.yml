@@ -35,14 +35,13 @@ jobs:
     - name: Test with stdlib unittest
       run: |
         echo 'Setting up directory structure'
-        mkdir .logria
-        mkdir .logria/patterns
-        mkdir .logria/sessions
-        ls -a
-        ls .logria
+        mkdir ~/.logria
+        mkdir ~/.logria/patterns
+        mkdir ~/.logria/sessions
+        ls -R ~/.logria
         echo 'Creating sample files'
-        touch '.DS_Store'
-        touch 'File - readme'
-        touch 'File - Sample Access Log'
-        touch 'Cmd - Generate Test Logs'
+        touch ~/.logria/sessions/.DS_Store
+        touch ~/.logria/sessions/File\ -\ readme
+        touch ~/.logria/sessions/File\ -\ Sample Access Log
+        touch ~/.logria/sessions/Cmd\ -\ Generate Test Logs
         python -m unittest discover -v
