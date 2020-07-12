@@ -43,6 +43,19 @@ jobs:
         touch ~/.logria/sessions/Cmd\ -\ Generate\ Test\ Logs
         touch ~/.logria/sessions/File\ -\ readme
         touch ~/.logria/sessions/File\ -\ Sample\ Access\ Log
-        echo '{}' > ~/.logria/patterns/test
+        touch ~/.logria/patterns/.DS_Store
+        echo '{
+          "commands": [
+              [
+                  "/Users/chris/Documents/Code/Python/logria/venv/bin/python3",
+                  "/Users/chris/.logria/sample_streams/generate_test_logs.py"
+              ],
+              [
+                  "/Users/chris/Documents/Code/Python/logria/venv/bin/python3",
+                  "/Users/chris/.logria/sample_streams/generate_test_logs_2.py"
+              ]
+          ],
+          "type": "command"
+        }' > ~/.logria/patterns/test2
         cat ~/.logria/patterns/test
         python -m unittest discover -v
