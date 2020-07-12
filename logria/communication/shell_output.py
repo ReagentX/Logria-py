@@ -88,7 +88,7 @@ class Logria():
 
     def build_command_line(self) -> None:
         """
-        Creates a textbox object that has insert mode set to the passed value
+        Creates a textbox object that represents the command line
         """
         if self.command_line:
             del self.command_line
@@ -757,6 +757,18 @@ class Logria():
         self.reset_command_line()
         self.write_to_command_line(self.current_status)
 
+    def handle_resize(self):
+        """
+        Resize curses elements when window size changes
+        """
+        self.height, self.width = self.stdscr.getmaxyx()
+        curses.resizeterm(self.height, self.width)
+        self.build_command_line()  # Rebuild the command line
+        self.current_status = 'Resize handler'
+        self.write_to_command_line(self.current_status)
+        self.previous_render = None  # Force render
+        self.render_text_in_output()
+
     def start(self) -> None:
         """
         Starts the program
@@ -872,6 +884,8 @@ class Logria():
                 elif keypress == 'z':
                     # Tear down parser
                     self.reset_parser()
+                elif keypress == 'KEY_RESIZE':
+                    self.handle_resize()
                 elif keypress == 'KEY_UP':
                     # Scroll up
                     self.manually_controlled_line = True
