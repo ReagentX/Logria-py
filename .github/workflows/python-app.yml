@@ -38,6 +38,8 @@ jobs:
         mkdir .logria
         mkdir .logria/patterns
         mkdir .logria/sessions
+        ls -a
+        ls .logria
         echo 'Creating sample files'
         touch '.DS_Store'
         touch 'File - readme'
