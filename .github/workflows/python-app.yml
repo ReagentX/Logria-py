@@ -25,6 +25,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install mypy pylint
     - name: Setup Local Environment
+      run: |
         echo 'Setting up directory structure'
         mkdir .logria
         mkdir .logria/patterns
