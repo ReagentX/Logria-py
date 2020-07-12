@@ -57,7 +57,7 @@ class TestFormattingFunctions(unittest.TestCase):
         r = command_parser.Resolver()
         actual = r.resolve_command_as_string(
             'tail -f $HOME/file.txt | grep [^a-z](.*?)<')
-        expected = '/usr/bin/tail -f /Users/chris/file.txt | /usr/bin/grep [^a-z](.*?)<'
+        expected = f'/usr/bin/tail -f {Path.home()}/file.txt | /usr/bin/grep [^a-z](.*?)<'
         self.assertEqual(actual, expected)
 
     def test_resolve_command_as_list(self):
@@ -70,7 +70,7 @@ class TestFormattingFunctions(unittest.TestCase):
         expected = [
             '/usr/bin/tail',
             '-f',
-            '/Users/chris/file.txt',
+            f'{Path.home()}/file.txt',
             '|',
             '/usr/bin/grep',
             '[^a-z](.*?)<'
@@ -83,7 +83,7 @@ class TestFormattingFunctions(unittest.TestCase):
         """
         r = command_parser.Resolver()
         actual = r.resolve_command_as_string('$HOME/file.txt')
-        expected = '/Users/chris/file.txt'
+        expected = f'{Path.home()}/file.txt'
         self.assertEqual(actual, expected)
 
     def test_resolve_file_as_list(self):
@@ -94,7 +94,7 @@ class TestFormattingFunctions(unittest.TestCase):
         actual = r.resolve_file_as_list(
             '~/file.txt')
         expected = [
-            '/Users/chris',
+            f'{Path.home()}',
             'file.txt'
         ]
         self.assertEqual(actual, expected)
