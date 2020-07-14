@@ -96,11 +96,12 @@ class HistoryTape():
         """
         Adds `item` to the end of the queue and update the index
         """
-        if item not in HISTORY_EXCLUDES:
-            if not self.history_tape or item != self.history_tape[-1]:
+        clean_item = item.strip()  # Sanitize extra spaces from `gather()`
+        if clean_item not in HISTORY_EXCLUDES:
+            if not self.history_tape or clean_item != self.history_tape[-1]:
                 if self.use_cache:
-                    self.write_to_history_file(item)
-                self.history_tape.append(item)
+                    self.write_to_history_file(clean_item)
+                self.history_tape.append(clean_item)
                 self.current_index = len(self.history_tape) - 1
                 self.should_scroll_back = False
 
