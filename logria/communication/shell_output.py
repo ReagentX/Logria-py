@@ -790,7 +790,6 @@ class Logria():
                         ),
                         constants.MIN_POLL_RATE
                     )
-                self.write_to_command_line(f'Poll rate: {new_poll_rate}')
                 self.update_poll_rate(new_poll_rate)
 
     def handle_command_mode(self) -> None:
