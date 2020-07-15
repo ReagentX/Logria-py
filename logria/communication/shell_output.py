@@ -29,20 +29,24 @@ class Logria():
     Main app class that controls the logical flow of the app
     """
 
-    def __init__(self, stream: InputStream, history_tape_cache: bool, poll_rate=0.001):
+    def __init__(self, stream: InputStream, history_tape_cache: bool = True, smart_poll_rate: bool = True, poll_rate=0.001):
         # UI Elements initialized to None
         self.stdscr: curses.window = None  # The entire window
         self.outwin: curses.window = None  # The output window
         self.command_line: curses.window = None  # The command line
         self.box: Textbox  # The text box inside the command line
 
-        # App state
+        # App state passed as parameters
         # Wether we save command history
-        self.first_run: bool = True  # Whether this is a first run or not
         self.history_tape_cache: bool = history_tape_cache
         self.poll_rate: float = poll_rate  # The rate at which we check for new messages
+        self.smart_poll_rate: bool = smart_poll_rate
+
+        # App state that changes as we use the app
+        self.first_run: bool = True  # Whether this is a first run or not
         self.height: int = 0  # Window height
         self.width: int = 0  # Window width
+        self.loop_time: float = 0  # How long a loop of the main app takes
         # Store the state of the previous render so we know if we need to refresh
         self.previous_render: Optional[List[str]] = None
         # Pointer to the previous non-parsed message list, which is continuously updated
@@ -725,6 +729,10 @@ class Logria():
         """
         Handle when user activates regex mode, including parsing textbox message
         """
+        # Handle smart poll rate
+        if self.smart_poll_rate:
+            # Make it smooth to type
+            self.update_poll_rate(constants.MIN_POLL_RATE)
         if not self.analytics_enabled:  # Disable regex in analytics view
             # Handle getting input from the command line for regex
             self.activate_prompt()
@@ -752,10 +760,44 @@ class Logria():
         # Set new message pointer
         self.messages = self.box.history_tape.tail(last_n=last_n)
 
+    def update_poll_rate(self, new_poll_rate: float) -> None:
+        """
+        Update Logria's poll rate
+        """
+        self.poll_rate = new_poll_rate
+        # Update stream poll rates
+        for stream in self.streams:
+            stream.poll_rate = new_poll_rate
+        # Update command line poll rate
+        self.box.poll_rate = new_poll_rate
+
+    def handle_smart_poll_rate(self, t_1: float, new_messages: int) -> None:
+        if not self.loop_time:
+            self.loop_time = time.perf_counter()
+        else:
+            self.loop_time = t_1 - self.loop_time
+            messages_per_second = new_messages / self.loop_time
+            if messages_per_second > 0:
+                # Update poll rate
+                new_poll_rate = \
+                    max(
+                        min(
+                            messages_per_second / 10,
+                            constants.MAX_POLL_RATE
+                        ),
+                        constants.MIN_POLL_RATE
+                    )
+                self.write_to_command_line(f'Poll rate: {new_poll_rate}')
+                self.update_poll_rate(new_poll_rate)
+
     def handle_command_mode(self) -> None:
         """
         Handle when user activates command mode, including parsing textbox message
         """
+        # Handle smart poll rate
+        if self.smart_poll_rate:
+            # Make it smooth to type
+            self.update_poll_rate(constants.MIN_POLL_RATE)
         # Handle getting input from the command line for commands
         self.activate_prompt(':')
         command = self.box.gather().strip()
@@ -769,13 +811,7 @@ class Logria():
                 except ValueError:
                     pass
                 else:
-                    # Update Logria's poll rate
-                    self.poll_rate = new_poll_rate
-                    # Update stream poll rates
-                    for stream in self.streams:
-                        stream.poll_rate = new_poll_rate
-                    # Update command line poll rate
-                    self.box.poll_rate = new_poll_rate
+                    self.update_poll_rate(new_poll_rate)
             elif ':config' in command:
                 self.config_mode()
             elif ':history' in command:
@@ -851,30 +887,37 @@ class Logria():
         while True:
             if not self.streams:
                 self.setup_streams()
+
             # Update messages from the input stream's queues, track time
             t_0 = time.perf_counter()
+            new_messages: int = 0
             for stream in self.streams:
                 while not stream.stderr.empty():
                     message = stream.stderr.get()
                     self.stderr_messages.append(message)
+                    new_messages += 1
 
                 while not stream.stdout.empty():
                     message = stream.stdout.get()
                     self.stdout_messages.append(message)
+                    new_messages += 1
+            # Prevent this loop from taking up 100% of the CPU dedicated to the main thread by delaying loops
+            t_1 = time.perf_counter() - t_0
+            # Don't delay if the queue processing took too long
+            time.sleep(max(0, self.poll_rate - t_1))
+
+            # Calculate new poll rate
+            if self.smart_poll_rate:
+                self.handle_smart_poll_rate(t_1, new_messages)
 
             # Since this is the first run, set the visible stream to the one that has the most messages
-            if self.first_run and len(self.stdout_messages) > 0 or len(self.stderr_messages) > 0:
+            if self.first_run and (len(self.stdout_messages) > 0 or len(self.stderr_messages) > 0):
                 self.first_run = False
                 # Default to stdout unless stderr has more messages
                 if len(self.stdout_messages) >= len(self.stderr_messages):
                     self.messages = self.stdout_messages
                 else:
                     self.messages = self.stderr_messages
-
-            # Prevent this loop from taking up 100% of the CPU dedicated to the main thread by delaying loops
-            t_1 = time.perf_counter() - t_0
-            # Don't delay if the queue processing took too long
-            time.sleep(max(0, self.poll_rate - t_1))
 
             try:
                 keypress = self.command_line.getkey()  # Get keypress
