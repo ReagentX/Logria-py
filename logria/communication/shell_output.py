@@ -63,15 +63,15 @@ class Logria():
         # Regex func that handles filtering
         self.func_handle: Optional[Callable] = None
         self.regex_pattern: str = ''  # Current regex pattern
-        # Int array of matches when filtering is active
+        # List of matches when filtering is active
         self.matched_rows: List[int] = []
         self.last_index_regexed: int = 0  # The last index the filtering function saw
 
         # Processor information
         self.parser: Optional[Parser] = None  # Reference to the current parser
         self.parser_index: int = 0  # Index for the parser to look at
-        self.parsed_messages: List[dict] = []  # Array of parsed rows
-        self.analytics_enabled: bool = False  # Array for statistics messages
+        self.parsed_messages: List[dict] = []  # List of parsed rows
+        self.analytics_enabled: bool = False  # List for statistics messages
         self.last_index_processed: int = 0  # The last index the parsing function saw
 
         # Variables to store the current state of the app
@@ -268,7 +268,7 @@ class Logria():
         # Set parser
         self.parser = parser
 
-        # Put pointer back to new array
+        # Put pointer back to new list
         self.messages = self.parsed_messages
 
         # Render immediately
