@@ -14,31 +14,48 @@ class TestHistoryTapeFunctions(unittest.TestCase):
 
     def test_can_create_history_tape(self):
         """
-        Test that we can create a resolver instance
+        Test that we can create a history tape instance without a cache
+        """
+        tape = input_history.HistoryTape(use_cache=False)
+        self.assertIsInstance(tape, input_history.HistoryTape)
+
+    def test_cah_create_cache_history_tape(self):
+        """
+        Test that we can create a history tape instance with a cache
         """
         tape = input_history.HistoryTape()
+        tape.add_item('Test')
         self.assertIsInstance(tape, input_history.HistoryTape)
 
     def test_get_current_item_empty(self):
         """
         Test that we don't crash when looking at a blank tape
         """
-        tape = input_history.HistoryTape()
+        tape = input_history.HistoryTape(use_cache=False)
         self.assertEqual(tape.get_current_item(), '')
 
     def test_can_add_item(self):
         """
         Test that we can add and retrieve the current item
         """
-        tape = input_history.HistoryTape()
+        tape = input_history.HistoryTape(use_cache=False)
         tape.add_item('Test')
         self.assertEqual(tape.get_current_item(), 'Test')
+
+    def test_cant_add_excluded_item(self):
+        """
+        Test that we can add and retrieve the current item
+        """
+        tape = input_history.HistoryTape(use_cache=False)
+        tape.add_item(':history')
+        tape.add_item(':history off')
+        self.assertEqual(tape.size(), 0)
 
     def test_at_end(self):
         """
         Test that we correctly report when we are at the end
         """
-        tape = input_history.HistoryTape()
+        tape = input_history.HistoryTape(use_cache=False)
         tape.add_item('Test')
         self.assertTrue(tape.at_end())
 
@@ -46,7 +63,7 @@ class TestHistoryTapeFunctions(unittest.TestCase):
         """
         Test that we correctly report when we are not at the end
         """
-        tape = input_history.HistoryTape()
+        tape = input_history.HistoryTape(use_cache=False)
         tape.add_item('Test 1')
         tape.add_item('Test 2')
         tape.add_item('Test 3')
@@ -58,7 +75,7 @@ class TestHistoryTapeFunctions(unittest.TestCase):
         """
         Test that we can add and retrieve the current item
         """
-        tape = input_history.HistoryTape()
+        tape = input_history.HistoryTape(use_cache=False)
         tape.add_item('Test')
         tape.add_item('Test')
         self.assertEqual(tape.size(), 1)
@@ -67,7 +84,7 @@ class TestHistoryTapeFunctions(unittest.TestCase):
         """
         Ensure we can scroll back
         """
-        tape = input_history.HistoryTape()
+        tape = input_history.HistoryTape(use_cache=False)
         tape.add_item('Test 1')
         tape.add_item('Test 2')
         tape.add_item('Test 3')
@@ -79,7 +96,7 @@ class TestHistoryTapeFunctions(unittest.TestCase):
         """
         Ensure we can scroll back
         """
-        tape = input_history.HistoryTape()
+        tape = input_history.HistoryTape(use_cache=False)
         tape.add_item('Test 1')
         tape.add_item('Test 2')
         tape.scroll_back()
@@ -92,7 +109,7 @@ class TestHistoryTapeFunctions(unittest.TestCase):
         """
         Ensure we can scroll forward
         """
-        tape = input_history.HistoryTape()
+        tape = input_history.HistoryTape(use_cache=False)
         tape.add_item('Test 1')
         tape.add_item('Test 2')
         tape.add_item('Test 3')
@@ -105,7 +122,7 @@ class TestHistoryTapeFunctions(unittest.TestCase):
         """
         Ensure we can scroll forward
         """
-        tape = input_history.HistoryTape()
+        tape = input_history.HistoryTape(use_cache=False)
         tape.add_item('Test 1')
         tape.add_item('Test 2')
         tape.add_item('Test 3')
@@ -122,7 +139,7 @@ class TestHistoryTapeFunctions(unittest.TestCase):
         """
         Ensure we can go to a point in the tape in bounds
         """
-        tape = input_history.HistoryTape()
+        tape = input_history.HistoryTape(use_cache=False)
         tape.add_item('Test 1')
         tape.add_item('Test 2')
         tape.add_item('Test 3')
@@ -133,7 +150,7 @@ class TestHistoryTapeFunctions(unittest.TestCase):
         """
         Ensure we do not try to go to a point above the tape and instead go to the last item
         """
-        tape = input_history.HistoryTape()
+        tape = input_history.HistoryTape(use_cache=False)
         tape.add_item('Test 1')
         tape.add_item('Test 2')
         tape.add_item('Test 3')
@@ -144,7 +161,7 @@ class TestHistoryTapeFunctions(unittest.TestCase):
         """
         Ensure we do not try to go to a point below the tape and instead go to the first item
         """
-        tape = input_history.HistoryTape()
+        tape = input_history.HistoryTape(use_cache=False)
         tape.add_item('Test 1')
         tape.add_item('Test 2')
         tape.add_item('Test 3')
@@ -155,7 +172,7 @@ class TestHistoryTapeFunctions(unittest.TestCase):
         """
         Test that we can get size of the tape
         """
-        tape = input_history.HistoryTape()
+        tape = input_history.HistoryTape(use_cache=False)
         self.assertEqual(tape.size(), 0)
         for item in range(10):
             tape.add_item(f'Test {item}')
@@ -165,7 +182,7 @@ class TestHistoryTapeFunctions(unittest.TestCase):
         """
         Test that we can get the last 5 messages
         """
-        tape = input_history.HistoryTape()
+        tape = input_history.HistoryTape(use_cache=False)
         num_to_get = 5
         for item in range(10):
             tape.add_item(f'Test {item}')
@@ -178,7 +195,7 @@ class TestHistoryTapeFunctions(unittest.TestCase):
         """
         Test that we can get the last n messages
         """
-        tape = input_history.HistoryTape()
+        tape = input_history.HistoryTape(use_cache=False)
         num_to_get = 7
         for item in range(10):
             tape.add_item(f'Test {item}')

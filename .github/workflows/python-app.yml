@@ -1,0 +1,60 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: Unit Test and Static Analysis
+
+on:
+  pull_request:
+    branches:
+      - master
+      - develop
+
+jobs:
+  tests:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install mypy pylint
+    - name: Lint with pylint
+      run: |
+        pylint logria
+    - name: Static Analysis with mypy
+      run: |
+        mypy . --ignore-missing-imports
+      continue-on-error: true
+    - name: Test with stdlib unittest
+      run: |
+        echo 'Setting up directory structure'
+        mkdir ~/.logria
+        mkdir ~/.logria/patterns
+        mkdir ~/.logria/sessions
+        echo 'Creating sample files'
+        touch ~/.logria/sessions/.DS_Store
+        touch ~/.logria/sessions/Cmd\ -\ Generate\ Test\ Logs
+        touch ~/.logria/sessions/File\ -\ readme
+        touch ~/.logria/sessions/File\ -\ Sample\ Access\ Log
+        touch ~/.logria/patterns/.DS_Store
+        touch ~/.logria/patterns/test
+        echo '{
+          "commands": [
+              [
+                  "/Users/chris/Documents/Code/Python/logria/venv/bin/python3",
+                  "/Users/chris/.logria/sample_streams/generate_test_logs.py"
+              ],
+              [
+                  "/Users/chris/Documents/Code/Python/logria/venv/bin/python3",
+                  "/Users/chris/.logria/sample_streams/generate_test_logs_2.py"
+              ]
+          ],
+          "type": "command"
+        }' > ~/.logria/sessions/Cmd\ -\ Generate\ Test\ Logs
+        python -m unittest discover -v

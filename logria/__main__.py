@@ -14,6 +14,7 @@ def main():
     """
     Main app loop, handles parsing args and starting the app
     """
+    # pylint: disable=no-else-raise
     if not os.isatty(0):
         # If we are getting piped to, use that input stream only
         raise ValueError('Piping is not supported!')
@@ -26,6 +27,10 @@ def main():
                             version=f'{APP_NAME} {VERSION}')
         parser.add_argument('-e', action='append', type=str,
                             help='Command to pass through that will stream into this program, ex: logria -e \'tail -f log.txt\'')
+        parser.add_argument('-c', '--no-cache', dest='no_cache', default=True, action='store_false',
+                            help='Disable command history disk cache')
+        parser.add_argument('-n', '--no-smart-speed', dest='no_cache', default=True, action='store_false',
+                            help='Disable variable speed polling based on message receive speed')
 
         args = parser.parse_args()
         if args.e:
@@ -37,7 +42,7 @@ def main():
 
     # Start the app
     # If the stream is None, the app will ask the user to init
-    app = Logria(stream)
+    app = Logria(stream, history_tape_cache=args.no_cache, )
     app.start()
 
 

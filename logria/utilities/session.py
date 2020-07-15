@@ -30,9 +30,15 @@ class SessionHandler():
         self.set_type(type_)
 
     def set_type(self, type_str):
+        """
+        Sets the type of command
+        """
         self._type = type_str
 
     def add_command(self, command: List[str]):
+        """
+        Adds the command to the list of commands
+        """
         self._commands.append(command)
 
     def setup_folder(self):
@@ -96,12 +102,12 @@ class SessionHandler():
         """
         Get the existing sessions as a dict
         """
-        sessions = os.listdir(self.folder)
+        sessions = sorted(os.listdir(self.folder))
         return dict(zip(range(0, len(sessions)), sessions))
 
     def show_sessions(self) -> List[str]:
         """
         Get the existing sessions as a list for output
         """
-        sessions = os.listdir(self.folder)
+        sessions = sorted(os.listdir(self.folder))
         return [f'{i}: {v}' for i, v in enumerate(sessions)]

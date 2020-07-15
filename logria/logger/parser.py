@@ -35,12 +35,11 @@ class Parser():
         """
         Set workspace folder, create if nonexistent
         """
-        home = str(Path.home())
-        if Path(home, SAVED_PATTERNS_PATH).exists():
+        if Path(SAVED_PATTERNS_PATH).exists():
             pass
         else:
-            os.mkdir(Path(home, SAVED_PATTERNS_PATH))
-        self.folder = Path(home, SAVED_PATTERNS_PATH)
+            os.mkdir(Path(SAVED_PATTERNS_PATH))
+        self.folder = Path(SAVED_PATTERNS_PATH)
 
     def get_name(self):
         """
@@ -72,13 +71,14 @@ class Parser():
         """
         return self._analytics_map[index]
 
+    # pylint: disable=no-self-use
     def extract_numbers_from_message(self, message: str) -> Union[int, float]:
-        """
+        r"""
         We do not use regex replacement here because...
 
-        chris ~ % python -m timeit '"".join(c for c in "sdkjh987978asd098as0980a98sd" if c.isdigit() or c == ".")'
+        % python -m timeit '"".join(c for c in "sdkjh987978asd098as0980a98sd" if c.isdigit() or c == ".")'
         100000 loops, best of 3: 3.47 usec per loop
-        chris ~ % python -m timeit 'import re; re.sub(r"[^\d\.]", "", "sdkjh987978asd098as0980a98sd")'
+        % python -m timeit 'import re; re.sub(r"[^\d\.]", "", "sdkjh987978asd098as0980a98sd")'
         100000 loops, best of 3: 4.67 usec per loop
         """
         digits = "".join(c for c in message if c.isdigit() or c == ".")
@@ -147,7 +147,7 @@ class Parser():
             if isinstance(value, Counter):
                 out_l += [f'  {item}: {count:,}' for item,
                           count in value.most_common(self.num_to_print)]
-            elif isinstance(value, int) or isinstance(value, float):
+            elif isinstance(value, (int, float)):
                 out_l += [f'  Total: {value:,}']
             elif isinstance(value, dict):
                 out_l += [f'  {key}:\t {value[key]:,.2f}' for key in value]
@@ -185,8 +185,7 @@ class Parser():
             return self.split_pattern(message)
         elif self._type == 'regex':
             return self.regex_pattern(message)
-        else:
-            raise ValueError(f'{self._type} is not a valid Parser type!')
+        raise ValueError(f'{self._type} is not a valid Parser type!')
 
     def as_dict(self):
         """

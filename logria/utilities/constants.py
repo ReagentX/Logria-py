@@ -2,16 +2,31 @@
 Constants used throughout the application
 """
 
+import os
 from pathlib import Path
 
 # Patterns
 ANSI_COLOR_PATTERN = r'(\x9B|\x1B\[)[0-?]*[ -\/]*[@-~]'
 
 # Paths
-USER_HOME = str(Path.home())
-LOGRIA_ROOT = 'logria'
-SAVED_PATTERNS_PATH = f'{LOGRIA_ROOT}/patterns'
-SAVED_SESSIONS_PATH = f'{LOGRIA_ROOT}/sessions'
+USER_HOME = '' if os.environ.get('LOGRIA_DISABLE_USER_HOME') else str(Path.home())
+LOGRIA_ROOT = os.environ.get('LOGRIA_ROOT', '.logria')
+SAVED_PATTERNS_PATH = f'{USER_HOME}/{LOGRIA_ROOT}/patterns'
+SAVED_SESSIONS_PATH = f'{USER_HOME}/{LOGRIA_ROOT}/sessions'
+SAVED_HISTORY_PATH = f'{USER_HOME}/{LOGRIA_ROOT}/history'
+
+# Filenames
+HISTORY_TAPE_NAME = 'tape'
+
+# Numerical limits
+MIN_POLL_RATE: float = 0.0001   # Fast enough for smooth typing, 1000 hz
+MAX_POLL_RATE: float = 0.5  # Poll once every half second
+
+# Text to exclude from message history
+HISTORY_EXCLUDES = {
+    ':history',
+    ':history off'
+}
 
 # Messages
 START_MESSAGE = [
@@ -19,7 +34,7 @@ START_MESSAGE = [
     'or enter a number to choose a saved session from the list,',
     'or enter `:config` to configure.',
     'Enter `:q` to quit.',
-    ' '
+    ' '  # Not an empty string so Curses knows to not use this line
 ]
 
 # Config messages

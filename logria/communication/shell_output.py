@@ -29,17 +29,24 @@ class Logria():
     Main app class that controls the logical flow of the app
     """
 
-    def __init__(self, stream: InputStream, poll_rate=0.001):
+    def __init__(self, stream: InputStream, history_tape_cache: bool = True, smart_poll_rate: bool = True, poll_rate=0.001):
         # UI Elements initialized to None
         self.stdscr: curses.window = None  # The entire window
         self.outwin: curses.window = None  # The output window
         self.command_line: curses.window = None  # The command line
         self.box: Textbox  # The text box inside the command line
 
-        # App state
+        # App state passed as parameters
+        # Wether we save command history
+        self.history_tape_cache: bool = history_tape_cache
         self.poll_rate: float = poll_rate  # The rate at which we check for new messages
+        self.smart_poll_rate: bool = smart_poll_rate
+
+        # App state that changes as we use the app
+        self.first_run: bool = True  # Whether this is a first run or not
         self.height: int = 0  # Window height
         self.width: int = 0  # Window width
+        self.loop_time: float = 0  # How long a loop of the main app takes
         # Store the state of the previous render so we know if we need to refresh
         self.previous_render: Optional[List[str]] = None
         # Pointer to the previous non-parsed message list, which is continuously updated
@@ -56,15 +63,15 @@ class Logria():
         # Regex func that handles filtering
         self.func_handle: Optional[Callable] = None
         self.regex_pattern: str = ''  # Current regex pattern
-        # Int array of matches when filtering is active
+        # List of matches when filtering is active
         self.matched_rows: List[int] = []
         self.last_index_regexed: int = 0  # The last index the filtering function saw
 
         # Processor information
         self.parser: Optional[Parser] = None  # Reference to the current parser
         self.parser_index: int = 0  # Index for the parser to look at
-        self.parsed_messages: List[dict] = []  # Array of parsed rows
-        self.analytics_enabled: bool = False  # Array for statistics messages
+        self.parsed_messages: List[dict] = []  # List of parsed rows
+        self.analytics_enabled: bool = False  # List for statistics messages
         self.last_index_processed: int = 0  # The last index the parsing function saw
 
         # Variables to store the current state of the app
@@ -88,7 +95,7 @@ class Logria():
 
     def build_command_line(self) -> None:
         """
-        Creates a textbox object that has insert mode set to the passed value
+        Creates a textbox object that represents the command line
         """
         if self.command_line:
             del self.command_line
@@ -103,7 +110,11 @@ class Logria():
         rectangle(self.stdscr, height - 3, 0, height - 1, width - 2)
         self.stdscr.refresh()
         # Editable text box element
-        self.box = Textbox(self.command_line, insert_mode=self.insert_mode, poll_rate=self.poll_rate)
+        self.box = Textbox(
+            self.command_line,
+            insert_mode=self.insert_mode,
+            poll_rate=self.poll_rate,
+            history_cache=self.history_tape_cache)
         self.write_to_command_line(
             self.current_status)  # Update current status
 
@@ -113,9 +124,12 @@ class Logria():
         """
         # Setup a SessionHandler and get the existing saved sessions
         session_handler = SessionHandler()
+        # Create a new message list to see
+        setup_messages: List[str] = []
+        self.messages = setup_messages
         # Tell the user what we are doing
-        self.messages.extend(constants.START_MESSAGE)
-        self.messages.extend(session_handler.show_sessions())
+        setup_messages.extend(constants.START_MESSAGE)
+        setup_messages.extend(session_handler.show_sessions())
         self.render_text_in_output()
 
         # Dump the existing status
@@ -144,12 +158,12 @@ class Logria():
                     elif session.get('type') == 'command':
                         self.streams.append(CommandInputStream(stored_command))
             except KeyError as err:
-                self.messages.append(
+                setup_messages.append(
                     f'Data missing from configuration: {err}')
                 self.render_text_in_output()
                 continue
             except JSONDecodeError as err:
-                self.messages.append(
+                setup_messages.append(
                     f'Invalid JSON: {err.msg} on line {err.lineno}, char {err.colno}')
                 self.render_text_in_output()
                 continue
@@ -254,7 +268,7 @@ class Logria():
         # Set parser
         self.parser = parser
 
-        # Put pointer back to new array
+        # Put pointer back to new list
         self.messages = self.parsed_messages
 
         # Render immediately
@@ -287,6 +301,8 @@ class Logria():
         self.last_index_processed = 0  # Reset the last searched index
         self.current_end = 0  # We now do not know where to end
         self.stick_to_bottom = True  # Stay at the bottom for the next render
+        self.stick_to_top = False  # Do not stick to the top
+        self.manually_controlled_line = False  # Do not stop rendering new messages
         self.write_to_command_line(self.current_status)
 
     def process_parser(self):
@@ -713,6 +729,10 @@ class Logria():
         """
         Handle when user activates regex mode, including parsing textbox message
         """
+        # Handle smart poll rate
+        if self.smart_poll_rate:
+            # Make it smooth to type
+            self.update_poll_rate(constants.MIN_POLL_RATE)
         if not self.analytics_enabled:  # Disable regex in analytics view
             # Handle getting input from the command line for regex
             self.activate_prompt()
@@ -727,10 +747,60 @@ class Logria():
                 self.reset_regex_status()
                 self.reset_command_line()
 
+    def start_history_mode(self, last_n: int) -> None:
+        """
+        Swap message pointer to history tape
+        """
+        # Store previous message pointer
+        if self.messages is self.stderr_messages:
+            self.previous_messages = self.stderr_messages
+        elif self.messages is self.stdout_messages:
+            self.previous_messages = self.stdout_messages
+
+        # Set new message pointer
+        self.messages = self.box.history_tape.tail(last_n=last_n)
+
+    def update_poll_rate(self, new_poll_rate: float) -> None:
+        """
+        Update Logria's poll rate
+        """
+        self.poll_rate = new_poll_rate
+        # Update stream poll rates
+        for stream in self.streams:
+            stream.poll_rate = new_poll_rate
+        # Update command line poll rate
+        self.box.poll_rate = new_poll_rate
+
+    def handle_smart_poll_rate(self, t_1: float, new_messages: int) -> None:
+        """
+        Determine a reasonable poll rate based on the speed of messages recieved
+        """
+        if not self.loop_time:
+            self.loop_time = time.perf_counter()
+        else:
+            self.loop_time = t_1 - self.loop_time
+            messages_per_second = new_messages / self.loop_time
+            if messages_per_second > 0:
+                # Update poll rate
+                new_poll_rate = \
+                    max(
+                        min(
+                            messages_per_second / 10,
+                            constants.MAX_POLL_RATE
+                        ),
+                        constants.MIN_POLL_RATE
+                    )
+                self.write_to_command_line(f'Poll rate: {new_poll_rate}')
+                self.update_poll_rate(new_poll_rate)
+
     def handle_command_mode(self) -> None:
         """
         Handle when user activates command mode, including parsing textbox message
         """
+        # Handle smart poll rate
+        if self.smart_poll_rate:
+            # Make it smooth to type
+            self.update_poll_rate(constants.MIN_POLL_RATE)
         # Handle getting input from the command line for commands
         self.activate_prompt(':')
         command = self.box.gather().strip()
@@ -744,17 +814,32 @@ class Logria():
                 except ValueError:
                     pass
                 else:
-                    # Update Logria's poll rate
-                    self.poll_rate = new_poll_rate
-                    # Update stream poll rates
-                    for stream in self.streams:
-                        stream.poll_rate = new_poll_rate
-                    # Update command line poll rate
-                    self.box.poll_rate = new_poll_rate
+                    self.update_poll_rate(new_poll_rate)
             elif ':config' in command:
                 self.config_mode()
+            elif ':history' in command:
+                if command == ':history off':
+                    self.reset_parser()
+                else:
+                    try:
+                        num_to_get = int(command.replace(':history', ''))
+                    except ValueError:
+                        num_to_get = self.height  # Default to screen height if no info given
+                    self.start_history_mode(num_to_get)
         self.reset_command_line()
         self.write_to_command_line(self.current_status)
+
+    def handle_resize(self):
+        """
+        Resize curses elements when window size changes
+        """
+        self.height, self.width = self.stdscr.getmaxyx()
+        curses.resizeterm(self.height, self.width)
+        self.build_command_line()  # Rebuild the command line
+        self.current_status = 'Resize handler'
+        self.write_to_command_line(self.current_status)
+        self.previous_render = None  # Force render
+        self.render_text_in_output()
 
     def start(self) -> None:
         """
@@ -805,27 +890,43 @@ class Logria():
         while True:
             if not self.streams:
                 self.setup_streams()
+
             # Update messages from the input stream's queues, track time
             t_0 = time.perf_counter()
+            new_messages: int = 0
             for stream in self.streams:
                 while not stream.stderr.empty():
                     message = stream.stderr.get()
                     self.stderr_messages.append(message)
+                    new_messages += 1
 
                 while not stream.stdout.empty():
                     message = stream.stdout.get()
                     self.stdout_messages.append(message)
-
+                    new_messages += 1
             # Prevent this loop from taking up 100% of the CPU dedicated to the main thread by delaying loops
             t_1 = time.perf_counter() - t_0
             # Don't delay if the queue processing took too long
             time.sleep(max(0, self.poll_rate - t_1))
 
+            # Calculate new poll rate
+            if self.smart_poll_rate:
+                self.handle_smart_poll_rate(t_1, new_messages)
+
+            # Since this is the first run, set the visible stream to the one that has the most messages
+            if self.first_run and (len(self.stdout_messages) > 0 or len(self.stderr_messages) > 0):
+                self.first_run = False
+                # Default to stdout unless stderr has more messages
+                if len(self.stdout_messages) >= len(self.stderr_messages):
+                    self.messages = self.stdout_messages
+                else:
+                    self.messages = self.stderr_messages
+
             try:
                 keypress = self.command_line.getkey()  # Get keypress
                 if keypress == '/':
                     self.handle_regex_mode()
-                if keypress == ':':
+                elif keypress == ':':
                     self.handle_command_mode()
                 elif keypress == 'h':
                     self.previous_render = None  # Force render
@@ -871,6 +972,8 @@ class Logria():
                 elif keypress == 'z':
                     # Tear down parser
                     self.reset_parser()
+                elif keypress == 'KEY_RESIZE':
+                    self.handle_resize()
                 elif keypress == 'KEY_UP':
                     # Scroll up
                     self.manually_controlled_line = True

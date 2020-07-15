@@ -1,3 +1,6 @@
+# Git environment
+.gitattributes
+
 # Environment config
 venv/*
 .vscode/*

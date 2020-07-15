@@ -10,11 +10,6 @@ from fcntl import fcntl, F_GETFL, F_SETFL
 from os import O_NONBLOCK
 from typing import List
 
-from logria.logger.default_logger import setup_default_logger
-
-# Setup default logger
-LOGGER = setup_default_logger(__name__)
-
 
 class InputStream():
     """
@@ -119,7 +114,7 @@ class PipeInputStream(InputStream):
     """
     Read in a pipe as a stream
     """
-
+    # pylint: disable=arguments-differ
     def run(self, pipe, stdoutq: multiprocessing.Queue, _: multiprocessing.Queue) -> None:
         """
         Given a filename, open the file and read the contents
@@ -132,6 +127,7 @@ class PipeInputStream(InputStream):
                 pipe_input = pipe.readline()
                 if pipe_input:
                     stdoutq.put(pipe_input)
+            # pylint: disable=bare-except
             except:
                 break
 

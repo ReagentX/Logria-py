@@ -34,6 +34,7 @@ There are a few main ways to invoke Logria:
 - With args:
   - `logria -e 'tail -f log.txt'`
   - Opens a pipe to 'tail -f log.txt'` and skips setup
+  - `logria -h` will show the help page with all possible options
 
 For more details, see [Sample Usage Session](docs/README.md#sample-usage-session).
 
@@ -45,6 +46,7 @@ For more details, see [Sample Usage Session](docs/README.md#sample-usage-session
 | `/` | regex search |
 | `h` | if regex active, toggle highlighting of matches |
 | `i` | toggle insert mode (default off) |
+| `s` | swap reading `stdin` and `stdout` |
 | `p` | activate parser |
 | `a` | toggle analytics mode when parser is active |
 | `z` | deactivate parser |
@@ -55,7 +57,7 @@ For more details, see [Sample Usage Session](docs/README.md#sample-usage-session
 
 ## Features
 
-Here are some of ways you can leverage Logria
+Here are some of the ways you can leverage Logria:
 
 ### Live stream of log data
 

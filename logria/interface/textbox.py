@@ -50,14 +50,14 @@ class Textbox():
     KEY_BACKSPACE = Ctrl-h
     """
 
-    def __init__(self, win, insert_mode: bool = False, poll_rate: float = 0.001):
+    def __init__(self, win, insert_mode: bool = False, poll_rate: float = 0.001, history_cache: bool = True):
         self.win = win
-        self.insert_mode = insert_mode
+        self.insert_mode: bool = insert_mode
         self._update_max_yx()
         self.stripspaces = 1
-        self.lastcmd = None
-        self.history_tape = HistoryTape()
-        self.poll_rate = poll_rate
+        self.lastcmd: str = ''
+        self.history_tape = HistoryTape(use_cache=history_cache)
+        self.poll_rate: float = poll_rate
         win.keypad(1)
 
     def _update_max_yx(self):
@@ -76,6 +76,7 @@ class Textbox():
         self._update_max_yx()
         last = self.maxx
         while True:
+            # pylint: disable=no-else-break
             if curses.ascii.ascii(self.win.inch(y, last)) != curses.ascii.SP:
                 last = min(self.maxx, last+1)
                 break

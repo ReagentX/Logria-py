@@ -2,9 +2,10 @@
 Unit Tests for sessions
 """
 
+import unittest
 from os import remove
 from pathlib import Path
-import unittest
+
 from logria.utilities import session
 from logria.utilities.constants import SAVED_SESSIONS_PATH
 
@@ -35,8 +36,8 @@ class TestSessionHandler(unittest.TestCase):
         """
         s = session.SessionHandler()
         actual = s.sessions()
-        expected = {0: '.DS_Store', 1: 'File - readme',
-                    2: 'File - Sample Access Log', 3: 'Cmd - Generate Test Logs'}
+        expected = {0: '.DS_Store', 1: 'Cmd - Generate Test Logs',
+                    2: 'File - Sample Access Log', 3: 'File - readme'}
         self.assertEqual(actual, expected)
 
     def test_show_sessions(self):
@@ -46,9 +47,10 @@ class TestSessionHandler(unittest.TestCase):
         s = session.SessionHandler()
         actual = s.show_sessions()
         expected = ['0: .DS_Store',
-                    '1: File - readme',
+                    '1: Cmd - Generate Test Logs',
                     '2: File - Sample Access Log',
-                    '3: Cmd - Generate Test Logs']
+                    '3: File - readme'
+                    ]
         self.assertEqual(actual, expected)
 
     def test_session_parsing(self):
@@ -68,19 +70,20 @@ class TestSessionHandler(unittest.TestCase):
         sessions = s.sessions()
         first_item = list(sessions.keys())[1]
         actual = s.load_session(first_item)
-        expected = {'commands': [
-            [
-                'Users',
-                'me',
-                'Documents',
-                'Code',
-                'Python',
-                'logria',
-                'README.md'
-            ]
-        ],
-            'type': 'file'
-        }
+        expected = \
+            {
+                "commands": [
+                    [
+                        "/Users/chris/Documents/Code/Python/logria/venv/bin/python3",
+                        "/Users/chris/.logria/sample_streams/generate_test_logs.py"
+                    ],
+                    [
+                        "/Users/chris/Documents/Code/Python/logria/venv/bin/python3",
+                        "/Users/chris/.logria/sample_streams/generate_test_logs_2.py"
+                    ]
+                ],
+                "type": "command"
+            }
         self.assertEqual(actual, expected)
 
     def test_save_session(self):
@@ -98,6 +101,9 @@ class TestSessionBuilder(unittest.TestCase):
     """
 
     def test_set_params(self):
+        """
+        Test that we can set a command's params
+        """
         s = session.SessionHandler()
         command = ['ls', '-l']
         type_ = 'command'
@@ -106,6 +112,9 @@ class TestSessionBuilder(unittest.TestCase):
         self.assertEqual(s._type, type_)
 
     def test_as_list_command(self):
+        """
+        Test that we can resolve a list of commands
+        """
         s = session.SessionHandler()
         command = ['ls', '-l']
         command_2 = ['grep', '-nr', 'code', '.']
@@ -117,6 +126,9 @@ class TestSessionBuilder(unittest.TestCase):
         self.assertEqual(s.as_list(), expected)
 
     def test_as_list_file(self):
+        """
+        Test that we can resolve a list of files
+        """
         s = session.SessionHandler()
         command = ['usr', 'log', 'cloud-init.log']
         command_2 = ['usr', 'log', 'cloud-init-output.log']
