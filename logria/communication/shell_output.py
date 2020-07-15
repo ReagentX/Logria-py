@@ -38,6 +38,7 @@ class Logria():
 
         # App state
         # Wether we save command history
+        self.first_run: bool = True  # Whether this is a first run or not
         self.history_tape_cache: bool = history_tape_cache
         self.poll_rate: float = poll_rate  # The rate at which we check for new messages
         self.height: int = 0  # Window height
@@ -119,9 +120,12 @@ class Logria():
         """
         # Setup a SessionHandler and get the existing saved sessions
         session_handler = SessionHandler()
+        # Create a new message list to see
+        setup_messages = []
+        self.messages = setup_messages
         # Tell the user what we are doing
-        self.messages.extend(constants.START_MESSAGE)
-        self.messages.extend(session_handler.show_sessions())
+        setup_messages.extend(constants.START_MESSAGE)
+        setup_messages.extend(session_handler.show_sessions())
         self.render_text_in_output()
 
         # Dump the existing status
@@ -150,12 +154,12 @@ class Logria():
                     elif session.get('type') == 'command':
                         self.streams.append(CommandInputStream(stored_command))
             except KeyError as err:
-                self.messages.append(
+                setup_messages.append(
                     f'Data missing from configuration: {err}')
                 self.render_text_in_output()
                 continue
             except JSONDecodeError as err:
-                self.messages.append(
+                setup_messages.append(
                     f'Invalid JSON: {err.msg} on line {err.lineno}, char {err.colno}')
                 self.render_text_in_output()
                 continue
@@ -857,6 +861,15 @@ class Logria():
                 while not stream.stdout.empty():
                     message = stream.stdout.get()
                     self.stdout_messages.append(message)
+
+            # Since this is the first run, set the visible stream to the one that has the most messages
+            if self.first_run and len(self.stdout_messages) > 0 or len(self.stderr_messages) > 0:
+                self.first_run = False
+                # Default to stdout unless stderr has more messages
+                if len(self.stdout_messages) >= len(self.stderr_messages):
+                    self.messages = self.stdout_messages
+                else:
+                    self.messages = self.stderr_messages
 
             # Prevent this loop from taking up 100% of the CPU dedicated to the main thread by delaying loops
             t_1 = time.perf_counter() - t_0
