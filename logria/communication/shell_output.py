@@ -772,6 +772,9 @@ class Logria():
         self.box.poll_rate = new_poll_rate
 
     def handle_smart_poll_rate(self, t_1: float, new_messages: int) -> None:
+        """
+        Determine a reasonable poll rate based on the speed of messages recieved
+        """
         if not self.loop_time:
             self.loop_time = time.perf_counter()
         else:
