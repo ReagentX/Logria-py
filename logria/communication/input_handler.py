@@ -10,11 +10,6 @@ from fcntl import fcntl, F_GETFL, F_SETFL
 from os import O_NONBLOCK
 from typing import List
 
-from logria.logger.default_logger import setup_default_logger
-
-# Setup default logger
-LOGGER = setup_default_logger(__name__)
-
 
 class InputStream():
     """
