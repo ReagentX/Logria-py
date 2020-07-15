@@ -18,6 +18,10 @@ SAVED_HISTORY_PATH = f'{USER_HOME}/{LOGRIA_ROOT}/history'
 # Filenames
 HISTORY_TAPE_NAME = 'tape'
 
+# Numerical limits
+MIN_POLL_RATE: float = 0.0001   # Fast enough for smooth typing, 1000 hz
+MAX_POLL_RATE: float = 0.5  # Poll once every half second
+
 # Text to exclude from message history
 HISTORY_EXCLUDES = {
     ':history',
