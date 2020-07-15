@@ -121,7 +121,7 @@ class Logria():
         # Setup a SessionHandler and get the existing saved sessions
         session_handler = SessionHandler()
         # Create a new message list to see
-        setup_messages = []
+        setup_messages: List[str] = []
         self.messages = setup_messages
         # Tell the user what we are doing
         setup_messages.extend(constants.START_MESSAGE)
