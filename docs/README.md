@@ -30,7 +30,7 @@ This folder contains the documentation on how to interact with Logria programmat
   - These are only for some development tools and are not needed to run the app
   - `pip install -r requirements.txt`
 - Install self
-  - `deactivate` if we want to install globally, otherwise leave your `venv` active
+  - (Optional) `deactivate` if we want to install globally, otherwise leave your `venv` active
   - `python setup.py develop` or `python setup.py install` depending on whether you are actively developing this app
 
 ### Installing as part of another app
