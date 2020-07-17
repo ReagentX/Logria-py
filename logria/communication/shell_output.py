@@ -732,7 +732,7 @@ class Logria():
         # Handle smart poll rate
         if self.smart_poll_rate:
             # Make it smooth to type
-            self.update_poll_rate(constants.MIN_POLL_RATE)
+            self.update_poll_rate(constants.SLOWEST_POLL_RATE)
         if not self.analytics_enabled:  # Disable regex in analytics view
             # Handle getting input from the command line for regex
             self.activate_prompt()
@@ -775,22 +775,25 @@ class Logria():
         """
         Determine a reasonable poll rate based on the speed of messages recieved
         """
-        if not self.loop_time:
-            self.loop_time = time.perf_counter()
-        else:
-            self.loop_time = t_1 - self.loop_time
-            messages_per_second = new_messages / self.loop_time
-            if messages_per_second > 0:
-                # Update poll rate
-                new_poll_rate = \
-                    max(
+        if self.manually_controlled_line:
+            pass
+        elif self.smart_poll_rate:
+            if not self.loop_time:
+                self.loop_time = time.perf_counter()
+            else:
+                self.loop_time = t_1 - self.loop_time
+                messages_per_second = new_messages / self.loop_time
+                if messages_per_second > 0:
+                    # Update poll rate
+                    new_poll_rate = \
                         min(
-                            messages_per_second / 10,
-                            constants.MAX_POLL_RATE
-                        ),
-                        constants.MIN_POLL_RATE
-                    )
-                self.update_poll_rate(new_poll_rate)
+                            max(
+                                1 / messages_per_second,
+                                constants.FASTEST_POLL_RATE
+                            ),
+                            constants.SLOWEST_POLL_RATE
+                        )
+                    self.update_poll_rate(new_poll_rate)
 
     def handle_command_mode(self) -> None:
         """
@@ -799,7 +802,7 @@ class Logria():
         # Handle smart poll rate
         if self.smart_poll_rate:
             # Make it smooth to type
-            self.update_poll_rate(constants.MIN_POLL_RATE)
+            self.update_poll_rate(constants.SLOWEST_POLL_RATE)
         # Handle getting input from the command line for commands
         self.activate_prompt(':')
         command = self.box.gather().strip()
@@ -974,6 +977,8 @@ class Logria():
                 elif keypress == 'KEY_RESIZE':
                     self.handle_resize()
                 elif keypress == 'KEY_UP':
+                    # Smooth scroll
+                    self.update_poll_rate(constants.FASTEST_POLL_RATE)
                     # Scroll up
                     self.manually_controlled_line = True
                     self.stick_to_top = False
@@ -981,6 +986,8 @@ class Logria():
                     self.current_end = max(0, self.current_end - 1)
                     self.previous_render = None  # Force render
                 elif keypress == 'KEY_DOWN':
+                    # Smooth scroll
+                    self.update_poll_rate(constants.FASTEST_POLL_RATE)
                     # Scroll down
                     self.manually_controlled_line = True
                     self.stick_to_top = False
