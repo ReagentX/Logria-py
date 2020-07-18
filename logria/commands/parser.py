@@ -13,7 +13,7 @@ from logria.logger.parser import Parser
 
 
 
-def reset_parser(logria: 'Logria'):
+def reset_parser(logria: 'Logria'):  # type: ignore
     """
     Remove the current parser, if any exists
     """
