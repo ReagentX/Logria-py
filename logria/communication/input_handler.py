@@ -71,21 +71,21 @@ class CommandInputStream(InputStream):
                               universal_newlines=True)
 
             # Un-buffer streams
-            stdout_flag = fcntl(self.proc.stdout, F_GETFL)
-            fcntl(self.proc.stdout, F_SETFL, stdout_flag | O_NONBLOCK)
+            stdout_flag = fcntl(self.proc.stdout, F_GETFL)  # type: ignore
+            fcntl(self.proc.stdout, F_SETFL, stdout_flag | O_NONBLOCK)  # type: ignore
 
-            stderr_flag = fcntl(self.proc.stderr, F_GETFL)
-            fcntl(self.proc.stderr, F_SETFL, stderr_flag | O_NONBLOCK)
+            stderr_flag = fcntl(self.proc.stderr, F_GETFL)  # type: ignore
+            fcntl(self.proc.stderr, F_SETFL, stderr_flag | O_NONBLOCK)  # type: ignore
 
             while True:
                 time.sleep(self.poll_rate)
                 # stdout
-                stdout_output = self.proc.stdout.readline()
+                stdout_output = self.proc.stdout.readline()  # type: ignore
                 if stdout_output:
                     stdoutq.put(stdout_output)
 
                 # stderr
-                stderr_output = self.proc.stderr.readline()
+                stderr_output = self.proc.stderr.readline()  # type: ignore
                 if stderr_output:
                     stderrq.put(stderr_output)
 
