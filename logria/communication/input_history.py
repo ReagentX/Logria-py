@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 from typing import List
 
-from logria.utilities.constants import HISTORY_TAPE_NAME, SAVED_HISTORY_PATH, HISTORY_EXCLUDES
+from logria.utilities.constants import HISTORY_TAPE_NAME, SAVED_HISTORY_PATH, HISTORY_EXCLUDES, LOGRIA_ROOT, USER_HOME
 
 
 class HistoryTape():
@@ -26,6 +26,12 @@ class HistoryTape():
         """
         Load the history tape from the disk if it exists
         """
+        # Create Logria root folder if it is missing
+        if Path(f'{USER_HOME}/{LOGRIA_ROOT}').exists():
+            pass
+        else:
+            os.mkdir(Path(f'{USER_HOME}/{LOGRIA_ROOT}'))
+
         # Create history folder if it is missing
         if Path(SAVED_HISTORY_PATH).exists():
             pass
