@@ -12,7 +12,6 @@ from logria.logger.parser import Parser
 # from logria.communication.shell_output import Logria
 
 
-
 def reset_parser(logria: 'Logria'):  # type: ignore
     """
     Remove the current parser, if any exists

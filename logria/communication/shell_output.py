@@ -11,14 +11,14 @@ from math import ceil
 from os.path import isfile
 from typing import Callable, List, Optional, Tuple
 
+from logria.commands.config import config_mode
+from logria.commands.regex import reset_regex_status
 from logria.communication.input_handler import (CommandInputStream,
                                                 FileInputStream, InputStream)
 from logria.interface import color_handler
 from logria.interface.textbox import Textbox, rectangle
 from logria.logger.parser import Parser
 from logria.logger.processor import process_matches, process_parser
-from logria.commands.regex import reset_regex_status
-from logria.commands.config import config_mode
 from logria.utilities import constants
 from logria.utilities.command_parser import Resolver
 from logria.utilities.keystrokes import resolve_keypress, validator
@@ -205,7 +205,6 @@ class Logria():
         self.stderr_messages = []
         self.messages = self.stderr_messages
 
-
     def determine_render_position(self, messages_pointer: List[str]) -> Tuple[int, int]:
         """
         Determine the start and end positions for a screen render
@@ -304,7 +303,6 @@ class Logria():
             color_handler.addstr(self.outwin, current_row, 0, item.rstrip())
         self.outwin.refresh()
 
-
     def write_to_command_line(self, string: str) -> None:
         """
         Writes a message to the command line
@@ -348,7 +346,7 @@ class Logria():
 
     def handle_smart_poll_rate(self, t_1: float, new_messages: int) -> None:
         """
-        Determine a reasonable poll rate based on the speed of messages recieved
+        Determine a reasonable poll rate based on the speed of messages received
         """
         if self.manually_controlled_line:
             pass
@@ -462,15 +460,18 @@ class Logria():
                     self.messages = self.stderr_messages
 
             try:
-                keypress = self.command_line.getkey()  # Get keypress, raise curses.error if nothing detected
+                # Get keypress, raise curses.error if nothing detected
+                keypress = self.command_line.getkey()
                 resolve_keypress(self, keypress)
             except curses.error:
                 if self.exit_val == -1:
                     return
                 # If we have an active filter/parser, process it/them
                 if self.parser:
-                    process_parser(self)  # This may block if there are a lot of messages
+                    # This may block if there are a lot of messages
+                    process_parser(self)
                 if self.func_handle:
-                    process_matches(self)  # This may block if there are a lot of messages
+                    # This may block if there are a lot of messages
+                    process_matches(self)
                 # Always try to render
                 self.render_text_in_output()
