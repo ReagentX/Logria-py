@@ -7,10 +7,11 @@ import curses
 import re
 import time
 from math import ceil
-from typing import Callable, List, Optional, Tuple
+from typing import Callable, List, Optional
 
 from logria.commands.regex import reset_regex_status
 from logria.communication.input_handler import InputStream
+from logria.communication.render import determine_position
 from logria.communication.setup import setup_streams
 from logria.interface import color_handler
 from logria.interface.textbox import Textbox, rectangle
@@ -118,60 +119,6 @@ class Logria():
         self.write_to_command_line(
             self.current_status)  # Update current status
 
-    def determine_render_position(self, messages_pointer: List[str]) -> Tuple[int, int]:
-        """
-        Determine the start and end positions for a screen render
-        """
-        if self.stick_to_top:
-            end = 0
-            rows = 0
-            for i in messages_pointer:
-                if messages_pointer is self.messages:
-                    # No processing needed for normal messages
-                    item: str = i
-                elif messages_pointer is self.matched_rows:
-                    # Grab the matched message
-                    item = self.messages[i]  # type: ignore
-                # Determine if the message will fit in the window
-                msg_lines = ceil(get_real_length(item) / self.width)
-                rows += msg_lines
-                # If we can fit, increment the last row number
-                if rows < self.last_row and end < len(messages_pointer) - 1:
-                    end += 1
-                else:
-                    break
-            self.current_end = end  # Save this row so we know where we are
-            # When iterating backwards, we need to end at 0, so we must create a range
-            # object like range(10, -1, -1) to generate a list that ends at 0
-            # If there are no messages, we want to not iterate later, so we change the
-            # -1 to 0 so that we do not iterate at all
-            return -1 if messages_pointer else 0, end  # Early escape
-        elif self.stick_to_bottom:
-            end = len(messages_pointer) - 1
-        elif self.manually_controlled_line:
-            if len(messages_pointer) < self.last_row:
-                # If have fewer messages than lines, just render it all
-                end = len(messages_pointer) - 1
-            elif self.current_end < self.last_row:
-                # If the last row we rendered comes before the last row we can render,
-                # use all of the available rows
-                end = self.current_end
-            elif self.current_end < len(messages_pointer):
-                # If we are looking at a valid line, render ends there
-                end = self.current_end
-            else:
-                # If we have over-scrolled, go back
-                if self.current_end > len(messages_pointer):
-                    self.current_end = len(messages_pointer)
-                # Since current_end can be zero, we have to use the number of messages
-                end = len(messages_pointer)
-        else:
-            end = len(messages_pointer)
-        self.current_end = end  # Save this row so we know where we are
-        # Last index of a list is length - 1
-        start = max(-1, end - self.last_row - 1)
-        return start, end
-
     def render_text_in_output(self) -> None:
         """
         Renders stream content in the output window
@@ -188,7 +135,7 @@ class Logria():
             messages_pointer = self.matched_rows  # type: ignore
 
         # Determine the start and end position of the render
-        start, end = self.determine_render_position(messages_pointer)
+        start, end = determine_position(self, messages_pointer)
         # Don't do anything if nothing changed; start at index 0
         if self.previous_render == messages_pointer[max(start, 0):end]:
             return  # Early escape
@@ -281,7 +228,7 @@ class Logria():
                         )
                     self.update_poll_rate(new_poll_rate)
 
-    def handle_resize(self):
+    def resize_window(self):
         """
         Resize curses elements when window size changes
         """
