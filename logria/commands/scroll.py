@@ -11,7 +11,8 @@ def up(logria: 'Logria'):  # type: ignore
     Scroll one line up
     """
     # Smooth scroll
-    logria.update_poll_rate(constants.FASTEST_POLL_RATE)
+    if logria.smart_poll_rate:
+        logria.update_poll_rate(constants.FASTEST_POLL_RATE)
     # Scroll up
     logria.manually_controlled_line = True
     logria.stick_to_top = False
@@ -25,7 +26,8 @@ def down(logria: 'Logria'):  # type: ignore
     Scroll one line down
     """
     # Smooth scroll
-    logria.update_poll_rate(constants.FASTEST_POLL_RATE)
+    if logria.smart_poll_rate:
+        logria.update_poll_rate(constants.FASTEST_POLL_RATE)
     # Scroll down
     logria.manually_controlled_line = True
     logria.stick_to_top = False
