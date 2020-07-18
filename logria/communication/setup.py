@@ -18,7 +18,7 @@ from logria.utilities.session import SessionHandler
 # from logria.communication.shell_output import Logria
 
 
-def setup_streams(logria: 'Logria') -> None:
+def setup_streams(logria: 'Logria') -> None:  # type: ignore
     """
     When launched without a stream, allow the user to define them for us
     """
