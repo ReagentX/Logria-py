@@ -7,6 +7,7 @@ import curses
 
 from logria.utilities import constants
 from logria.utilities.regex_generator import regex_test_generator
+from logria.logger.processor import process_parser, process_matches
 
 # from logria.communication.shell_output import Logria
 
@@ -44,7 +45,7 @@ def handle_regex_command(logria: 'Logria', command: str) -> None:  # type: ignor
     logria.write_to_command_line(logria.current_status)
 
     # Process any new matched messages to render
-    logria.process_matches()
+    process_matches(logria)
 
     # Tell the user we are now filtering
     logria.current_status = f'Regex with pattern /{logria.regex_pattern}/'

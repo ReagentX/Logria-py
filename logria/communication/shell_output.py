@@ -16,6 +16,7 @@ from logria.communication.input_handler import (CommandInputStream,
 from logria.interface import color_handler
 from logria.interface.textbox import Textbox, rectangle
 from logria.logger.parser import Parser
+from logria.logger.processor import process_matches, process_parser
 from logria.commands.regex import reset_regex_status
 from logria.commands.config import config_mode
 from logria.utilities import constants
@@ -230,31 +231,6 @@ class Logria():
         self.manually_controlled_line = False  # Do not stop rendering new messages
         self.write_to_command_line(self.current_status)
 
-    def process_parser(self):
-        """
-        Load parsed messages to new array if we have matches
-
-        # TODO: Same as process_matches
-        """
-        for index in range(self.last_index_processed, len(self.previous_messages)):
-            if self.analytics_enabled:
-                self.parser.handle_analytics_for_message(
-                    self.previous_messages[index])
-                self.messages = self.parser.analytics_to_list()
-                # For some reason this isn't switching back
-                self.last_index_processed = len(self.previous_messages)
-            else:
-                if self.messages is not self.parsed_messages:
-                    self.messages = self.parsed_messages
-                match = self.parser.parse(self.previous_messages[index])
-                if match:
-                    try:
-                        self.parsed_messages.append(match[self.parser_index])
-                    except IndexError:
-                        # If there was an error parsing, the message did not match the current pattern
-                        pass
-                self.last_index_processed = len(self.messages)
-
     def determine_render_position(self, messages_pointer: List[str]) -> Tuple[int, int]:
         """
         Determine the start and end positions for a screen render
@@ -328,7 +304,7 @@ class Logria():
         start, end = self.determine_render_position(messages_pointer)
         # Don't do anything if nothing changed; start at index 0
         if self.previous_render == messages_pointer[max(start, 0):end]:
-            return
+            return  # Early escape
         self.previous_render = messages_pointer[max(start, 0):end]
         self.outwin.erase()
         current_row = self.last_row  # The row we are currently rendering
@@ -353,42 +329,6 @@ class Logria():
             color_handler.addstr(self.outwin, current_row, 0, item.rstrip())
         self.outwin.refresh()
 
-    def process_matches(self) -> None:
-        """
-        Process the matches for filtering, should by async but the commented code here
-        does not work
-
-        # TODO: Fix this method
-        """
-        # def add_to_list(result: multiprocessing.Queue, messages: list, last_idx_searched: int, func_handle: Callable):
-        #     """
-        #     Main loop will create this separate process to find matches while the main loop runs
-        #     """
-        #     for index, message in range(last_idx_searched, len(messages)):
-        #         print(index, message)
-        #         if func_handle(message):
-        #             result.put(index)
-        #         return result
-
-        # result = multiprocessing.Queue()
-        # proc = multiprocessing.Process(target=add_to_list, args=(result, self.messages, self.last_index_searched, self.func_handle))
-        # proc.start()
-        # proc.join()
-        # print('done')
-        # self.last_index_searched = len(self.messages)
-        # while not result.empty:
-        #     idx = result.get()
-        #     print(idx)
-        #     self.matched_rows.append(idx)
-        # self.write_to_prompt('in method')
-
-        # For each message, add its index to the list of matches; this is more efficient than
-        # Storing a second copy of each match
-        for index in range(self.last_index_regexed, len(self.messages)):
-            # pylint: disable=not-callable
-            if self.func_handle and self.func_handle(self.messages[index]):
-                self.matched_rows.append(index)
-        self.last_index_regexed = len(self.messages)
 
     def write_to_command_line(self, string: str) -> None:
         """
@@ -547,14 +487,15 @@ class Logria():
                     self.messages = self.stderr_messages
 
             try:
-                keypress = self.command_line.getkey()  # Get keypress
+                keypress = self.command_line.getkey()  # Get keypress, raise curses.error if nothing detected
                 resolve_keypress(self, keypress)
             except curses.error:
-                # If we have an active filter, process it, always render
                 if self.exit_val == -1:
                     return
+                # If we have an active filter/parser, process it/them
                 if self.parser:
-                    self.process_parser()  # This may block if there are a lot of messages
+                    process_parser(self)  # This may block if there are a lot of messages
                 if self.func_handle:
-                    self.process_matches()  # This may block if there are a lot of messages
+                    process_matches(self)  # This may block if there are a lot of messages
+                # Always try to render
                 self.render_text_in_output()
