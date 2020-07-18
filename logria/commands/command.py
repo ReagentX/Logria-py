@@ -5,6 +5,7 @@ import curses
 
 
 from logria.utilities import constants
+from logria.commands.parser import reset_parser
 # from logria.communication.shell_output import Logria
 
 def start_history_mode(logria: 'Logria', last_n: int) -> None:  # type: ignore
@@ -47,7 +48,7 @@ def handle_command(logria: 'Logria'):  # type: ignore
             logria.config_mode()
         elif ':history' in command:
             if command == ':history off':
-                logria.reset_parser()
+                reset_parser(logria)
             else:
                 try:
                     num_to_get = int(command.replace(':history', ''))
