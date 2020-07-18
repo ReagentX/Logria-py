@@ -799,42 +799,6 @@ class Logria():
                         )
                     self.update_poll_rate(new_poll_rate)
 
-    def handle_command_mode(self) -> None:
-        """
-        Handle when user activates command mode, including parsing textbox message
-        """
-        # Handle smart poll rate
-        if self.smart_poll_rate:
-            # Make it smooth to type
-            self.update_poll_rate(constants.SLOWEST_POLL_RATE)
-        # Handle getting input from the command line for commands
-        self.activate_prompt(':')
-        command = self.box.gather().strip()
-        curses.curs_set(0)
-        if command:
-            if command == ':q':
-                self.stop()
-            elif ':poll' in command:
-                try:
-                    new_poll_rate = float(command.replace(':poll', ''))
-                except ValueError:
-                    pass
-                else:
-                    self.update_poll_rate(new_poll_rate)
-            elif ':config' in command:
-                self.config_mode()
-            elif ':history' in command:
-                if command == ':history off':
-                    self.reset_parser()
-                else:
-                    try:
-                        num_to_get = int(command.replace(':history', ''))
-                    except ValueError:
-                        num_to_get = self.height  # Default to screen height if no info given
-                    self.start_history_mode(num_to_get)
-        self.reset_command_line()
-        self.write_to_command_line(self.current_status)
-
     def handle_resize(self):
         """
         Resize curses elements when window size changes
