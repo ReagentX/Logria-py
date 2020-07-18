@@ -6,6 +6,7 @@ Contains the main class that controls the state of the app
 import curses
 import re
 import time
+from json import JSONDecodeError
 from math import ceil
 from os.path import isfile
 from typing import Callable, List, Optional, Tuple
@@ -16,6 +17,7 @@ from logria.interface import color_handler
 from logria.interface.textbox import Textbox, rectangle
 from logria.logger.parser import Parser
 from logria.commands.regex import reset_regex_status
+from logria.commands.config import config_mode
 from logria.utilities import constants
 from logria.utilities.command_parser import Resolver
 from logria.utilities.keystrokes import resolve_keypress, validator
@@ -171,7 +173,7 @@ class Logria():
                 continue
             except ValueError:
                 if command == ':config':
-                    self.config_mode()
+                    config_mode(self)
                     return
                 elif command == ':q':
                     self.stop()
@@ -418,196 +420,6 @@ class Logria():
         curses.curs_set(1)
         self.box.edit(validator)
 
-    def handle_create_session_file(self, session: SessionHandler) -> bool:
-        """
-        Handle manual session file creation
-        """
-        cmd_resolver = Resolver()  # The resolver we use to add commands
-
-        self.messages.append(constants.SESSION_ADD_FILE)
-        self.previous_render = None  # Force render
-        self.render_text_in_output()
-        session.set_type('file')
-        self.activate_prompt()
-        file_path = self.box.gather().strip()
-        resolved_file_path = cmd_resolver.resolve_file_as_list(file_path)
-        if isfile('/'.join(resolved_file_path)):
-            session.add_command(resolved_file_path)
-            self.messages = session.as_list()
-            self.messages.append(constants.SESSION_SHOULD_CONTINUE_FILE)
-            self.previous_render = None  # Force render
-            self.render_text_in_output()
-            self.activate_prompt()
-            user_done = self.box.gather().strip()
-            if user_done == ':s':
-                self.messages = [constants.SAVE_CURRENT_SESSION]
-                self.previous_render = None  # Force render
-                self.render_text_in_output()
-                self.activate_prompt()
-                filename = self.box.gather().strip()
-                session.save_current_session(filename)
-                return True
-        elif file_path == ':q':
-            self.stop()
-        else:
-            self.messages.append(f'Cannot resolve path: {"/".join(file_path)}')
-            self.previous_render = None  # Force render
-            self.render_text_in_output()
-        return False
-
-    def handle_create_session_command(self, session: SessionHandler) -> bool:
-        """
-        Get user input to create a session
-        """
-        cmd_resolver = Resolver()  # The resolver we use to add commands
-        self.messages.append(constants.SESSION_ADD_COMMAND)
-        self.previous_render = None  # Force render
-        self.render_text_in_output()
-        session.set_type('command')
-        self.activate_prompt()
-        command = self.box.gather().strip()
-        resolved_command = cmd_resolver.resolve_command_as_list(command)
-        session.add_command(resolved_command)
-        self.messages = session.as_list()
-        self.messages.append(constants.SESSION_SHOULD_CONTINUE_COMMAND)
-        self.previous_render = None  # Force render
-        self.render_text_in_output()
-        self.activate_prompt()
-        user_done = self.box.gather().strip()
-        if user_done == ':s':
-            self.messages = [constants.SAVE_CURRENT_SESSION]
-            self.previous_render = None  # Force render
-            self.render_text_in_output()
-            self.activate_prompt()
-            filename = self.box.gather().strip()
-            session.save_current_session(filename)
-            return True
-        elif command == ':q':
-            self.stop()
-        return False
-
-    def handle_create_session(self) -> None:
-        """
-        Handle the creation of new sessions
-        """
-        # Render text
-        self.current_end = 0
-        self.messages = constants.CREATE_SESSION_START_MESSAGES
-        self.previous_render = None  # Force render
-        self.render_text_in_output()
-
-        # Get the user choice
-        choice = None
-        while choice not in {'file', 'command'}:
-            self.activate_prompt()
-            choice = self.box.gather().strip()
-            if choice == ':q':
-                self.stop()
-                break
-
-        done = False
-        self.messages = []
-        temp_session = SessionHandler()  # The session object we build
-        while not done:
-            if choice == 'file':
-                done = self.handle_create_session_file(temp_session)
-            elif choice == 'command':
-                done = self.handle_create_session_command(temp_session)
-            elif choice == ':q':
-                self.stop()
-                break
-            else:
-                raise ValueError(f'{choice} not one of ("file", "command")')
-        self.setup_streams()
-
-    def handle_create_parser(self) -> None:
-        """
-        Get user input to create a session
-        """
-        temp_parser = Parser()
-
-        # Render text
-        self.current_end = 0
-        self.messages = constants.CREATE_PARSER_MESSAGES
-        self.previous_render = None  # Force render
-        self.render_text_in_output()
-        # Get type
-        self.activate_prompt()
-        parser_type: str = ''
-        while parser_type not in {'regex', 'split'}:
-            self.activate_prompt()
-            parser_type = self.box.gather().strip()
-
-        # Handle next step
-        self.messages = [f'Parser type {parser_type}']
-        self.messages.append(constants.PARSER_SET_NAME)
-        self.previous_render = None  # Force render
-        self.render_text_in_output()
-        # Get name
-        self.activate_prompt()
-        parser_name = self.box.gather().strip()
-
-        # Handle next step
-        self.messages.append(f'Parser name {parser_name}')
-        self.messages.append(constants.PARSER_SET_EXAMPLE)
-        self.previous_render = None  # Force render
-        self.render_text_in_output()
-        # Get example
-        self.activate_prompt()
-        parser_example = self.box.gather().strip()
-
-        # Handle next step
-        self.messages.append(f'Parser example {parser_example}')
-        self.messages.append(constants.PARSER_SET_PATTERN)
-        self.previous_render = None  # Force render
-        self.render_text_in_output()
-        # Get pattern
-        self.activate_prompt()
-        parser_pattern = self.box.gather()
-
-        # Set the parser's data
-        temp_parser.set_pattern(
-            parser_pattern, parser_type, parser_name, parser_example, {})
-
-        # Determine the analytics dict
-        parts = temp_parser.parse(parser_example)
-        analytics = {part: 'count' for part in parts}
-
-        # Set the parser's data with analytics
-        temp_parser.set_pattern(
-            parser_pattern, parser_type, parser_name, parser_example, analytics)
-
-        self.messages = temp_parser.as_list()
-        self.messages.append(constants.SAVE_CURRENT_PATTERN)
-        self.previous_render = None  # Force render
-        self.render_text_in_output()
-        self.activate_prompt()
-        final_res = self.box.gather().strip()
-        if final_res == ':q':
-            return
-        temp_parser.save()
-        self.messages = []
-
-    def config_mode(self) -> None:
-        """
-        Start the configuration setup
-        """
-        self.current_end = 0
-        self.messages = constants.CONFIG_START_MESSAGES
-        self.previous_render = None  # Force render
-        self.render_text_in_output()
-        choice = None
-        while choice not in {'session', 'parser'}:
-            self.activate_prompt()
-            choice = self.box.gather().strip()
-            if choice == ':q':
-                self.stop()
-                break
-        if choice == 'session':
-            self.handle_create_session()
-        elif choice == 'parser':
-            self.handle_create_parser()
-
     def update_poll_rate(self, new_poll_rate: float) -> None:
         """
         Update Logria's poll rate
@@ -650,8 +462,6 @@ class Logria():
         self.height, self.width = self.stdscr.getmaxyx()
         curses.resizeterm(self.height, self.width)
         self.build_command_line()  # Rebuild the command line
-        self.current_status = 'Resize handler'
-        self.write_to_command_line(self.current_status)
         self.previous_render = None  # Force render
         self.render_text_in_output()
 
