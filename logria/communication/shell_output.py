@@ -137,6 +137,7 @@ class Logria():
         # Determine the start and end position of the render
         start, end = determine_position(self, messages_pointer)
         # Don't do anything if nothing changed; start at index 0
+        # TODO: Simplify the memory space this takes up
         if self.previous_render == messages_pointer[max(start, 0):end]:
             return  # Early escape
         self.previous_render = messages_pointer[max(start, 0):end]
