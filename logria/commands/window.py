@@ -26,4 +26,4 @@ def resize(logria: 'Logria'):  # type: ignore
     """
     Resize window
     """
-    logria.handle_resize()
+    logria.resize_window()
