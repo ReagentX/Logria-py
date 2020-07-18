@@ -12,12 +12,40 @@ from logria.logger.parser import Parser
 # from logria.communication.shell_output import Logria
 
 
+
+def reset_parser(logria: 'Logria'):
+    """
+    Remove the current parser, if any exists
+    """
+    if logria.func_handle:
+        logria.current_status = f'Regex with pattern /{logria.regex_pattern}/'
+    else:
+        logria.current_status = 'No filter applied'  # CLI message, rendered after
+    if logria.previous_messages:
+        # Move messages pointer to the previous state
+        if logria.previous_messages is logria.stderr_messages:
+            logria.messages = logria.stderr_messages
+        else:
+            logria.messages = logria.stdout_messages
+        logria.previous_messages = []
+        logria.parsed_messages = []  # Dump parsed messages
+    logria.parser = None  # Dump the parser
+    logria.analytics_enabled = False  # Disable analytics blocker
+    logria.parser_index = 0  # Dump the pattern index
+    logria.last_index_processed = 0  # Reset the last searched index
+    logria.current_end = 0  # We now do not know where to end
+    logria.stick_to_bottom = True  # Stay at the bottom for the next render
+    logria.stick_to_top = False  # Do not stick to the top
+    logria.manually_controlled_line = False  # Do not stop rendering new messages
+    logria.write_to_command_line(logria.current_status)
+
+
 def setup_parser(logria: 'Logria'):  # type: ignore
     """
     Setup a parser object in the main runtime
     """
     # Reset the status for new writes
-    logria.reset_parser()
+    reset_parser(logria)
     reset_regex_status(logria)
 
     # Store previous message pointer
@@ -40,7 +68,7 @@ def setup_parser(logria: 'Logria'):  # type: ignore
         logria.activate_prompt()
         command = logria.box.gather().strip()
         if command == 'q':
-            logria.reset_parser()
+            reset_parser(logria)
             return
         else:
             try:
@@ -62,7 +90,7 @@ def setup_parser(logria: 'Logria'):  # type: ignore
         logria.activate_prompt()
         command = logria.box.gather().strip()
         if command == 'q':
-            logria.reset_parser()
+            reset_parser(logria)
             return
         else:
             try:
@@ -97,7 +125,7 @@ def enable_parser(logria: 'Logria'):  # type: ignore
     Enable parser
     """
     if logria.parser is not None:
-        logria.reset_parser()
+        reset_parser(logria)
     setup_parser(logria)
 
 
@@ -121,4 +149,4 @@ def teardown_parser(logria: 'Logria'):  # type: ignore
     """
     Tear down parser
     """
-    logria.reset_parser()
+    reset_parser(logria)

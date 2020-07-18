@@ -205,31 +205,6 @@ class Logria():
         self.stderr_messages = []
         self.messages = self.stderr_messages
 
-    def reset_parser(self):
-        """
-        Remove the current parser, if any exists
-        """
-        if self.func_handle:
-            self.current_status = f'Regex with pattern /{self.regex_pattern}/'
-        else:
-            self.current_status = 'No filter applied'  # CLI message, rendered after
-        if self.previous_messages:
-            # Move messages pointer to the previous state
-            if self.previous_messages is self.stderr_messages:
-                self.messages = self.stderr_messages
-            else:
-                self.messages = self.stdout_messages
-            self.previous_messages = []
-            self.parsed_messages = []  # Dump parsed messages
-        self.parser = None  # Dump the parser
-        self.analytics_enabled = False  # Disable analytics blocker
-        self.parser_index = 0  # Dump the pattern index
-        self.last_index_processed = 0  # Reset the last searched index
-        self.current_end = 0  # We now do not know where to end
-        self.stick_to_bottom = True  # Stay at the bottom for the next render
-        self.stick_to_top = False  # Do not stick to the top
-        self.manually_controlled_line = False  # Do not stop rendering new messages
-        self.write_to_command_line(self.current_status)
 
     def determine_render_position(self, messages_pointer: List[str]) -> Tuple[int, int]:
         """
