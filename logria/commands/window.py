@@ -6,7 +6,7 @@ Logria window content display handler
 # from logria.communication.shell_output import Logria
 
 
-def swap_input(logria: 'Logria'):
+def swap_input(logria: 'Logria'):  # type: ignore
     """
     Swap between stderr and stdout
     """
@@ -20,7 +20,7 @@ def swap_input(logria: 'Logria'):
         logria.messages = logria.stderr_messages
 
 
-def resize(logria: 'Logria'):
+def resize(logria: 'Logria'):  # type: ignore
     """
     Resize window
     """

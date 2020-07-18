@@ -31,9 +31,12 @@ class Logria():
 
     def __init__(self, stream: InputStream, history_tape_cache: bool = True, smart_poll_rate: bool = True, poll_rate=0.001):
         # UI Elements initialized to None
-        self.stdscr: curses.window = None  # The entire window
-        self.outwin: curses.window = None  # The output window
-        self.command_line: curses.window = None  # The command line
+        # The entire window
+        self.stdscr: curses.window = None  # type: ignore
+        # The entire window
+        self.outwin: curses.window = None  # type: ignore
+        # The command line
+        self.command_line: curses.window = None  # type: ignore
         self.box: Textbox  # The text box inside the command line
 
         # App state passed as parameters
@@ -343,7 +346,7 @@ class Logria():
                     item: str = i
                 elif messages_pointer is self.matched_rows:
                     # Grab the matched message
-                    item = self.messages[i]
+                    item = self.messages[i]  # type: ignore
                 # Determine if the message will fit in the window
                 msg_lines = ceil(get_real_length(item) / self.width)
                 rows += msg_lines
@@ -396,7 +399,8 @@ class Logria():
         if self.func_handle is None:
             messages_pointer = self.messages
         else:
-            messages_pointer = self.matched_rows
+            # Ignore typing because we use different values depending on what this pointer is
+            messages_pointer = self.matched_rows  # type: ignore
 
         # Determine the start and end position of the render
         start, end = self.determine_render_position(messages_pointer)

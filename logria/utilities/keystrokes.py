@@ -24,7 +24,7 @@ STROKES: Dict[str, Callable] = {
 }
 
 
-def resolve_keypress(logria: 'Logria', key_press: str) -> None:
+def resolve_keypress(logria: 'Logria', key_press: str) -> None:  # type: ignore
     """
     Resolve a key press to a callable in the dictionary
     """

@@ -6,7 +6,7 @@ Commands for scrolling the window
 # from logria.communication.shell_output import Logria
 from logria.utilities import constants
 
-def up(logria: 'Logria'):
+def up(logria: 'Logria'):  # type: ignore
     """
     Scroll one line up
     """
@@ -20,7 +20,7 @@ def up(logria: 'Logria'):
     logria.previous_render = None  # Force render
 
 
-def down(logria: 'Logria'):
+def down(logria: 'Logria'):  # type: ignore
     """
     Scroll one line down
     """
@@ -39,7 +39,7 @@ def down(logria: 'Logria'):
     logria.previous_render = None  # Force render
 
 
-def bottom(logria: 'Logria'):
+def bottom(logria: 'Logria'):  # type: ignore
     """
     Stick to bottom
     """
@@ -48,7 +48,7 @@ def bottom(logria: 'Logria'):
     logria.manually_controlled_line = False
 
 
-def top(logria: 'Logria'):
+def top(logria: 'Logria'):  # type: ignore
     """
     Stick to top
     """

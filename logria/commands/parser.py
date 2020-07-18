@@ -5,7 +5,7 @@ Commands for enabling parser and analytics
 
 # from logria.communication.shell_output import Logria
 
-def enable_parser(logria: 'Logria'):
+def enable_parser(logria: 'Logria'):  # type: ignore
     """
     Enable parser
     """
@@ -14,7 +14,7 @@ def enable_parser(logria: 'Logria'):
     logria.setup_parser()
 
 
-def enable_analytics(logria: 'Logria'):
+def enable_analytics(logria: 'Logria'):  # type: ignore
     """
     Enable analytics engine
     """
@@ -30,7 +30,7 @@ def enable_analytics(logria: 'Logria'):
             logria.current_status = f'Parsing with {logria.parser.get_name()}, analytics view'
 
 
-def teardown_parser(logria: 'Logria'):
+def teardown_parser(logria: 'Logria'):  # type: ignore
     """
     Tear down parser
     """

@@ -6,14 +6,14 @@ Logria regex handler
 # from logria.communication.shell_output import Logria
 
 
-def handle_regex(logria: 'Logria'):
+def handle_regex(logria: 'Logria'):  # type: ignore
     """
     Enable regex mode
     """
     logria.handle_regex_mode()
 
 
-def toggle_highlight(logria: 'Logria'):
+def toggle_highlight(logria: 'Logria'):  # type: ignore
     """
     Toggle highlighting of search matches
     """
