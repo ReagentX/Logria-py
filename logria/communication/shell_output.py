@@ -6,24 +6,19 @@ Contains the main class that controls the state of the app
 import curses
 import re
 import time
-from json import JSONDecodeError
 from math import ceil
-from os.path import isfile
 from typing import Callable, List, Optional, Tuple
 
-from logria.commands.config import config_mode
 from logria.commands.regex import reset_regex_status
-from logria.communication.input_handler import (CommandInputStream,
-                                                FileInputStream, InputStream)
+from logria.communication.input_handler import InputStream
+from logria.communication.setup import setup_streams
 from logria.interface import color_handler
 from logria.interface.textbox import Textbox, rectangle
 from logria.logger.parser import Parser
 from logria.logger.processor import process_matches, process_parser
 from logria.utilities import constants
-from logria.utilities.command_parser import Resolver
 from logria.utilities.keystrokes import resolve_keypress, validator
 from logria.utilities.regex_generator import get_real_length
-from logria.utilities.session import SessionHandler
 
 
 class Logria():
@@ -122,88 +117,6 @@ class Logria():
             history_cache=self.history_tape_cache)
         self.write_to_command_line(
             self.current_status)  # Update current status
-
-    def setup_streams(self) -> None:
-        """
-        When launched without a stream, allow the user to define them for us
-        """
-        # Setup a SessionHandler and get the existing saved sessions
-        session_handler = SessionHandler()
-        # Create a new message list to see
-        setup_messages: List[str] = []
-        self.messages = setup_messages
-        # Tell the user what we are doing
-        setup_messages.extend(constants.START_MESSAGE)
-        setup_messages.extend(session_handler.show_sessions())
-        self.render_text_in_output()
-
-        # Dump the existing status
-        self.write_to_command_line('')
-
-        # Create resolver class to resolve commands
-        resolver = Resolver()
-
-        # Get user input
-        while True:
-            time.sleep(self.poll_rate)
-            self.activate_prompt()
-            command = self.box.gather().strip()
-            if not command:
-                continue
-            try:
-                chosen_item = int(command)
-                session = session_handler.load_session(chosen_item)
-                if not session:
-                    continue
-                stored_commands = session['commands']
-                # Commands need a type
-                for stored_command in stored_commands:
-                    if session.get('type') == 'file':
-                        self.streams.append(FileInputStream(stored_command))
-                    elif session.get('type') == 'command':
-                        self.streams.append(CommandInputStream(stored_command))
-            except KeyError as err:
-                setup_messages.append(
-                    f'Data missing from configuration: {err}')
-                self.render_text_in_output()
-                continue
-            except JSONDecodeError as err:
-                setup_messages.append(
-                    f'Invalid JSON: {err.msg} on line {err.lineno}, char {err.colno}')
-                self.render_text_in_output()
-                continue
-            except ValueError:
-                if command == ':config':
-                    config_mode(self)
-                    return
-                elif command == ':q':
-                    self.stop()
-                elif isfile(command):
-                    self.streams.append(
-                        FileInputStream(command.split('/')))
-                    session_handler.save_session(
-                        'File - ' + command.replace('/', '|'), command.split('/'), 'file')
-                else:
-                    cmd = resolver.resolve_command_as_list(command)
-                    self.streams.append(CommandInputStream(cmd))
-                    session_handler.save_session(
-                        'Cmd - ' + command.replace('/', '|'), cmd, 'command')
-            break
-
-        # Launch the subprocess
-        for stream in self.streams:
-            stream.poll_rate = self.poll_rate
-            stream.start()
-
-        # Set status back to what it was
-        self.write_to_command_line(self.current_status)
-
-        # Render immediately
-        self.previous_render = None
-
-        # Reset messages
-        self.stderr_messages = []
-        self.messages = self.stderr_messages
 
     def determine_render_position(self, messages_pointer: List[str]) -> Tuple[int, int]:
         """
@@ -426,7 +339,7 @@ class Logria():
         # Start the main app loop
         while True:
             if not self.streams:
-                self.setup_streams()
+                setup_streams(self)
 
             # Update messages from the input stream's queues, track time
             t_0 = time.perf_counter()
