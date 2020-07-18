@@ -6,7 +6,6 @@ Contains the main class that controls the state of the app
 import curses
 import re
 import time
-from json import JSONDecodeError
 from math import ceil
 from os.path import isfile
 from typing import Callable, List, Optional, Tuple
@@ -202,85 +201,6 @@ class Logria():
         # Reset messages
         self.stderr_messages = []
         self.messages = self.stderr_messages
-
-    def setup_parser(self):
-        """
-        Setup a parser object in the main runtime
-        """
-        # Reset the status for new writes
-        self.reset_parser()
-        reset_regex_status(self)
-
-        # Store previous message pointer
-        if self.messages is self.stderr_messages:
-            self.previous_messages = self.stderr_messages
-        elif self.messages is self.stdout_messages:
-            self.previous_messages = self.stdout_messages
-
-        # Stick to top to show options
-        self.manually_controlled_line = False
-        self.stick_to_bottom = True
-        self.stick_to_top = False
-
-        # Overwrite the messages pointer
-        self.messages = Parser().show_patterns()
-        self.previous_render = None
-        self.render_text_in_output()
-        while True:
-            time.sleep(self.poll_rate)
-            self.activate_prompt()
-            command = self.box.gather().strip()
-            if command == 'q':
-                self.reset_parser()
-                return
-            else:
-                try:
-                    parser = Parser()
-                    parser.load(Parser().patterns()[int(command)])
-                    break
-                except JSONDecodeError as err:
-                    self.messages.append(
-                        f'Invalid JSON: {err.msg} on line {err.lineno}, char {err.colno}')
-                except ValueError:
-                    pass
-
-        # Overwrite a different list this time, and reset it when done
-        self.messages = parser.display_example()
-        self.previous_render = None
-        self.render_text_in_output()
-        while True:
-            time.sleep(self.poll_rate)
-            self.activate_prompt()
-            command = self.box.gather().strip()
-            if command == 'q':
-                self.reset_parser()
-                return
-            else:
-                try:
-                    command = int(command)
-                    assert command < len(self.messages)
-                    self.parser_index = int(command)
-                    self.current_status = f'Parsing with {parser.get_name()}, field {parser.get_analytics_for_index(command)}'
-                    self.write_to_command_line(self.current_status)
-                    break
-                except ValueError:
-                    pass
-                except AssertionError:
-                    pass
-
-        # Set parser
-        self.parser = parser
-
-        # Put pointer back to new list
-        self.messages = self.parsed_messages
-
-        # Render immediately
-        self.previous_render = None
-
-        # Stick to bottom again
-        self.last_index_processed = 0
-        self.stick_to_bottom = True
-        self.stick_to_top = False
 
     def reset_parser(self):
         """
