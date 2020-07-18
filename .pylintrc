@@ -147,8 +147,7 @@ disable=print-statement,
         invalid-name,
         too-few-public-methods,
         too-many-arguments,
-        no-else-return,
-        too-many-lines
+        no-else-return
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
