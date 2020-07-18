@@ -16,11 +16,11 @@ from logria.communication.input_handler import (CommandInputStream,
 from logria.interface import color_handler
 from logria.interface.textbox import Textbox, rectangle
 from logria.logger.parser import Parser
+from logria.commands.regex import reset_regex_status
 from logria.utilities import constants
 from logria.utilities.command_parser import Resolver
 from logria.utilities.keystrokes import resolve_keypress, validator
-from logria.utilities.regex_generator import (get_real_length,
-                                              regex_test_generator)
+from logria.utilities.regex_generator import get_real_length
 from logria.utilities.session import SessionHandler
 
 
@@ -209,7 +209,7 @@ class Logria():
         """
         # Reset the status for new writes
         self.reset_parser()
-        self.reset_regex_status()
+        reset_regex_status(self)
 
         # Store previous message pointer
         if self.messages is self.stderr_messages:
@@ -497,48 +497,6 @@ class Logria():
         curses.curs_set(1)
         self.box.edit(validator)
 
-    def handle_regex_command(self, command: str) -> None:
-        """
-        Handle a regex command
-        """
-        self.reset_regex_status()
-        self.func_handle = regex_test_generator(command)
-        self.highlight_match = True
-        self.regex_pattern = command
-
-        # Tell the user what is happening since this is synchronous
-        self.current_status = f'Searching buffer for regex /{self.regex_pattern}/'
-        self.write_to_command_line(self.current_status)
-
-        # Process any new matched messages to render
-        self.process_matches()
-
-        # Tell the user we are now filtering
-        self.current_status = f'Regex with pattern /{self.regex_pattern}/'
-        self.write_to_command_line(self.current_status)
-
-        # Render the text
-        self.render_text_in_output()
-        curses.curs_set(0)
-
-    def reset_regex_status(self) -> None:
-        """
-        Reset current regex/filter status to no filter
-        """
-        if self.parser:
-            self.current_status = f'Parsing with {self.parser.get_name()}, field {self.parser_index}'
-        else:
-            self.current_status = 'No filter applied'  # CLI message, rendered after
-        self.previous_render = None  # Reset previous render
-        self.func_handle = None  # Disable filter
-        self.highlight_match = False  # Disable highlighting
-        self.regex_pattern = ''  # Clear the current pattern
-        self.matched_rows = []  # Clear out matched rows
-        self.last_index_regexed = 0  # Reset the last searched index
-        self.current_end = 0  # We now do not know where to end
-        self.stick_to_bottom = True  # Stay at the bottom for the next render
-        self.write_to_command_line(self.current_status)  # Render status
-
     def handle_create_session_file(self, session: SessionHandler) -> bool:
         """
         Handle manual session file creation
@@ -729,28 +687,6 @@ class Logria():
         elif choice == 'parser':
             self.handle_create_parser()
 
-    def handle_regex_mode(self) -> None:
-        """
-        Handle when user activates regex mode, including parsing textbox message
-        """
-        # Handle smart poll rate
-        if self.smart_poll_rate:
-            # Make it smooth to type
-            self.update_poll_rate(constants.SLOWEST_POLL_RATE)
-        if not self.analytics_enabled:  # Disable regex in analytics view
-            # Handle getting input from the command line for regex
-            self.activate_prompt()
-            command = self.box.gather().strip()
-            if command:
-                if command == ':q':
-                    self.reset_regex_status()
-                else:
-                    self.handle_regex_command(command)
-            else:
-                # If command is an empty string, ignore the input
-                self.reset_regex_status()
-                self.reset_command_line()
-
     def start_history_mode(self, last_n: int) -> None:
         """
         Swap message pointer to history tape
@@ -851,7 +787,7 @@ class Logria():
         self.build_command_line()
 
         # Update the command line status
-        self.reset_regex_status()
+        reset_regex_status(self)
 
         # Disable cursor:
         curses.curs_set(0)
