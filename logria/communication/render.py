@@ -11,7 +11,7 @@ from logria.utilities.regex_generator import get_real_length
 # from logria.communication.shell_output import Logria
 
 
-def determine_position(logria: 'Logria', messages_pointer: List[str]) -> Tuple[int, int]:
+def determine_position(logria: 'Logria', messages_pointer: List[str]) -> Tuple[int, int]:  # type: ignore
     """
     Determine the start and end positions for a screen render
     """
