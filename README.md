@@ -33,7 +33,7 @@ There are a few main ways to invoke Logria:
   - Opens to the setup screen
 - With args:
   - `logria -e 'tail -f log.txt'`
-  - Opens a pipe to 'tail -f log.txt'` and skips setup
+  - Opens a pipe to `'tail -f log.txt'` and skips setup
   - `logria -h` will show the help page with all possible options
 
 For more details, see [Sample Usage Session](docs/README.md#sample-usage-session).
