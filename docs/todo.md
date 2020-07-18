@@ -1,7 +1,5 @@
 # Todo
 
-- New features
-  - [ ] Add 'status bar' since we have an empty row so the user can see what we are currently doing
 - Enhancements
   - [ ] Explore PyInstaller for static binaries
   - [ ] Esc key to go back to previous state
