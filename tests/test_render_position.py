@@ -9,9 +9,9 @@ from logria.communication.shell_output import Logria
 from logria.commands import scroll
 from logria.communication.render import determine_position
 
-class TestCanLaunchApp(unittest.TestCase):
+class TestCanRenderContentRange(unittest.TestCase):
     """
-    Tests various ways we can launch the app
+    Tests scenarios with which we render content
     """
 
     def test_render_final_items(self):
