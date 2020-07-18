@@ -18,7 +18,7 @@ from logria.interface.textbox import Textbox, rectangle
 from logria.logger.parser import Parser
 from logria.utilities import constants
 from logria.utilities.command_parser import Resolver
-from logria.utilities.keystrokes import validator
+from logria.utilities.keystrokes import resolve_keypress, validator
 from logria.utilities.regex_generator import (get_real_length,
                                               regex_test_generator)
 from logria.utilities.session import SessionHandler
@@ -31,9 +31,12 @@ class Logria():
 
     def __init__(self, stream: InputStream, history_tape_cache: bool = True, smart_poll_rate: bool = True, poll_rate=0.001):
         # UI Elements initialized to None
-        self.stdscr: curses.window = None  # The entire window
-        self.outwin: curses.window = None  # The output window
-        self.command_line: curses.window = None  # The command line
+        # The entire window
+        self.stdscr: curses.window = None  # type: ignore
+        # The entire window
+        self.outwin: curses.window = None  # type: ignore
+        # The command line
+        self.command_line: curses.window = None  # type: ignore
         self.box: Textbox  # The text box inside the command line
 
         # App state passed as parameters
@@ -343,7 +346,7 @@ class Logria():
                     item: str = i
                 elif messages_pointer is self.matched_rows:
                     # Grab the matched message
-                    item = self.messages[i]
+                    item = self.messages[i]  # type: ignore
                 # Determine if the message will fit in the window
                 msg_lines = ceil(get_real_length(item) / self.width)
                 rows += msg_lines
@@ -396,7 +399,8 @@ class Logria():
         if self.func_handle is None:
             messages_pointer = self.messages
         else:
-            messages_pointer = self.matched_rows
+            # Ignore typing because we use different values depending on what this pointer is
+            messages_pointer = self.matched_rows  # type: ignore
 
         # Determine the start and end position of the render
         start, end = self.determine_render_position(messages_pointer)
@@ -926,89 +930,7 @@ class Logria():
 
             try:
                 keypress = self.command_line.getkey()  # Get keypress
-                if keypress == '/':
-                    self.handle_regex_mode()
-                elif keypress == ':':
-                    self.handle_command_mode()
-                elif keypress == 'h':
-                    self.previous_render = None  # Force render
-                    if self.func_handle and self.highlight_match:
-                        self.highlight_match = False
-                    elif self.func_handle and not self.highlight_match:
-                        self.highlight_match = True
-                    else:
-                        self.highlight_match = False
-                elif keypress == 'i':
-                    # Toggle insert mode
-                    if self.insert_mode:
-                        self.insert_mode = False
-                    else:
-                        self.insert_mode = True
-                    self.build_command_line()
-                elif keypress == 's':
-                    self.previous_render = None  # Force render
-                    # Swap stdout and stderr
-                    self.reset_parser()
-                    self.reset_regex_status()
-                    if self.messages is self.stderr_messages:
-                        self.messages = self.stdout_messages
-                    else:
-                        self.messages = self.stderr_messages
-                elif keypress == 'p':
-                    # Enable parser
-                    if self.parser is not None:
-                        self.reset_parser()
-                    self.setup_parser()
-                elif keypress == 'a':
-                    # Enable analytics engine
-                    if self.parser is not None:
-                        self.last_index_processed = 0
-                        self.parser.reset_analytics()
-                        if self.analytics_enabled:
-                            self.current_status = f'Parsing with {self.parser.get_name()}, field {self.parser.get_analytics_for_index(self.parser_index)}'
-                            self.parsed_messages = []
-                            self.analytics_enabled = False
-                        else:
-                            self.analytics_enabled = True
-                            self.current_status = f'Parsing with {self.parser.get_name()}, analytics view'
-                elif keypress == 'z':
-                    # Tear down parser
-                    self.reset_parser()
-                elif keypress == 'KEY_RESIZE':
-                    self.handle_resize()
-                elif keypress == 'KEY_UP':
-                    # Smooth scroll
-                    self.update_poll_rate(constants.FASTEST_POLL_RATE)
-                    # Scroll up
-                    self.manually_controlled_line = True
-                    self.stick_to_top = False
-                    self.stick_to_bottom = False
-                    self.current_end = max(0, self.current_end - 1)
-                    self.previous_render = None  # Force render
-                elif keypress == 'KEY_DOWN':
-                    # Smooth scroll
-                    self.update_poll_rate(constants.FASTEST_POLL_RATE)
-                    # Scroll down
-                    self.manually_controlled_line = True
-                    self.stick_to_top = False
-                    self.stick_to_bottom = False
-                    if self.matched_rows:
-                        self.current_end = min(
-                            len(self.matched_rows) - 1, self.current_end + 1)
-                    else:
-                        self.current_end = min(
-                            len(self.messages) - 1, self.current_end + 1)
-                    self.previous_render = None  # Force render
-                elif keypress == 'KEY_RIGHT':
-                    # Stick to bottom
-                    self.stick_to_top = False
-                    self.stick_to_bottom = True
-                    self.manually_controlled_line = False
-                elif keypress == 'KEY_LEFT':
-                    # Stick to top
-                    self.stick_to_top = True
-                    self.stick_to_bottom = False
-                    self.manually_controlled_line = False
+                resolve_keypress(self, keypress)
             except curses.error:
                 # If we have an active filter, process it, always render
                 if self.exit_val == -1:
