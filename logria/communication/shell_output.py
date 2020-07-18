@@ -7,7 +7,7 @@ import curses
 import re
 import time
 from math import ceil
-from typing import Callable, List, Optional
+from typing import Callable, List, Optional, Tuple
 
 from logria.commands.regex import reset_regex_status
 from logria.communication.input_handler import InputStream
@@ -49,7 +49,7 @@ class Logria():
         self.width: int = 0  # Window width
         self.loop_time: float = 0  # How long a loop of the main app takes
         # Store the state of the previous render so we know if we need to refresh
-        self.previous_render: Optional[List[str]] = None
+        self.previous_render: Optional[Tuple[int, int]] = None
         # Pointer to the previous non-parsed message list, which is continuously updated
         self.previous_messages: List[str] = []
         self.exit_val = 0  # If exit_val is -1, the app dies
@@ -138,9 +138,9 @@ class Logria():
         start, end = determine_position(self, messages_pointer)
         # Don't do anything if nothing changed; start at index 0
         # TODO: Simplify the memory space this takes up
-        if self.previous_render == messages_pointer[max(start, 0):end]:
+        if self.previous_render == (max(start, 0), end):
             return  # Early escape
-        self.previous_render = messages_pointer[max(start, 0):end]
+        self.previous_render = (max(start, 0), end)
         self.outwin.erase()
         current_row = self.last_row  # The row we are currently rendering
         for i in range(end, start, -1):
