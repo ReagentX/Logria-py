@@ -6,24 +6,20 @@ Contains the main class that controls the state of the app
 import curses
 import re
 import time
-from json import JSONDecodeError
 from math import ceil
-from os.path import isfile
 from typing import Callable, List, Optional, Tuple
 
-from logria.commands.config import config_mode
 from logria.commands.regex import reset_regex_status
-from logria.communication.input_handler import (CommandInputStream,
-                                                FileInputStream, InputStream)
+from logria.communication.input_handler import InputStream
+from logria.communication.render import determine_position
+from logria.communication.setup import setup_streams
 from logria.interface import color_handler
 from logria.interface.textbox import Textbox, rectangle
 from logria.logger.parser import Parser
 from logria.logger.processor import process_matches, process_parser
 from logria.utilities import constants
-from logria.utilities.command_parser import Resolver
 from logria.utilities.keystrokes import resolve_keypress, validator
 from logria.utilities.regex_generator import get_real_length
-from logria.utilities.session import SessionHandler
 
 
 class Logria():
@@ -53,7 +49,7 @@ class Logria():
         self.width: int = 0  # Window width
         self.loop_time: float = 0  # How long a loop of the main app takes
         # Store the state of the previous render so we know if we need to refresh
-        self.previous_render: Optional[List[str]] = None
+        self.previous_render: Optional[Tuple[int, int]] = None
         # Pointer to the previous non-parsed message list, which is continuously updated
         self.previous_messages: List[str] = []
         self.exit_val = 0  # If exit_val is -1, the app dies
@@ -123,142 +119,6 @@ class Logria():
         self.write_to_command_line(
             self.current_status)  # Update current status
 
-    def setup_streams(self) -> None:
-        """
-        When launched without a stream, allow the user to define them for us
-        """
-        # Setup a SessionHandler and get the existing saved sessions
-        session_handler = SessionHandler()
-        # Create a new message list to see
-        setup_messages: List[str] = []
-        self.messages = setup_messages
-        # Tell the user what we are doing
-        setup_messages.extend(constants.START_MESSAGE)
-        setup_messages.extend(session_handler.show_sessions())
-        self.render_text_in_output()
-
-        # Dump the existing status
-        self.write_to_command_line('')
-
-        # Create resolver class to resolve commands
-        resolver = Resolver()
-
-        # Get user input
-        while True:
-            time.sleep(self.poll_rate)
-            self.activate_prompt()
-            command = self.box.gather().strip()
-            if not command:
-                continue
-            try:
-                chosen_item = int(command)
-                session = session_handler.load_session(chosen_item)
-                if not session:
-                    continue
-                stored_commands = session['commands']
-                # Commands need a type
-                for stored_command in stored_commands:
-                    if session.get('type') == 'file':
-                        self.streams.append(FileInputStream(stored_command))
-                    elif session.get('type') == 'command':
-                        self.streams.append(CommandInputStream(stored_command))
-            except KeyError as err:
-                setup_messages.append(
-                    f'Data missing from configuration: {err}')
-                self.render_text_in_output()
-                continue
-            except JSONDecodeError as err:
-                setup_messages.append(
-                    f'Invalid JSON: {err.msg} on line {err.lineno}, char {err.colno}')
-                self.render_text_in_output()
-                continue
-            except ValueError:
-                if command == ':config':
-                    config_mode(self)
-                    return
-                elif command == ':q':
-                    self.stop()
-                elif isfile(command):
-                    self.streams.append(
-                        FileInputStream(command.split('/')))
-                    session_handler.save_session(
-                        'File - ' + command.replace('/', '|'), command.split('/'), 'file')
-                else:
-                    cmd = resolver.resolve_command_as_list(command)
-                    self.streams.append(CommandInputStream(cmd))
-                    session_handler.save_session(
-                        'Cmd - ' + command.replace('/', '|'), cmd, 'command')
-            break
-
-        # Launch the subprocess
-        for stream in self.streams:
-            stream.poll_rate = self.poll_rate
-            stream.start()
-
-        # Set status back to what it was
-        self.write_to_command_line(self.current_status)
-
-        # Render immediately
-        self.previous_render = None
-
-        # Reset messages
-        self.stderr_messages = []
-        self.messages = self.stderr_messages
-
-    def determine_render_position(self, messages_pointer: List[str]) -> Tuple[int, int]:
-        """
-        Determine the start and end positions for a screen render
-        """
-        if self.stick_to_top:
-            end = 0
-            rows = 0
-            for i in messages_pointer:
-                if messages_pointer is self.messages:
-                    # No processing needed for normal messages
-                    item: str = i
-                elif messages_pointer is self.matched_rows:
-                    # Grab the matched message
-                    item = self.messages[i]  # type: ignore
-                # Determine if the message will fit in the window
-                msg_lines = ceil(get_real_length(item) / self.width)
-                rows += msg_lines
-                # If we can fit, increment the last row number
-                if rows < self.last_row and end < len(messages_pointer) - 1:
-                    end += 1
-                else:
-                    break
-            self.current_end = end  # Save this row so we know where we are
-            # When iterating backwards, we need to end at 0, so we must create a range
-            # object like range(10, -1, -1) to generate a list that ends at 0
-            # If there are no messages, we want to not iterate later, so we change the
-            # -1 to 0 so that we do not iterate at all
-            return -1 if messages_pointer else 0, end  # Early escape
-        elif self.stick_to_bottom:
-            end = len(messages_pointer) - 1
-        elif self.manually_controlled_line:
-            if len(messages_pointer) < self.last_row:
-                # If have fewer messages than lines, just render it all
-                end = len(messages_pointer) - 1
-            elif self.current_end < self.last_row:
-                # If the last row we rendered comes before the last row we can render,
-                # use all of the available rows
-                end = self.current_end
-            elif self.current_end < len(messages_pointer):
-                # If we are looking at a valid line, render ends there
-                end = self.current_end
-            else:
-                # If we have over-scrolled, go back
-                if self.current_end > len(messages_pointer):
-                    self.current_end = len(messages_pointer)
-                # Since current_end can be zero, we have to use the number of messages
-                end = len(messages_pointer)
-        else:
-            end = len(messages_pointer)
-        self.current_end = end  # Save this row so we know where we are
-        # Last index of a list is length - 1
-        start = max(-1, end - self.last_row - 1)
-        return start, end
-
     def render_text_in_output(self) -> None:
         """
         Renders stream content in the output window
@@ -275,11 +135,11 @@ class Logria():
             messages_pointer = self.matched_rows  # type: ignore
 
         # Determine the start and end position of the render
-        start, end = self.determine_render_position(messages_pointer)
+        start, end = determine_position(self, messages_pointer)
         # Don't do anything if nothing changed; start at index 0
-        if self.previous_render == messages_pointer[max(start, 0):end]:
+        if self.previous_render == (max(start, 0), end):
             return  # Early escape
-        self.previous_render = messages_pointer[max(start, 0):end]
+        self.previous_render = (max(start, 0), end)
         self.outwin.erase()
         current_row = self.last_row  # The row we are currently rendering
         for i in range(end, start, -1):
@@ -368,7 +228,7 @@ class Logria():
                         )
                     self.update_poll_rate(new_poll_rate)
 
-    def handle_resize(self):
+    def resize_window(self):
         """
         Resize curses elements when window size changes
         """
@@ -426,7 +286,7 @@ class Logria():
         # Start the main app loop
         while True:
             if not self.streams:
-                self.setup_streams()
+                setup_streams(self)
 
             # Update messages from the input stream's queues, track time
             t_0 = time.perf_counter()
