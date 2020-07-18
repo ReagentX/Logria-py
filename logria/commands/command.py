@@ -7,7 +7,7 @@ import curses
 from logria.utilities import constants
 # from logria.communication.shell_output import Logria
 
-def start_history_mode(logria: 'Logria', last_n: int) -> None:
+def start_history_mode(logria: 'Logria', last_n: int) -> None:  # type: ignore
     """
     Swap message pointer to history tape
     """

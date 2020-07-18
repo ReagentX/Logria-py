@@ -12,7 +12,7 @@ from logria.logger.parser import Parser
 # from logria.communication.shell_output import Logria
 
 
-def setup_parser(logria: 'Logria'):
+def setup_parser(logria: 'Logria'):  # type: ignore
     """
     Setup a parser object in the main runtime
     """

@@ -13,7 +13,7 @@ from logria.utilities.session import SessionHandler
 # from logria.communication.shell_output import Logria
 
 
-def handle_create_session_file(logria: 'Logria', session: SessionHandler) -> bool:
+def handle_create_session_file(logria: 'Logria', session: SessionHandler) -> bool:  # type: ignore
     """
     Handle manual session file creation
     """
@@ -51,7 +51,7 @@ def handle_create_session_file(logria: 'Logria', session: SessionHandler) -> boo
     return False
 
 
-def handle_create_session_command(logria: 'Logria', session: SessionHandler) -> bool:
+def handle_create_session_command(logria: 'Logria', session: SessionHandler) -> bool:  # type: ignore
     """
     Get user input to create a session
     """
@@ -83,7 +83,7 @@ def handle_create_session_command(logria: 'Logria', session: SessionHandler) -> 
     return False
 
 
-def handle_create_session(logria: 'Logria') -> None:
+def handle_create_session(logria: 'Logria') -> None:  # type: ignore
     """
     Handle the creation of new sessions
     """
@@ -118,7 +118,7 @@ def handle_create_session(logria: 'Logria') -> None:
     logria.setup_streams()
 
 
-def handle_create_parser(logria: 'Logria') -> None:
+def handle_create_parser(logria: 'Logria') -> None:  # type: ignore
     """
     Get user input to create a session
     """
@@ -187,7 +187,7 @@ def handle_create_parser(logria: 'Logria') -> None:
     logria.messages = []
 
 
-def config_mode(logria: 'Logria') -> None:
+def config_mode(logria: 'Logria') -> None:  # type: ignore
     """
     Start the configuration setup
     """
