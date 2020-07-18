@@ -4,6 +4,7 @@ Logria window content display handler
 
 
 from logria.commands.regex import reset_regex_status
+
 # from logria.communication.shell_output import Logria
 
 

@@ -7,6 +7,7 @@ import curses
 
 from logria.utilities import constants
 from logria.utilities.regex_generator import regex_test_generator
+
 # from logria.communication.shell_output import Logria
 
 

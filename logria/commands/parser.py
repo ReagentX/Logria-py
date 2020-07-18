@@ -6,9 +6,9 @@ Commands for enabling parser and analytics
 import time
 from json import JSONDecodeError
 
-
-from logria.logger.parser import Parser
 from logria.commands.regex import reset_regex_status
+from logria.logger.parser import Parser
+
 # from logria.communication.shell_output import Logria
 
 
