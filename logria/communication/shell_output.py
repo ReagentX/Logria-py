@@ -463,6 +463,7 @@ class Logria():
         # For each message, add its index to the list of matches; this is more efficient than
         # Storing a second copy of each match
         for index in range(self.last_index_regexed, len(self.messages)):
+            # pylint: disable=not-callable
             if self.func_handle and self.func_handle(self.messages[index]):
                 self.matched_rows.append(index)
         self.last_index_regexed = len(self.messages)
@@ -686,19 +687,6 @@ class Logria():
             self.handle_create_session()
         elif choice == 'parser':
             self.handle_create_parser()
-
-    def start_history_mode(self, last_n: int) -> None:
-        """
-        Swap message pointer to history tape
-        """
-        # Store previous message pointer
-        if self.messages is self.stderr_messages:
-            self.previous_messages = self.stderr_messages
-        elif self.messages is self.stdout_messages:
-            self.previous_messages = self.stdout_messages
-
-        # Set new message pointer
-        self.messages = self.box.history_tape.tail(last_n=last_n)
 
     def update_poll_rate(self, new_poll_rate: float) -> None:
         """
