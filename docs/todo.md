@@ -49,6 +49,6 @@
 - [ ] Multiprocessing manager dict for `{stdout: [], stdin: []}`
   - This is not possible because to access the data in the array we must wait for the subprocess to complete, which defeats the purpose of this app.
 - [ ] Support optional piping as input stream - [SO Link](https://stackoverflow.com/questions/1450393/how-do-you-read-from-stdin)
-  - Not possible to implement
+  - Not possible to implement as Logria requires the user to be in control of stdin
   - stdin gets taken over by whatever we pipe to this program, and we cannot move that pipe away from stdin until the pipe finishes
   - We can overwrite the pipe with `sys.stdin = open(0)` however this will not work until the original pipe ends, which will never happen when tailing a stream
