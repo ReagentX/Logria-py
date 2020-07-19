@@ -58,6 +58,7 @@ class Textbox():
         self.lastcmd: str = ''
         self.history_tape = HistoryTape(use_cache=history_cache)
         self.poll_rate: float = poll_rate
+        self.exit_val: int = 0  # Exit exit() when set to -1
         win.keypad(1)
 
     def _update_max_yx(self):
@@ -196,10 +197,12 @@ class Textbox():
                         self._insert_printable_char(char)
         return 1
 
-    def gather(self):
+    def gather(self) -> str:
         """
         Collect and return the contents of the window.
         """
+        if self.exit_val == -1:
+            return str(curses.ascii.ETX)
         result = ""
         self._update_max_yx()
         for y in range(self.maxy+1):
@@ -216,6 +219,12 @@ class Textbox():
         self.history_tape.add_item(result)
         return result
 
+    def stop(self) -> None:
+        """
+        Die if we send exit signal
+        """
+        self.exit_val = -1
+
     def edit(self, validate: Optional[Callable] = None):
         """
         Edit in the widget window and collect the results.
@@ -223,6 +232,8 @@ class Textbox():
         TODO: Async, not blocking
         """
         while True:
+            if self.exit_val == -1:
+                return ''
             time.sleep(self.poll_rate)
             ch = self.win.getch()
             if validate:
