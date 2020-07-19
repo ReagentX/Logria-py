@@ -66,9 +66,9 @@ def setup_parser(logria: 'Logria'):  # type: ignore
         time.sleep(logria.poll_rate)
         logria.activate_prompt()
         command = logria.box.gather().strip()
-        if command == 'q':
-            reset_parser(logria)
-            return
+        if command == ':q':
+            parser = None
+            break
         else:
             try:
                 parser = Parser()
@@ -80,35 +80,38 @@ def setup_parser(logria: 'Logria'):  # type: ignore
             except ValueError:
                 pass
 
-    # Overwrite a different list this time, and reset it when done
-    logria.messages = parser.display_example()
-    logria.previous_render = None
-    logria.render_text_in_output()
-    while True:
-        time.sleep(logria.poll_rate)
-        logria.activate_prompt()
-        command = logria.box.gather().strip()
-        if command == 'q':
-            reset_parser(logria)
-            return
-        else:
-            try:
-                command = int(command)
-                assert command < len(logria.messages)
-                logria.parser_index = int(command)
-                logria.current_status = f'Parsing with {parser.get_name()}, field {parser.get_analytics_for_index(command)}'
-                logria.write_to_command_line(logria.current_status)
+    # Ensure we didn't exit early already
+    if parser:
+        # Overwrite a different list this time, and reset it when done
+        logria.messages = parser.display_example()
+        logria.previous_render = None
+        logria.render_text_in_output()
+        while True:
+            time.sleep(logria.poll_rate)
+            logria.activate_prompt()
+            command = logria.box.gather().strip()
+            if command == ':q':
+                reset_parser(logria)
                 break
-            except ValueError:
-                pass
-            except AssertionError:
-                pass
+            else:
+                try:
+                    command = int(command)
+                    assert command < len(logria.messages)
+                    logria.parser_index = int(command)
+                    logria.current_status = f'Parsing with {parser.get_name()}, field {parser.get_analytics_for_index(command)}'
+                    logria.write_to_command_line(logria.current_status)
+                    break
+                except ValueError:
+                    pass
+                except AssertionError:
+                    pass
+        # Set parser
+        logria.parser = parser
 
-    # Set parser
-    logria.parser = parser
-
-    # Put pointer back to new list
-    logria.messages = logria.parsed_messages
+        # Put pointer back to new list
+        logria.messages = logria.parsed_messages
+    else:
+        reset_parser(logria)
 
     # Render immediately
     logria.previous_render = None
