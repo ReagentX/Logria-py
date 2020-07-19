@@ -3,7 +3,6 @@ Handle creating input streams for Logria
 """
 
 
-from curses.ascii import ETX
 import time
 from json import JSONDecodeError
 from os.path import isfile
@@ -46,8 +45,8 @@ def setup_streams(logria: 'Logria') -> None:  # type: ignore
         command = logria.box.gather().strip()
         if not command:
             continue
-        elif command == str(ETX):
-            return
+        if command == ':q':
+            break
         try:
             chosen_item = int(command)
             session = session_handler.load_session(chosen_item)
