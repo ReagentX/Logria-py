@@ -202,7 +202,7 @@ class Textbox():
         Collect and return the contents of the window.
         """
         if self.exit_val == -1:
-            return str(curses.ascii.ETX)
+            return ':q'  # exit string
         result = ""
         self._update_max_yx()
         for y in range(self.maxy+1):
