@@ -5,8 +5,8 @@ Logria configuration handler
 
 from os.path import isfile
 
-from logria.utilities import constants
 from logria.commands.parser import Parser
+from logria.utilities import constants
 from logria.utilities.command_parser import Resolver
 from logria.utilities.session import SessionHandler
 
