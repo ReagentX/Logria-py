@@ -3,10 +3,12 @@ Logria command handler
 """
 import curses
 
-
-from logria.utilities import constants
 from logria.commands.parser import reset_parser
+from logria.utilities import constants
+from logria.commands.config import config_mode
+
 # from logria.communication.shell_output import Logria
+
 
 def start_history_mode(logria: 'Logria', last_n: int) -> None:  # type: ignore
     """
@@ -22,7 +24,7 @@ def start_history_mode(logria: 'Logria', last_n: int) -> None:  # type: ignore
     logria.messages = logria.box.history_tape.tail(last_n=last_n)
 
 
-def handle_command(logria: 'Logria'):  # type: ignore
+def handle_command(logria: 'Logria') -> None:  # type: ignore
     """
     Enable command mode
     """
@@ -34,6 +36,8 @@ def handle_command(logria: 'Logria'):  # type: ignore
     logria.activate_prompt(':')
     command = logria.box.gather().strip()
     curses.curs_set(0)
+    # Since we parse info out of these strings we cannot use a dictionary to store
+    #   the callable map like we do in the main app
     if command:
         if command == ':q':
             logria.stop()
@@ -45,7 +49,7 @@ def handle_command(logria: 'Logria'):  # type: ignore
             else:
                 logria.update_poll_rate(new_poll_rate)
         elif ':config' in command:
-            logria.config_mode()
+            config_mode(logria)
         elif ':history' in command:
             if command == ':history off':
                 reset_parser(logria)

@@ -66,32 +66,32 @@ def setup_parser(logria: 'Logria'):  # type: ignore
         time.sleep(logria.poll_rate)
         logria.activate_prompt()
         command = logria.box.gather().strip()
-        if command == 'q':
-            reset_parser(logria)
-            return
-        else:
-            try:
-                parser = Parser()
-                parser.load(Parser().patterns()[int(command)])
-                break
-            except JSONDecodeError as err:
-                logria.messages.append(
-                    f'Invalid JSON: {err.msg} on line {err.lineno}, char {err.colno}')
-            except ValueError:
-                pass
+        if command == ':q':
+            parser = None
+            break
+        try:
+            parser = Parser()
+            parser.load(Parser().patterns()[int(command)])
+            break
+        except JSONDecodeError as err:
+            logria.messages.append(
+                f'Invalid JSON: {err.msg} on line {err.lineno}, char {err.colno}')
+        except ValueError:
+            pass
 
-    # Overwrite a different list this time, and reset it when done
-    logria.messages = parser.display_example()
-    logria.previous_render = None
-    logria.render_text_in_output()
-    while True:
-        time.sleep(logria.poll_rate)
-        logria.activate_prompt()
-        command = logria.box.gather().strip()
-        if command == 'q':
-            reset_parser(logria)
-            return
-        else:
+    # Ensure we didn't exit early already
+    if parser:
+        # Overwrite a different list this time, and reset it when done
+        logria.messages = parser.display_example()
+        logria.previous_render = None
+        logria.render_text_in_output()
+        while True:
+            time.sleep(logria.poll_rate)
+            logria.activate_prompt()
+            command = logria.box.gather().strip()
+            if command == ':q':
+                reset_parser(logria)
+                break
             try:
                 command = int(command)
                 assert command < len(logria.messages)
@@ -103,12 +103,13 @@ def setup_parser(logria: 'Logria'):  # type: ignore
                 pass
             except AssertionError:
                 pass
+        # Set parser
+        logria.parser = parser
 
-    # Set parser
-    logria.parser = parser
-
-    # Put pointer back to new list
-    logria.messages = logria.parsed_messages
+        # Put pointer back to new list
+        logria.messages = logria.parsed_messages
+    else:
+        reset_parser(logria)
 
     # Render immediately
     logria.previous_render = None

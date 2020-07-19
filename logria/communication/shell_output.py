@@ -5,9 +5,11 @@ Contains the main class that controls the state of the app
 
 import curses
 import re
+import signal
 import time
 from math import ceil
-from typing import Callable, List, Optional, Tuple
+from types import FrameType
+from typing import Callable, List, Optional, Tuple, Union
 
 from logria.commands.regex import reset_regex_status
 from logria.communication.input_handler import InputStream
@@ -137,7 +139,7 @@ class Logria():
         # Determine the start and end position of the render
         start, end = determine_position(self, messages_pointer)
         # Don't do anything if nothing changed; start at index 0
-        if self.previous_render == (max(start, 0), end):
+        if not self.analytics_enabled and self.previous_render == (max(start, 0), end):
             return  # Early escape
         self.previous_render = (max(start, 0), end)
         self.outwin.erase()
@@ -228,7 +230,7 @@ class Logria():
                         )
                     self.update_poll_rate(new_poll_rate)
 
-    def resize_window(self):
+    def resize_window(self) -> None:
         """
         Resize curses elements when window size changes
         """
@@ -242,15 +244,20 @@ class Logria():
         """
         Starts the program
         """
+        signal.signal(signal.SIGINT, self.stop)  # type: ignore
         curses.wrapper(self.main)
 
-    def stop(self) -> None:
+    # pylint: disable=unused-argument
+    def stop(self, signum: Optional[Union[str, int]] = None, frame: Optional[FrameType] = None) -> None:
         """
         Die if we send an exit signal of -1
         """
         for stream in self.streams:
             stream.exit()
         self.exit_val = -1
+        # If we crash before the command line is set up:
+        if getattr(self, 'box', None):
+            self.box.stop()
 
     def main(self, stdscr) -> None:
         """

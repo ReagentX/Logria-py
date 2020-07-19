@@ -5,8 +5,8 @@ Logria configuration handler
 
 from os.path import isfile
 
-from logria.utilities import constants
 from logria.commands.parser import Parser
+from logria.utilities import constants
 from logria.utilities.command_parser import Resolver
 from logria.utilities.session import SessionHandler
 
@@ -40,8 +40,12 @@ def handle_create_session_file(logria: 'Logria', session: SessionHandler) -> boo
             logria.render_text_in_output()
             logria.activate_prompt()
             filename = logria.box.gather().strip()
+            if filename == ':q':
+                logria.stop()
             session.save_current_session(filename)
             return True
+        elif user_done == ':q':
+            logria.stop()
     elif file_path == ':q':
         logria.stop()
     else:
@@ -62,6 +66,9 @@ def handle_create_session_command(logria: 'Logria', session: SessionHandler) -> 
     session.set_type('command')
     logria.activate_prompt()
     command = logria.box.gather().strip()
+    if command == ':q':
+        logria.stop()
+        return False
     resolved_command = cmd_resolver.resolve_command_as_list(command)
     session.add_command(resolved_command)
     logria.messages = session.as_list()
@@ -78,7 +85,7 @@ def handle_create_session_command(logria: 'Logria', session: SessionHandler) -> 
         filename = logria.box.gather().strip()
         session.save_current_session(filename)
         return True
-    elif command == ':q':
+    elif user_done == ':q':
         logria.stop()
     return False
 
@@ -135,6 +142,9 @@ def handle_create_parser(logria: 'Logria') -> None:  # type: ignore
     while parser_type not in {'regex', 'split'}:
         logria.activate_prompt()
         parser_type = logria.box.gather().strip()
+        if parser_type == ':q':
+            logria.stop()
+            return
 
     # Handle next step
     logria.messages = [f'Parser type {parser_type}']
@@ -144,6 +154,9 @@ def handle_create_parser(logria: 'Logria') -> None:  # type: ignore
     # Get name
     logria.activate_prompt()
     parser_name = logria.box.gather().strip()
+    if parser_name == ':q':
+        logria.stop()
+        return
 
     # Handle next step
     logria.messages.append(f'Parser name {parser_name}')
@@ -153,6 +166,9 @@ def handle_create_parser(logria: 'Logria') -> None:  # type: ignore
     # Get example
     logria.activate_prompt()
     parser_example = logria.box.gather().strip()
+    if parser_example == ':q':
+        logria.stop()
+        return
 
     # Handle next step
     logria.messages.append(f'Parser example {parser_example}')
@@ -162,6 +178,9 @@ def handle_create_parser(logria: 'Logria') -> None:  # type: ignore
     # Get pattern
     logria.activate_prompt()
     parser_pattern = logria.box.gather()
+    if parser_pattern == ':q':
+        logria.stop()
+        return
 
     # Set the parser's data
     temp_parser.set_pattern(

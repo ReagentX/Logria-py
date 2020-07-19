@@ -45,6 +45,8 @@ def setup_streams(logria: 'Logria') -> None:  # type: ignore
         command = logria.box.gather().strip()
         if not command:
             continue
+        if command == ':q':
+            break
         try:
             chosen_item = int(command)
             session = session_handler.load_session(chosen_item)
