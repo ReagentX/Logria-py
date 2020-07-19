@@ -69,16 +69,15 @@ def setup_parser(logria: 'Logria'):  # type: ignore
         if command == ':q':
             parser = None
             break
-        else:
-            try:
-                parser = Parser()
-                parser.load(Parser().patterns()[int(command)])
-                break
-            except JSONDecodeError as err:
-                logria.messages.append(
-                    f'Invalid JSON: {err.msg} on line {err.lineno}, char {err.colno}')
-            except ValueError:
-                pass
+        try:
+            parser = Parser()
+            parser.load(Parser().patterns()[int(command)])
+            break
+        except JSONDecodeError as err:
+            logria.messages.append(
+                f'Invalid JSON: {err.msg} on line {err.lineno}, char {err.colno}')
+        except ValueError:
+            pass
 
     # Ensure we didn't exit early already
     if parser:
@@ -93,18 +92,17 @@ def setup_parser(logria: 'Logria'):  # type: ignore
             if command == ':q':
                 reset_parser(logria)
                 break
-            else:
-                try:
-                    command = int(command)
-                    assert command < len(logria.messages)
-                    logria.parser_index = int(command)
-                    logria.current_status = f'Parsing with {parser.get_name()}, field {parser.get_analytics_for_index(command)}'
-                    logria.write_to_command_line(logria.current_status)
-                    break
-                except ValueError:
-                    pass
-                except AssertionError:
-                    pass
+            try:
+                command = int(command)
+                assert command < len(logria.messages)
+                logria.parser_index = int(command)
+                logria.current_status = f'Parsing with {parser.get_name()}, field {parser.get_analytics_for_index(command)}'
+                logria.write_to_command_line(logria.current_status)
+                break
+            except ValueError:
+                pass
+            except AssertionError:
+                pass
         # Set parser
         logria.parser = parser
 
