@@ -8,7 +8,8 @@ import re
 import signal
 import time
 from math import ceil
-from typing import Callable, List, Optional, Tuple
+from types import FrameType
+from typing import Callable, List, Optional, Tuple, Union
 
 from logria.commands.regex import reset_regex_status
 from logria.communication.input_handler import InputStream
@@ -138,7 +139,7 @@ class Logria():
         # Determine the start and end position of the render
         start, end = determine_position(self, messages_pointer)
         # Don't do anything if nothing changed; start at index 0
-        if self.previous_render == (max(start, 0), end):
+        if not self.analytics_enabled and self.previous_render == (max(start, 0), end):
             return  # Early escape
         self.previous_render = (max(start, 0), end)
         self.outwin.erase()
@@ -243,16 +244,18 @@ class Logria():
         """
         Starts the program
         """
-        signal.signal(signal.SIGINT, self.stop)
+        signal.signal(signal.SIGINT, self.stop)  # type: ignore
         curses.wrapper(self.main)
 
-    def stop(self, signum: str = '', frame: str = '') -> None:
+    # pylint: disable=unused-argument
+    def stop(self, signum: Optional[Union[str, int]] = None, frame: Optional[FrameType] = None) -> None:
         """
         Die if we send an exit signal of -1
         """
         for stream in self.streams:
             stream.exit()
         self.exit_val = -1
+        self.box.stop()
 
     def main(self, stdscr) -> None:
         """
