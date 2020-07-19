@@ -255,7 +255,9 @@ class Logria():
         for stream in self.streams:
             stream.exit()
         self.exit_val = -1
-        self.box.stop()
+        # If we crash before the command line is set up:
+        if getattr(self, 'box', None):
+            self.box.stop()
 
     def main(self, stdscr) -> None:
         """
