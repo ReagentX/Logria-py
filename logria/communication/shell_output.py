@@ -5,6 +5,7 @@ Contains the main class that controls the state of the app
 
 import curses
 import re
+import signal
 import time
 from math import ceil
 from typing import Callable, List, Optional, Tuple
@@ -228,7 +229,7 @@ class Logria():
                         )
                     self.update_poll_rate(new_poll_rate)
 
-    def resize_window(self):
+    def resize_window(self) -> None:
         """
         Resize curses elements when window size changes
         """
@@ -242,9 +243,10 @@ class Logria():
         """
         Starts the program
         """
+        signal.signal(signal.SIGINT, self.stop)
         curses.wrapper(self.main)
 
-    def stop(self) -> None:
+    def stop(self, signum: str = '', frame: str = '') -> None:
         """
         Die if we send an exit signal of -1
         """
