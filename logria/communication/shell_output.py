@@ -29,7 +29,7 @@ class Logria():
     Main app class that controls the logical flow of the app
     """
 
-    def __init__(self, stream: InputStream, history_tape_cache: bool = True, smart_poll_rate: bool = True, poll_rate=0.001):
+    def __init__(self, stream: Optional[InputStream], history_tape_cache: bool = True, smart_poll_rate: bool = True, poll_rate=0.001):
         # UI Elements initialized to None
         # The entire window
         self.stdscr: curses.window = None  # type: ignore

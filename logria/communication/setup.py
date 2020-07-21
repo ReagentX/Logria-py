@@ -46,6 +46,7 @@ def setup_streams(logria: 'Logria') -> None:  # type: ignore
         if not command:
             continue
         if command == ':q':
+            logria.stop()
             break
         try:
             chosen_item = int(command)
