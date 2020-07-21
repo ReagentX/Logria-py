@@ -84,7 +84,18 @@ def _color_str_to_color_pair(color: str):
     return color_pair
 
 
+def _sanitize(line: str) -> str:
+    """
+    Sanitize null bytes from strings before we try and render them
+    """
+    if '\x00' in line:
+        line = line.replace('\x00', '')
+    return line
+
+
 def _add_line(y_coord: int, x_coord: int, window, line: str):
+    # Sanitize string
+    line = _sanitize(line)
     # split but \033 which stands for a color change
     color_split = line.split('\033')
 
