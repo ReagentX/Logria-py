@@ -155,8 +155,10 @@ class Logria():
                 if self.highlight_match:
                     # Remove all color codes before applying highlighter
                     item = re.sub(constants.ANSI_COLOR_PATTERN, '', item)
-                    item = re.sub(
-                        self.regex_pattern, f'\u001b[35m{self.regex_pattern}\u001b[0m', item.rstrip())
+                    start, end = re.search(self.regex_pattern, item).span()
+                    if start and end:
+                        match = item[start:end]
+                        item = item.replace(match, f'\u001b[35m{match}\u001b[0m')
             # Find the correct start position
             current_row -= ceil(get_real_length(item) / self.width)
             if current_row < 0:
