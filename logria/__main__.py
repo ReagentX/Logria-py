@@ -30,7 +30,7 @@ def main():
                             help='Command to pass through that will stream into this program, ex: logria -e \'tail -f log.txt\'')
         parser.add_argument('-c', '--no-cache', dest='no_cache', default=True, action='store_false',
                             help='Disable command history disk cache')
-        parser.add_argument('-n', '--no-smart-speed', dest='no_cache', default=True, action='store_false',
+        parser.add_argument('-n', '--no-smart-speed', dest='no_smart_speed', default=True, action='store_false',
                             help='Disable variable speed polling based on message receive speed')
 
         args = parser.parse_args()
@@ -43,7 +43,7 @@ def main():
 
     # Start the app
     # If the stream is None, the app will ask the user to init
-    app = Logria(stream, history_tape_cache=args.no_cache, )
+    app = Logria(stream, history_tape_cache=args.no_cache, smart_poll_rate=args.no_smart_speed)
     app.start()
 
 

@@ -19,6 +19,8 @@ STROKES: Dict[str, Callable] = {
     'KEY_RESIZE': window.resize,
     'KEY_UP': scroll.up,
     'KEY_DOWN': scroll.down,
+    'KEY_PPAGE': scroll.pgup,
+    'KEY_NPAGE': scroll.pgdn,
     'KEY_RIGHT': scroll.bottom,
     'KEY_LEFT': scroll.top,
 }

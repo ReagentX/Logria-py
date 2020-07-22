@@ -186,3 +186,4 @@ Profiling a 40 second sample with `python -m cProfile -s time logria/__main__.py
 - Cannot use python-prompt-toolkit as it does not really support multiple input streams/sharing state between Application objects
   - Goal is also to have zero dependencies
 - Curses will crash when writing to the last line of a window, but it will write correctly, so we wrap some instances of this in a try/except to ensure we don't crash when writing valid values
+- When using `tmux` or other emulators that change the `$TERM` environment variable, you must set the default terminal to something that supports color. In `tmux`, this is as simple as adding `set -g default-terminal "screen-256color"` to `.tmux.conf`.

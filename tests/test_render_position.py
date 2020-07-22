@@ -288,5 +288,71 @@ class TestCanRenderContentRange(unittest.TestCase):
         app.stop()
 
 
+    def test_render_scroll_pgdn(self):
+        """
+        Test we render properly when stuck to the bottom
+        """
+        os.environ['TERM'] = 'dumb'
+        app = Logria(None, False, False)
+
+
+        # Fake window size: 10 x 100
+        app.height = 10
+        app.width = 100
+
+        # Set fake previous render
+        app.last_row = app.height - 3  # simulate the last row we can render to
+        app.current_end = 10  # Simulate the last message rendered
+
+        # Set fake messages
+        app.messages = [str(x) for x in range(100)]
+
+        # Set positional booleans
+        app.manually_controlled_line = False
+        app.stick_to_top = True
+        app.stick_to_bottom = True
+
+        # Scroll action
+        scroll.pgdn(app)
+
+        start, end = determine_position(app, app.messages)
+        self.assertEqual(start, 9)
+        self.assertEqual(end, 17)
+        app.stop()
+
+
+    def test_render_scroll_pgup(self):
+        """
+        Test we render properly when stuck to the bottom
+        """
+        os.environ['TERM'] = 'dumb'
+        app = Logria(None, False, False)
+
+
+        # Fake window size: 10 x 100
+        app.height = 10
+        app.width = 100
+
+        # Set fake previous render
+        app.last_row = app.height - 3  # simulate the last row we can render to
+        app.current_end = 40  # Simulate the last message rendered
+
+        # Set fake messages
+        app.messages = [str(x) for x in range(100)]
+
+        # Set positional booleans
+        app.manually_controlled_line = False
+        app.stick_to_top = True
+        app.stick_to_bottom = True
+
+        # Scroll action
+        scroll.pgup(app)
+
+        start, end = determine_position(app, app.messages)
+        self.assertEqual(start, 25)
+        self.assertEqual(end, 33)
+        app.stop()
+
+
 if __name__ == '__main__':
     unittest.main()

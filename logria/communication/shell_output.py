@@ -29,7 +29,7 @@ class Logria():
     Main app class that controls the logical flow of the app
     """
 
-    def __init__(self, stream: InputStream, history_tape_cache: bool = True, smart_poll_rate: bool = True, poll_rate=0.001):
+    def __init__(self, stream: Optional[InputStream], history_tape_cache: bool = True, smart_poll_rate: bool = True, poll_rate=0.001):
         # UI Elements initialized to None
         # The entire window
         self.stdscr: curses.window = None  # type: ignore
@@ -155,8 +155,11 @@ class Logria():
                 if self.highlight_match:
                     # Remove all color codes before applying highlighter
                     item = re.sub(constants.ANSI_COLOR_PATTERN, '', item)
-                    item = re.sub(
-                        self.regex_pattern, f'\u001b[35m{self.regex_pattern}\u001b[0m', item.rstrip())
+                    match = re.search(self.regex_pattern, item)
+                    if match:
+                        start, end = match.span()
+                        matched_str = item[start:end]
+                        item = item.replace(matched_str, f'\u001b[35m{matched_str}\u001b[0m')
             # Find the correct start position
             current_row -= ceil(get_real_length(item) / self.width)
             if current_row < 0:
