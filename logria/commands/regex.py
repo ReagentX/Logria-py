@@ -36,6 +36,10 @@ def handle_regex_command(logria: 'Logria', command: str) -> None:  # type: ignor
     Handle a regex command
     """
     reset_regex_status(logria)
+    regex_func = regex_test_generator(command)
+    if regex_func is None:
+        logria.write_to_command_line(f'Invalid regex pattern: {command}')
+        return
     logria.func_handle = regex_test_generator(command)
     logria.highlight_match = True
     logria.regex_pattern = command
