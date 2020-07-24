@@ -300,11 +300,12 @@ class Logria():
         # Disable cursor:
         curses.curs_set(0)
 
+        # If the streams do not exist, create them
+        if not self.streams:
+            setup_streams(self)
+
         # Start the main app loop
         while True:
-            if not self.streams:
-                setup_streams(self)
-
             # Update messages from the input stream's queues, track time
             t_0 = time.perf_counter()
             new_messages: int = 0
