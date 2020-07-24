@@ -5,7 +5,6 @@ Main app loop
 
 import argparse
 import os
-from subprocess import PIPE
 import sys
 
 from logria import APP_NAME, VERSION
