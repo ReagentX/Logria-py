@@ -9,7 +9,7 @@ from subprocess import PIPE
 import sys
 
 from logria import APP_NAME, VERSION
-from logria.communication.input_handler import CommandInputStream, ProcSubInputStream
+from logria.communication.input_handler import CommandInputStream
 from logria.communication.shell_output import Logria
 from logria.utilities import constants
 

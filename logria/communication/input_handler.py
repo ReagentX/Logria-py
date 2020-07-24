@@ -72,12 +72,10 @@ class CommandInputStream(InputStream):
 
             # Un-buffer streams
             stdout_flag = fcntl(self.proc.stdout, F_GETFL)  # type: ignore
-            fcntl(self.proc.stdout, F_SETFL, stdout_flag |
-                  O_NONBLOCK)  # type: ignore
+            fcntl(self.proc.stdout, F_SETFL, stdout_flag | O_NONBLOCK)  # type: ignore
 
             stderr_flag = fcntl(self.proc.stderr, F_GETFL)  # type: ignore
-            fcntl(self.proc.stderr, F_SETFL, stderr_flag |
-                  O_NONBLOCK)  # type: ignore
+            fcntl(self.proc.stderr, F_SETFL, stderr_flag | O_NONBLOCK)  # type: ignore
 
             while True:
                 time.sleep(self.poll_rate)
