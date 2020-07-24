@@ -1,5 +1,5 @@
 """
-Main app loop
+Main app loop, receive CLI args
 """
 
 
