@@ -3,11 +3,11 @@ Functions for handling getting input from a file or from stdout/stderr
 """
 
 
-import time
 import multiprocessing
-from subprocess import PIPE, Popen
-from fcntl import fcntl, F_GETFL, F_SETFL
+import time
+from fcntl import F_GETFL, F_SETFL, fcntl
 from os import O_NONBLOCK
+from subprocess import PIPE, Popen
 from typing import List
 
 
@@ -27,7 +27,7 @@ class InputStream():
         # Create the child process, have it run in the background
         self.process = multiprocessing.Process(
             target=self.run, args=(args, self.stdout, self.stderr,))
-        self.process.name = ' '.join(args)
+        self.process.name = ' '.join(str(args))
 
     def start(self):
         """
@@ -110,28 +110,6 @@ class CommandInputStream(InputStream):
         self.process.terminate()  # Kill Python process
 
 
-class PipeInputStream(InputStream):
-    """
-    Read in a pipe as a stream
-    """
-    # pylint: disable=arguments-differ
-    def run(self, pipe, stdoutq: multiprocessing.Queue, _: multiprocessing.Queue) -> None:
-        """
-        Given a filename, open the file and read the contents
-        args: a list of folders to be joined ['Docs', 'file.py'] -> 'Docs/file.py'
-        """
-        # pipe = open(0)
-        while True:
-            time.sleep(self.poll_rate)
-            try:
-                pipe_input = pipe.readline()
-                if pipe_input:
-                    stdoutq.put(pipe_input)
-            # pylint: disable=bare-except
-            except:
-                break
-
-
 class FileInputStream(InputStream):
     """
     Read in a file as a stream
@@ -152,6 +130,8 @@ class FileInputStream(InputStream):
         except FileNotFoundError:
             stdoutq.put(
                 f'File not found error opening handle to command: {"/".join(args)}')
+        except OSError:
+            stdoutq.put(f'Bad file descriptor: {args}')
 
 
 if __name__ == '__main__':
