@@ -63,3 +63,19 @@ PARSER_SET_NAME = 'Enter a name for the parser:'
 PARSER_SET_EXAMPLE = 'Enter an example string to match against:'
 PARSER_SET_PATTERN = 'Enter a regex pattern:'
 SAVE_CURRENT_PATTERN = 'Press enter to save or type `:q` to quit:'
+
+# Startup messages
+APP_DESCRIPTION = 'A powerful CLI tool that puts log analytics at your fingertips.'
+EXEC_HELP = 'Command to listen to, ex: logria -e \'tail -f log.txt\''
+HISTORY_HELP = 'Disable command history disk cache'
+SMART_SPEED_HELP = 'Disable variable speed polling based on message receive rate'
+PIPE_INPUT_ERROR = \
+'''Piping is not supported as Logria cannot both
+listen to stdin as well as get user input from
+your tty. Process substitution is also not
+allowed, as Logria is unable to read from the
+file descriptor created by the shell.
+
+To capture command output, start Logria and
+enter the command during the setup process, or
+invoke Logria with `logria -e \'command\''''
