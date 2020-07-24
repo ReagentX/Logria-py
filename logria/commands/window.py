@@ -12,7 +12,7 @@ def swap_input(logria: 'Logria'):  # type: ignore
     """
     Swap between stderr and stdout
     """
-    logria.previous_render = None  # Force render
+    logria.previous_render = None  # Force render, defer draw
     # Swap stdout and stderr
     reset_parser(logria)
     reset_regex_status(logria)
