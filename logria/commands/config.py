@@ -20,8 +20,7 @@ def handle_create_session_file(logria: 'Logria', session: SessionHandler) -> boo
     cmd_resolver = Resolver()  # The resolver we use to add commands
 
     logria.messages.append(constants.SESSION_ADD_FILE)
-    logria.previous_render = None  # Force render
-    logria.render_text_in_output()
+    logria.refresh()
     session.set_type('file')
     logria.activate_prompt()
     file_path = logria.box.gather().strip()
@@ -30,14 +29,12 @@ def handle_create_session_file(logria: 'Logria', session: SessionHandler) -> boo
         session.add_command(resolved_file_path)
         logria.messages = session.as_list()
         logria.messages.append(constants.SESSION_SHOULD_CONTINUE_FILE)
-        logria.previous_render = None  # Force render
-        logria.render_text_in_output()
+        logria.refresh()
         logria.activate_prompt()
         user_done = logria.box.gather().strip()
         if user_done == ':s':
             logria.messages = [constants.SAVE_CURRENT_SESSION]
-            logria.previous_render = None  # Force render
-            logria.render_text_in_output()
+            logria.refresh()
             logria.activate_prompt()
             filename = logria.box.gather().strip()
             if filename == ':q':
@@ -50,8 +47,7 @@ def handle_create_session_file(logria: 'Logria', session: SessionHandler) -> boo
         logria.stop()
     else:
         logria.messages.append(f'Cannot resolve path: {"/".join(file_path)}')
-        logria.previous_render = None  # Force render
-        logria.render_text_in_output()
+        logria.refresh()
     return False
 
 
@@ -61,8 +57,7 @@ def handle_create_session_command(logria: 'Logria', session: SessionHandler) -> 
     """
     cmd_resolver = Resolver()  # The resolver we use to add commands
     logria.messages.append(constants.SESSION_ADD_COMMAND)
-    logria.previous_render = None  # Force render
-    logria.render_text_in_output()
+    logria.refresh()
     session.set_type('command')
     logria.activate_prompt()
     command = logria.box.gather().strip()
@@ -73,14 +68,12 @@ def handle_create_session_command(logria: 'Logria', session: SessionHandler) -> 
     session.add_command(resolved_command)
     logria.messages = session.as_list()
     logria.messages.append(constants.SESSION_SHOULD_CONTINUE_COMMAND)
-    logria.previous_render = None  # Force render
-    logria.render_text_in_output()
+    logria.refresh()
     logria.activate_prompt()
     user_done = logria.box.gather().strip()
     if user_done == ':s':
         logria.messages = [constants.SAVE_CURRENT_SESSION]
-        logria.previous_render = None  # Force render
-        logria.render_text_in_output()
+        logria.refresh()
         logria.activate_prompt()
         filename = logria.box.gather().strip()
         session.save_current_session(filename)
@@ -97,8 +90,7 @@ def handle_create_session(logria: 'Logria') -> None:  # type: ignore
     # Render text
     logria.current_end = 0
     logria.messages = constants.CREATE_SESSION_START_MESSAGES
-    logria.previous_render = None  # Force render
-    logria.render_text_in_output()
+    logria.refresh()
 
     # Get the user choice
     choice = None
@@ -134,8 +126,7 @@ def handle_create_parser(logria: 'Logria') -> None:  # type: ignore
     # Render text
     logria.current_end = 0
     logria.messages = constants.CREATE_PARSER_MESSAGES
-    logria.previous_render = None  # Force render
-    logria.render_text_in_output()
+    logria.refresh()
     # Get type
     logria.activate_prompt()
     parser_type: str = ''
@@ -149,8 +140,7 @@ def handle_create_parser(logria: 'Logria') -> None:  # type: ignore
     # Handle next step
     logria.messages = [f'Parser type {parser_type}']
     logria.messages.append(constants.PARSER_SET_NAME)
-    logria.previous_render = None  # Force render
-    logria.render_text_in_output()
+    logria.refresh()
     # Get name
     logria.activate_prompt()
     parser_name = logria.box.gather().strip()
@@ -161,8 +151,7 @@ def handle_create_parser(logria: 'Logria') -> None:  # type: ignore
     # Handle next step
     logria.messages.append(f'Parser name {parser_name}')
     logria.messages.append(constants.PARSER_SET_EXAMPLE)
-    logria.previous_render = None  # Force render
-    logria.render_text_in_output()
+    logria.refresh()
     # Get example
     logria.activate_prompt()
     parser_example = logria.box.gather().strip()
@@ -173,8 +162,7 @@ def handle_create_parser(logria: 'Logria') -> None:  # type: ignore
     # Handle next step
     logria.messages.append(f'Parser example {parser_example}')
     logria.messages.append(constants.PARSER_SET_PATTERN)
-    logria.previous_render = None  # Force render
-    logria.render_text_in_output()
+    logria.refresh()
     # Get pattern
     logria.activate_prompt()
     parser_pattern = logria.box.gather()
@@ -196,8 +184,7 @@ def handle_create_parser(logria: 'Logria') -> None:  # type: ignore
 
     logria.messages = temp_parser.as_list()
     logria.messages.append(constants.SAVE_CURRENT_PATTERN)
-    logria.previous_render = None  # Force render
-    logria.render_text_in_output()
+    logria.refresh()
     logria.activate_prompt()
     final_res = logria.box.gather().strip()
     if final_res == ':q':
@@ -212,8 +199,7 @@ def config_mode(logria: 'Logria') -> None:  # type: ignore
     """
     logria.current_end = 0
     logria.messages = constants.CONFIG_START_MESSAGES
-    logria.previous_render = None  # Force render
-    logria.render_text_in_output()
+    logria.refresh()
     choice = None
     while choice not in {'session', 'parser'}:
         logria.activate_prompt()
