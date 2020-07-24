@@ -159,7 +159,8 @@ class Logria():
                     if match:
                         start, end = match.span()
                         matched_str = item[start:end]
-                        item = item.replace(matched_str, f'\u001b[35m{matched_str}\u001b[0m')
+                        item = item.replace(
+                            matched_str, f'\u001b[35m{matched_str}\u001b[0m')
             # Find the correct start position
             current_row -= ceil(get_real_length(item) / self.width)
             if current_row < 0:
@@ -233,6 +234,13 @@ class Logria():
                         )
                     self.update_poll_rate(new_poll_rate)
 
+    def redraw(self) -> None:
+        """
+        Force re-render the content of the window as if it has never been rendered before
+        """
+        self.previous_render = None  # Force render
+        self.render_text_in_output()
+
     def resize_window(self) -> None:
         """
         Resize curses elements when window size changes
@@ -240,8 +248,7 @@ class Logria():
         self.height, self.width = self.stdscr.getmaxyx()
         curses.resizeterm(self.height, self.width)
         self.build_command_line()  # Rebuild the command line
-        self.previous_render = None  # Force render
-        self.render_text_in_output()
+        self.redraw()
 
     def start(self) -> None:
         """

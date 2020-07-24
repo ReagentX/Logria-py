@@ -87,7 +87,7 @@ def toggle_highlight(logria: 'Logria'):  # type: ignore
     """
     Toggle highlighting of search matches
     """
-    logria.previous_render = None  # Force render
+    logria.previous_render = None  # Force render, but defer draw
     if logria.func_handle and logria.highlight_match:
         logria.highlight_match = False
     elif logria.func_handle and not logria.highlight_match:
