@@ -42,6 +42,7 @@ class Resolver():
                             f'{path} listed in PATH environment variable, refers to file!')
                         continue
                 try:
+                    # No need to use fs wrapper here
                     programs = os.listdir(self.resolve_home_dir(path))
                 except FileNotFoundError:
                     print(
