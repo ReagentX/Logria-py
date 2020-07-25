@@ -9,6 +9,7 @@ from collections import Counter
 from pathlib import Path
 from typing import List, Union
 
+from logria.utilities import fs
 from logria.utilities.constants import ANSI_COLOR_PATTERN, SAVED_PATTERNS_PATH
 
 
@@ -227,7 +228,7 @@ class Parser():
         # Convert to json
         if self._pattern is not None:
             raise ValueError('Setting pattern while pattern already set!')
-        patterns = set(os.listdir(self.folder))
+        patterns = set(fs.listdir(self.folder, {'.DS_Store'}))
         if name in patterns:
             with open(self.folder / name, 'r') as f:
                 d = json.loads(f.read())
@@ -249,12 +250,12 @@ class Parser():
         """
         Get the existing patterns as a dict
         """
-        patterns = os.listdir(self.folder)
+        patterns = fs.listdir(self.folder, {'.DS_Store'})
         return dict(zip(range(0, len(patterns)), patterns))
 
     def show_patterns(self) -> List[str]:
         """
         Get the existing patterns as a list
         """
-        patterns = os.listdir(self.folder)
+        patterns = fs.listdir(self.folder, {'.DS_Store'})
         return [f'{i}: {v}' for i, v in enumerate(patterns)]
