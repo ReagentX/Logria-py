@@ -31,7 +31,7 @@ class TestListDirectory(unittest.TestCase):
         Test that we don't crash if the path does not exist
         """
         result = fs.listdir(Path('a/b/c/d/e/f/g'), {'.DS_Store'})
-        self.assertIsNone(result)
+        self.assertListEqual(result, [])
 
     def test_can_remove_pattern(self):
         """
