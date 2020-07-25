@@ -67,12 +67,15 @@ def setup_parser(logria: 'Logria'):  # type: ignore
         logria.activate_prompt()
         command = logria.box.gather().strip()
         if command == ':q':
+            logria.messages = logria.previous_messages
             parser = None
             break
         try:
             parser = Parser()
             parser.load(Parser().patterns()[int(command)])
             break
+        except KeyError:
+            continue
         except JSONDecodeError as err:
             logria.messages.append(
                 f'Invalid JSON: {err.msg} on line {err.lineno}, char {err.colno}')
@@ -90,8 +93,10 @@ def setup_parser(logria: 'Logria'):  # type: ignore
             logria.activate_prompt()
             command = logria.box.gather().strip()
             if command == ':q':
+                logria.messages = logria.previous_messages
+                logria.previous_render = None
                 reset_parser(logria)
-                break
+                return  # no need to do any other work
             try:
                 command = int(command)
                 assert command < len(logria.messages)
@@ -109,6 +114,7 @@ def setup_parser(logria: 'Logria'):  # type: ignore
         # Put pointer back to new list
         logria.messages = logria.parsed_messages
     else:
+        logria.messages = logria.previous_messages
         reset_parser(logria)
 
     # Render immediately

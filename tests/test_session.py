@@ -36,8 +36,11 @@ class TestSessionHandler(unittest.TestCase):
         """
         s = session.SessionHandler()
         actual = s.sessions()
-        expected = {0: '.DS_Store', 1: 'Cmd - Generate Test Logs',
-                    2: 'File - Sample Access Log', 3: 'File - readme'}
+        expected = {
+            0: 'Cmd - Generate Test Logs',
+            1: 'File - Sample Access Log',
+            2: 'File - readme'
+        }
         self.assertEqual(actual, expected)
 
     def test_show_sessions(self):
@@ -46,10 +49,9 @@ class TestSessionHandler(unittest.TestCase):
         """
         s = session.SessionHandler()
         actual = s.show_sessions()
-        expected = ['0: .DS_Store',
-                    '1: Cmd - Generate Test Logs',
-                    '2: File - Sample Access Log',
-                    '3: File - readme'
+        expected = ['0: Cmd - Generate Test Logs',
+                    '1: File - Sample Access Log',
+                    '2: File - readme'
                     ]
         self.assertEqual(actual, expected)
 
@@ -68,7 +70,7 @@ class TestSessionHandler(unittest.TestCase):
         """
         s = session.SessionHandler()
         sessions = s.sessions()
-        first_item = list(sessions.keys())[1]
+        first_item = list(sessions.keys())[0]
         actual = s.load_session(first_item)
         expected = \
             {

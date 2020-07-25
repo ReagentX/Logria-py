@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 from typing import List, Union
 
+from logria.utilities import fs
 from logria.utilities.constants import LOGRIA_ROOT, SAVED_SESSIONS_PATH
 
 
@@ -102,12 +103,12 @@ class SessionHandler():
         """
         Get the existing sessions as a dict
         """
-        sessions = sorted(os.listdir(self.folder))
+        sessions = sorted(fs.listdir(self.folder, {'.DS_Store'}))
         return dict(zip(range(0, len(sessions)), sessions))
 
     def show_sessions(self) -> List[str]:
         """
         Get the existing sessions as a list for output
         """
-        sessions = sorted(os.listdir(self.folder))
+        sessions = sorted(fs.listdir(self.folder, {'.DS_Store'}))
         return [f'{i}: {v}' for i, v in enumerate(sessions)]
