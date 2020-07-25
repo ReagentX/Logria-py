@@ -43,6 +43,7 @@ class Logria():
         # Wether we save command history
         self.history_tape_cache: bool = history_tape_cache
         self.poll_rate: float = poll_rate  # The rate at which we check for new messages
+        # Wehether we reduce the poll rate to the message receive speed
         self.smart_poll_rate: bool = smart_poll_rate
 
         # App state that changes as we use the app
