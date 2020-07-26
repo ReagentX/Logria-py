@@ -132,15 +132,3 @@ class FileInputStream(InputStream):
                 f'File not found error opening handle to command: {"/".join(args)}')
         except OSError:
             stdoutq.put(f'Bad file descriptor: {args}')
-
-
-if __name__ == '__main__':
-    cmd = ['python', 'logria/communication/generate_test_logs.py']
-    stream = CommandInputStream(cmd)
-    while 1:
-        if not stream.stdout.empty():
-            out_log = stream.stdout.get()
-            print('stdout:', out_log, end='', flush=True)
-        if not stream.stderr.empty():
-            err_log = stream.stderr.get()
-            print('stderr:', err_log, end='', flush=True)
