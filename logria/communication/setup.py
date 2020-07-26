@@ -3,9 +3,7 @@ Handle creating input streams for Logria
 """
 
 
-from logria import commands
 import time
-import re
 from json import JSONDecodeError
 from os.path import isfile
 from typing import List
@@ -35,7 +33,6 @@ def render_setup_messages(logria: 'Logria', session_handler: SessionHandler) -> 
     logria.redraw()
 
 
-
 def resolve_delete_command(command: str) -> List[int]:
     """
     Resolve a delete command to the list of indexes to delete
@@ -49,16 +46,15 @@ def resolve_delete_command(command: str) -> List[int]:
             range_to_remove = part.split('-')
             if len(range_to_remove) != 2:
                 continue  # Handle multiple dashes
-            else:
-                try:
-                    start = int(range_to_remove[0])
-                    end = int(range_to_remove[1])
-                except ValueError:
-                    continue
-                for ii in range(start, end):
-                    out_l.append(ii)
-                # Since range() goes up to but does not include end
-                out_l.append(end)
+            try:
+                start = int(range_to_remove[0])
+                end = int(range_to_remove[1])
+            except ValueError:
+                continue
+            for ii in range(start, end):
+                out_l.append(ii)
+            # Since range() goes up to but does not include end
+            out_l.append(end)
         else:
             try:
                 part_num = int(part)
@@ -110,12 +106,12 @@ def setup_streams(logria: 'Logria') -> None:  # type: ignore
                 elif session.get('type') == 'command':
                     logria.streams.append(CommandInputStream(stored_command))
         except KeyError as err:
-            setup_messages.append(
+            logria.messages.append(
                 f'Data missing from configuration: {err}')
             logria.render_text_in_output()
             continue
         except JSONDecodeError as err:
-            setup_messages.append(
+            logria.messages.append(
                 f'Invalid JSON: {err.msg} on line {err.lineno}, char {err.colno}')
             logria.render_text_in_output()
             continue
