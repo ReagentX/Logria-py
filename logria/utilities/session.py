@@ -20,8 +20,7 @@ class SessionHandler():
     def __init__(self):
         self._commands: List[List[str]] = []
         self._type: str = ''  # One of {'command', 'file'}
-        self.folder: Path = None
-        self.setup_folder()
+        self.folder: Path = self.setup_folder()
 
     def set_params(self, command: List[str], type_: str) -> None:
         """
@@ -42,7 +41,7 @@ class SessionHandler():
         """
         self._commands.append(command)
 
-    def setup_folder(self):
+    def setup_folder(self) -> Path:
         """
         Set workspace folder, create if nonexistent
         """
@@ -55,7 +54,7 @@ class SessionHandler():
             pass
         else:
             os.mkdir(Path(home, SAVED_SESSIONS_PATH))
-        self.folder = Path(home, SAVED_SESSIONS_PATH)
+        return Path(home, SAVED_SESSIONS_PATH)
 
     def load_session(self, item: int) -> dict:
         """
@@ -67,6 +66,18 @@ class SessionHandler():
             with open(self.folder / name, 'r') as f:
                 out_d = json.loads(f.read())
         return out_d
+
+    def remove_session(self, session_name: str) -> bool:
+        """
+        Remove a session from the list of sessions
+
+        session_name is the filename of the session
+        """
+        path = self.folder / session_name
+        if os.path.exists(path):
+            os.remove(path)
+            return True
+        return False  # If we were not able to delete the file
 
     def save_current_session(self, name: str) -> None:
         """
