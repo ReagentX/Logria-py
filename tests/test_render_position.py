@@ -42,6 +42,7 @@ class TestCanRenderContentRange(unittest.TestCase):
         self.assertEqual(end, 99)
         app.stop()
 
+
     def test_render_first_items(self):
         """
         Test we render properly when stuck to the top
@@ -209,6 +210,40 @@ class TestCanRenderContentRange(unittest.TestCase):
 
         # Set fake messages
         app.messages = [str(x) for x in range(100)]
+
+        # Set positional booleans
+        app.manually_controlled_line = False
+        app.stick_to_top = True
+        app.stick_to_bottom = True
+
+        # Scroll action
+        scroll.down(app)
+
+        start, end = determine_position(app, app.messages)
+        self.assertEqual(start, 3)
+        self.assertEqual(end, 11)
+        app.stop()
+
+
+    def test_render_scroll_down_matched(self):
+        """
+        Test we render properly when stuck to the bottom
+        """
+        os.environ['TERM'] = 'dumb'
+        app = Logria(None, False, False)
+
+
+        # Fake window size: 10 x 100
+        app.height = 10
+        app.width = 100
+
+        # Set fake previous render
+        app.last_row = app.height - 3  # simulate the last row we can render to
+        app.current_end = 10  # Simulate the last message rendered
+
+        # Set fake messages
+        app.messages = [str(x) for x in range(100)]
+        app.matched_rows = [x for x in range(20)]
 
         # Set positional booleans
         app.manually_controlled_line = False
