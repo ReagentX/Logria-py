@@ -96,6 +96,15 @@ class TestSessionHandler(unittest.TestCase):
         s.save_session('Test', ['ls', '-l'], 'cmd')
         remove(s.folder / 'Test')
 
+    def test_remove_session(self):
+        """
+        Test that we can write a session if we need to
+        """
+        s = session.SessionHandler()
+        s.save_session('Test', ['ls', '-l'], 'cmd')
+        s.remove_session('Test')
+        self.assertNotIn('Test', s.sessions().values())
+
 
 class TestSessionBuilder(unittest.TestCase):
     """
