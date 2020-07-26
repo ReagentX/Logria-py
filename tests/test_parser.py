@@ -337,6 +337,58 @@ class TestPatternInteraction(unittest.TestCase):
         self.assertEqual(loaded, saved)
         remove(Path(p2.folder) / name)
 
+    def test_cannot_load_twice(self):
+        """
+        Test that we can successfully save and load items
+        """
+        p = parser.Parser()
+        log_message = '2005-03-19 15:10:26,773 - simple_example - CRITICAL - critical message 22'
+        analytics_methods = {
+            "Date": "date",
+            "Caller": "count",
+            "Level": "count",
+            "Message": "sum"
+        }
+        name = 'Test Run'
+        p.set_pattern(' - ', 'split', name,
+                      log_message, analytics_methods)
+        saved = p.as_dict()
+        p.save()
+        p2 = parser.Parser()
+        p2.load(name)
+        with self.assertRaises(ValueError):
+            p2.load(name)
+        remove(Path(p2.folder) / name)
+
+    def test_remove_parser(self):
+        """
+        Test that we can write a session if we need to
+        """
+        p = parser.Parser()
+        log_message = '2005-03-19 15:10:26,773 - simple_example - CRITICAL - critical message 22'
+        analytics_methods = {
+            "Date": "date",
+            "Caller": "count",
+            "Level": "count",
+            "Message": "sum"
+        }
+        name = 'Test Run'
+        p.set_pattern(' - ', 'split', name,
+                      log_message, analytics_methods)
+        saved = p.as_dict()
+        p.save()
+        p2 = parser.Parser()
+        p2.load(name)
+        p2.remove('Test Run')
+        self.assertNotIn('Test Run', p2.patterns().values())
+
+    def test_cannot_remove_parser(self):
+        """
+        Test that we can write a session if we need to
+        """
+        p = parser.Parser()
+        self.assertFalse(p.remove('This Fake Parser Name'))
+
     def test_display_example(self):
         """
         Test that we properly format the example parsed message
@@ -360,6 +412,14 @@ class TestPatternInteraction(unittest.TestCase):
         ]
         self.assertEqual(actual, expected)
 
+    def test_cannot_display_example(self):
+        """
+        Test that we properly format the example parsed message
+        """
+        p = parser.Parser()
+        with self.assertRaises(ValueError):
+            p.display_example()
+
     def test_patterns(self):
         """
         Test that we read patterns as dict
@@ -373,3 +433,4 @@ class TestPatternInteraction(unittest.TestCase):
         """
         p = parser.Parser()
         self.assertIsInstance(p.show_patterns(), list)
+
