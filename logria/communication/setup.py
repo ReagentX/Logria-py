@@ -3,7 +3,9 @@ Handle creating input streams for Logria
 """
 
 
+from logria import commands
 import time
+import re
 from json import JSONDecodeError
 from os.path import isfile
 from typing import List
@@ -18,22 +20,61 @@ from logria.utilities.session import SessionHandler
 # from logria.communication.shell_output import Logria
 
 
-def setup_streams(logria: 'Logria') -> None:  # type: ignore
+def render_setup_messages(logria: 'Logria', session_handler: SessionHandler) -> None:  # type: ignore
     """
-    When launched without a stream, allow the user to define them for us
+    Render setup messages from session_handler
     """
-    # Setup a SessionHandler and get the existing saved sessions
-    session_handler = SessionHandler()
     # Create a new message list to see
     setup_messages: List[str] = []
     logria.messages = setup_messages
     # Tell the user what we are doing
     setup_messages.extend(constants.START_MESSAGE)
     setup_messages.extend(session_handler.show_sessions())
-    logria.render_text_in_output()
 
-    # Dump the existing status
-    logria.write_to_command_line('')
+    # Force re-render
+    logria.redraw()
+
+
+
+def resolve_delete_command(command: str) -> List[int]:
+    """
+    Resolve a delete command to the list of indexes to delete
+    """
+    out_l = []
+    digits = command.replace(':r ', '')
+    parts = digits.split(',')
+    for part in parts:
+        print(part)
+        if '-' in part:
+            range_to_remove = part.split('-')
+            if len(range_to_remove) != 2:
+                continue  # Handle multiple dashes
+            else:
+                try:
+                    start = int(range_to_remove[0])
+                    end = int(range_to_remove[1])
+                except ValueError:
+                    continue
+                for ii in range(start, end):
+                    out_l.append(ii)
+                # Since range() goes up to but does not include end
+                out_l.append(end)
+        else:
+            try:
+                part_num = int(part)
+            except ValueError:
+                continue
+            out_l.append(int(part_num))
+    return list(set(out_l))  # Remove dupes
+
+
+def setup_streams(logria: 'Logria') -> None:  # type: ignore
+    """
+    When launched without a stream, allow the user to define them for us
+    """
+    # Setup a SessionHandler and get the existing saved sessions
+    session_handler = SessionHandler()
+    render_setup_messages(logria, session_handler)
 
     # Create resolver class to resolve commands
     resolver = Resolver()
@@ -48,6 +89,14 @@ def setup_streams(logria: 'Logria') -> None:  # type: ignore
         if command == ':q':
             logria.stop()
             break
+        if ':r ' in command[:3]:
+            items_to_remove = resolve_delete_command(command)
+            sessions = session_handler.sessions()
+            for item in items_to_remove:
+                if item in sessions:
+                    session_handler.remove_session(sessions[item])
+            render_setup_messages(logria, session_handler)
+            continue
         try:
             chosen_item = int(command)
             session = session_handler.load_session(chosen_item)
