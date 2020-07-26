@@ -31,6 +31,13 @@ class TestRegexGenerator(unittest.TestCase):
         pattern = regex_generator.regex_test_generator(' - ')
         self.assertTrue(pattern(' \u001b[0m-\u001b[32m '))
 
+    def test_generated_invalid_regex(self):
+        """
+        Test that we match properly against a string with escape codes
+        """
+        pattern = regex_generator.regex_test_generator('(')
+        self.assertIsNone(pattern)
+
 
 class TestRealLength(unittest.TestCase):
     """
