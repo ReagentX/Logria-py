@@ -3,7 +3,7 @@ Unit Tests for setup functions
 """
 
 import unittest
-from logria.communication import setup
+from logria.commands.config import resolve_delete_command
 
 
 class SetupValidator(unittest.TestCase):
@@ -15,14 +15,14 @@ class SetupValidator(unittest.TestCase):
         """
         Test that we correctly validate keystrokes
         """
-        resolved = setup.resolve_delete_command(':r 1')
+        resolved = resolve_delete_command(':r 1')
         self.assertCountEqual(resolved, [1])
 
     def test_resolve_double_num(self):
         """
         Test that we correctly validate keystrokes
         """
-        resolved = setup.resolve_delete_command(':r 1,2')
+        resolved = resolve_delete_command(':r 1,2')
         self.assertCountEqual(resolved, [1, 2])
 
 
@@ -30,7 +30,7 @@ class SetupValidator(unittest.TestCase):
         """
         Test that we correctly validate keystrokes
         """
-        resolved = setup.resolve_delete_command(':r 1,2,3')
+        resolved = resolve_delete_command(':r 1,2,3')
         self.assertCountEqual(resolved, [1, 2, 3])
 
 
@@ -38,7 +38,7 @@ class SetupValidator(unittest.TestCase):
         """
         Test that we correctly validate keystrokes
         """
-        resolved = setup.resolve_delete_command(':r 1,2,3,')
+        resolved = resolve_delete_command(':r 1,2,3,')
         self.assertCountEqual(resolved, [1, 2, 3])
 
 
@@ -46,7 +46,7 @@ class SetupValidator(unittest.TestCase):
         """
         Test that we correctly validate keystrokes
         """
-        resolved = setup.resolve_delete_command(':r 1-5')
+        resolved = resolve_delete_command(':r 1-5')
         self.assertCountEqual(resolved, [1, 2, 3, 4, 5])
 
 
@@ -54,7 +54,7 @@ class SetupValidator(unittest.TestCase):
         """
         Test that we correctly validate keystrokes
         """
-        resolved = setup.resolve_delete_command(':r 1-3,5-7')
+        resolved = resolve_delete_command(':r 1-3,5-7')
         self.assertCountEqual(resolved, [1, 2, 3, 5, 6, 7])
 
 
@@ -62,7 +62,7 @@ class SetupValidator(unittest.TestCase):
         """
         Test that we correctly validate keystrokes
         """
-        resolved = setup.resolve_delete_command(':r 1-3,5-7,9-11')
+        resolved = resolve_delete_command(':r 1-3,5-7,9-11')
         self.assertCountEqual(resolved, [1, 2, 3, 5, 6, 7, 9, 10, 11])
 
 
@@ -70,5 +70,5 @@ class SetupValidator(unittest.TestCase):
         """
         Test that we correctly validate keystrokes
         """
-        resolved = setup.resolve_delete_command(':r 1-3,5,9-11,15')
+        resolved = resolve_delete_command(':r 1-3,5,9-11,15')
         self.assertCountEqual(resolved, [1, 2, 3, 5, 9, 10, 11, 15])
