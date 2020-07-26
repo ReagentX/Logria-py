@@ -579,7 +579,3 @@ class TestCanRenderContentRangeKeypress(unittest.TestCase):
         self.assertEqual(start, 25)
         self.assertEqual(end, 33)
         app.stop()
-
-
-if __name__ == '__main__':
-    unittest.main()
