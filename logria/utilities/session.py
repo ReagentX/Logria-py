@@ -41,6 +41,7 @@ class SessionHandler():
         """
         self._commands.append(command)
 
+    # pylint: disable=no-self-use
     def setup_folder(self) -> Path:
         """
         Set workspace folder, create if nonexistent
