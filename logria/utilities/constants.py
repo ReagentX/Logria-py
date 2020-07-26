@@ -33,6 +33,8 @@ START_MESSAGE = [
     'Enter a new command to open and save a new stream,',
     'or enter a number to choose a saved session from the list,',
     'or enter `:config` to configure.',
+    ' ',  # Blank line for printout
+    'Enter `:r #` to remove session #.',
     'Enter `:q` to quit.',
     ' '  # Not an empty string so Curses knows to not use this line
 ]
