@@ -3,6 +3,7 @@ Unit Tests for setup functions
 """
 
 import unittest
+
 from logria.commands.config import resolve_delete_command
 
 
@@ -25,14 +26,12 @@ class SetupValidator(unittest.TestCase):
         resolved = resolve_delete_command(':r 1,2')
         self.assertCountEqual(resolved, [1, 2])
 
-
     def test_resolve_triple_num(self):
         """
         Test that we correctly validate keystrokes
         """
         resolved = resolve_delete_command(':r 1,2,3')
         self.assertCountEqual(resolved, [1, 2, 3])
-
 
     def test_resolve_triple_num_trailing_comma(self):
         """
@@ -41,14 +40,12 @@ class SetupValidator(unittest.TestCase):
         resolved = resolve_delete_command(':r 1,2,3,')
         self.assertCountEqual(resolved, [1, 2, 3])
 
-
     def test_resolve_range(self):
         """
         Test that we correctly validate keystrokes
         """
         resolved = resolve_delete_command(':r 1-5')
         self.assertCountEqual(resolved, [1, 2, 3, 4, 5])
-
 
     def test_resolve_double_range(self):
         """
@@ -57,14 +54,12 @@ class SetupValidator(unittest.TestCase):
         resolved = resolve_delete_command(':r 1-3,5-7')
         self.assertCountEqual(resolved, [1, 2, 3, 5, 6, 7])
 
-
     def test_resolve_triple_range(self):
         """
         Test that we correctly validate keystrokes
         """
         resolved = resolve_delete_command(':r 1-3,5-7,9-11')
         self.assertCountEqual(resolved, [1, 2, 3, 5, 6, 7, 9, 10, 11])
-
 
     def test_resolve_ranges_with_singletons(self):
         """

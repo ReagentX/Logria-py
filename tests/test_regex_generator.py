@@ -3,6 +3,7 @@ Unit Tests for regex_generator
 """
 
 import unittest
+
 from logria.utilities import regex_generator
 
 

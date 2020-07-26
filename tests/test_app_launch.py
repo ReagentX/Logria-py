@@ -6,8 +6,10 @@ import os
 import unittest
 from curses import error
 
+from logria.communication.input_handler import (CommandInputStream,
+                                                FileInputStream)
 from logria.communication.shell_output import Logria
-from logria.communication.input_handler import CommandInputStream, FileInputStream
+
 
 class TestCanLaunchApp(unittest.TestCase):
     """

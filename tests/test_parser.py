@@ -3,8 +3,8 @@ Unit Tests for parser
 """
 
 import unittest
-from os import remove
 from collections import Counter
+from os import remove
 from pathlib import Path
 
 from logria.logger import parser

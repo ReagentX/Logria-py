@@ -5,10 +5,11 @@ Tests the app launcher
 import os
 import unittest
 
-from logria.communication.shell_output import Logria
 from logria.commands import scroll
 from logria.communication.render import determine_position
+from logria.communication.shell_output import Logria
 from logria.utilities.keystrokes import resolve_keypress
+
 
 class TestCanRenderContentRange(unittest.TestCase):
     """
@@ -43,7 +44,6 @@ class TestCanRenderContentRange(unittest.TestCase):
         self.assertEqual(end, 99)
         app.stop()
 
-
     def test_render_first_items(self):
         """
         Test we render properly when stuck to the top
@@ -71,7 +71,6 @@ class TestCanRenderContentRange(unittest.TestCase):
         self.assertEqual(start, -1)
         self.assertEqual(end, 6)
         app.stop()
-
 
     def test_render_middle_items(self):
         """
@@ -101,7 +100,6 @@ class TestCanRenderContentRange(unittest.TestCase):
         self.assertEqual(end, 80)
         app.stop()
 
-
     def test_render_small_list_from_top(self):
         """
         Test we render properly when stuck to the top
@@ -130,7 +128,6 @@ class TestCanRenderContentRange(unittest.TestCase):
         self.assertEqual(end, 4)
         app.stop()
 
-
     def test_render_small_list_from_bottom(self):
         """
         Test we render properly when stuck to the top
@@ -158,7 +155,6 @@ class TestCanRenderContentRange(unittest.TestCase):
         self.assertEqual(start, -1)
         self.assertEqual(end, 4)
         app.stop()
-
 
     def test_render_scroll_up(self):
         """
@@ -191,7 +187,6 @@ class TestCanRenderContentRange(unittest.TestCase):
         self.assertEqual(end, 98)
         app.stop()
 
-
     def test_render_scroll_down(self):
         """
         Test we render properly when stuck to the bottom
@@ -222,7 +217,6 @@ class TestCanRenderContentRange(unittest.TestCase):
         self.assertEqual(start, 3)
         self.assertEqual(end, 11)
         app.stop()
-
 
     def test_render_scroll_down_matched(self):
         """
@@ -256,7 +250,6 @@ class TestCanRenderContentRange(unittest.TestCase):
         self.assertEqual(end, 11)
         app.stop()
 
-
     def test_render_stick_bottom(self):
         """
         Test we render properly when stuck to the bottom
@@ -287,7 +280,6 @@ class TestCanRenderContentRange(unittest.TestCase):
         self.assertEqual(start, 91)
         self.assertEqual(end, 99)
         app.stop()
-
 
     def test_render_stick_top(self):
         """
@@ -320,7 +312,6 @@ class TestCanRenderContentRange(unittest.TestCase):
         self.assertEqual(end, 6)
         app.stop()
 
-
     def test_render_scroll_pgdn(self):
         """
         Test we render properly when stuck to the bottom
@@ -351,7 +342,6 @@ class TestCanRenderContentRange(unittest.TestCase):
         self.assertEqual(start, 9)
         self.assertEqual(end, 17)
         app.stop()
-
 
     def test_render_scroll_pgup(self):
         """
@@ -389,6 +379,7 @@ class TestCanRenderContentRangeKeypress(unittest.TestCase):
     """
     Tests scenarios with which we render content
     """
+
     def test_render_scroll_up_keypress(self):
         """
         Test we render properly when stuck to the bottom
@@ -419,7 +410,6 @@ class TestCanRenderContentRangeKeypress(unittest.TestCase):
         self.assertEqual(start, 90)
         self.assertEqual(end, 98)
         app.stop()
-
 
     def test_render_scroll_down_keypress(self):
         """
@@ -452,7 +442,6 @@ class TestCanRenderContentRangeKeypress(unittest.TestCase):
         self.assertEqual(end, 11)
         app.stop()
 
-
     def test_render_stick_bottom_keypress(self):
         """
         Test we render properly when stuck to the bottom
@@ -483,7 +472,6 @@ class TestCanRenderContentRangeKeypress(unittest.TestCase):
         self.assertEqual(start, 91)
         self.assertEqual(end, 99)
         app.stop()
-
 
     def test_render_stick_top_keypress(self):
         """
@@ -516,7 +504,6 @@ class TestCanRenderContentRangeKeypress(unittest.TestCase):
         self.assertEqual(end, 6)
         app.stop()
 
-
     def test_render_scroll_pgdn_keystroke(self):
         """
         Test we render properly when stuck to the bottom
@@ -547,7 +534,6 @@ class TestCanRenderContentRangeKeypress(unittest.TestCase):
         self.assertEqual(start, 9)
         self.assertEqual(end, 17)
         app.stop()
-
 
     def test_render_scroll_pgup_keystroke(self):
         """
