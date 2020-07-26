@@ -23,7 +23,6 @@ class TestCanLaunchApp(unittest.TestCase):
             os.environ['TERM'] = 'dumb'
             app = Logria(None, False)
             app.start()
-            app.stop()
 
     def test_launch_with_command_stream(self):
         """
@@ -35,7 +34,6 @@ class TestCanLaunchApp(unittest.TestCase):
             stream = CommandInputStream(['ls', '-l'])
             app = Logria(stream, False)
             app.start()
-            app.stop()
 
     def test_launch_with_file_stream(self):
         """
@@ -47,4 +45,3 @@ class TestCanLaunchApp(unittest.TestCase):
             stream = FileInputStream(['readme.md'])
             app = Logria(stream, False)
             app.start()
-            app.stop()
