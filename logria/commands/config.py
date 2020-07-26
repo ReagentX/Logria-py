@@ -22,7 +22,6 @@ def resolve_delete_command(command: str) -> List[int]:
     digits = command.replace(':r ', '')
     parts = digits.split(',')
     for part in parts:
-        print(part)
         if '-' in part:
             range_to_remove = part.split('-')
             if len(range_to_remove) != 2:
