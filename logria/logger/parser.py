@@ -237,6 +237,18 @@ class Parser():
                 self._analytics_map = dict(
                     zip(range(len(d['analytics'].keys())), d['analytics'].keys()))
 
+    def remove(self, parser_name: str) -> bool:
+        """
+        Remove a parser from the list of parser
+
+        parser_name is the filename of the parser
+        """
+        path = self.folder / parser_name
+        if os.path.exists(path):
+            os.remove(path)
+            return True
+        return False  # If we were not able to delete the file
+
     def display_example(self):
         """
         Show parser result so the user can choose what section to look at
