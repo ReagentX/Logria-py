@@ -8,7 +8,7 @@ from json import JSONDecodeError
 from os.path import isfile
 from typing import List
 
-from logria.commands.config import config_mode
+from logria.commands.config import config_mode, resolve_delete_command
 from logria.communication.input_handler import (CommandInputStream,
                                                 FileInputStream)
 from logria.utilities import constants
@@ -31,37 +31,6 @@ def render_setup_messages(logria: 'Logria', session_handler: SessionHandler) -> 
 
     # Force re-render
     logria.redraw()
-
-
-def resolve_delete_command(command: str) -> List[int]:
-    """
-    Resolve a delete command to the list of indexes to delete
-    """
-    out_l = []
-    digits = command.replace(':r ', '')
-    parts = digits.split(',')
-    for part in parts:
-        print(part)
-        if '-' in part:
-            range_to_remove = part.split('-')
-            if len(range_to_remove) != 2:
-                continue  # Handle multiple dashes
-            try:
-                start = int(range_to_remove[0])
-                end = int(range_to_remove[1])
-            except ValueError:
-                continue
-            for ii in range(start, end):
-                out_l.append(ii)
-            # Since range() goes up to but does not include end
-            out_l.append(end)
-        else:
-            try:
-                part_num = int(part)
-            except ValueError:
-                continue
-            out_l.append(int(part_num))
-    return list(set(out_l))  # Remove dupes
 
 
 def setup_streams(logria: 'Logria') -> None:  # type: ignore

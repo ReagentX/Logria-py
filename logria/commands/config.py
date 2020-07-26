@@ -4,8 +4,9 @@ Logria configuration handler
 
 
 from os.path import isfile
+from typing import List
 
-from logria.commands.parser import Parser
+from logria.logger.parser import Parser
 from logria.utilities import constants
 from logria.utilities.command_parser import Resolver
 from logria.utilities.session import SessionHandler
@@ -13,7 +14,39 @@ from logria.utilities.session import SessionHandler
 # from logria.communication.shell_output import Logria
 
 
-def handle_create_session_file(logria: 'Logria', session: SessionHandler) -> bool:  # type: ignore
+def resolve_delete_command(command: str) -> List[int]:
+    """
+    Resolve a delete command to the list of indexes to delete
+    """
+    out_l = []
+    digits = command.replace(':r ', '')
+    parts = digits.split(',')
+    for part in parts:
+        print(part)
+        if '-' in part:
+            range_to_remove = part.split('-')
+            if len(range_to_remove) != 2:
+                continue  # Handle multiple dashes
+            try:
+                start = int(range_to_remove[0])
+                end = int(range_to_remove[1])
+            except ValueError:
+                continue
+            for ii in range(start, end):
+                out_l.append(ii)
+            # Since range() goes up to but does not include end
+            out_l.append(end)
+        else:
+            try:
+                part_num = int(part)
+            except ValueError:
+                continue
+            out_l.append(int(part_num))
+    return list(set(out_l))  # Remove dupes
+
+
+# type: ignore
+def handle_create_session_file(logria: 'Logria', session: SessionHandler) -> bool:
     """
     Handle manual session file creation
     """
@@ -51,7 +84,8 @@ def handle_create_session_file(logria: 'Logria', session: SessionHandler) -> boo
     return False
 
 
-def handle_create_session_command(logria: 'Logria', session: SessionHandler) -> bool:  # type: ignore
+# type: ignore
+def handle_create_session_command(logria: 'Logria', session: SessionHandler) -> bool:
     """
     Get user input to create a session
     """
