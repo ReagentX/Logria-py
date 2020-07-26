@@ -45,8 +45,7 @@ def resolve_delete_command(command: str) -> List[int]:
     return list(set(out_l))  # Remove dupes
 
 
-# type: ignore
-def handle_create_session_file(logria: 'Logria', session: SessionHandler) -> bool:
+def handle_create_session_file(logria: 'Logria', session: SessionHandler) -> bool:  # type: ignore
     """
     Handle manual session file creation
     """
@@ -84,8 +83,7 @@ def handle_create_session_file(logria: 'Logria', session: SessionHandler) -> boo
     return False
 
 
-# type: ignore
-def handle_create_session_command(logria: 'Logria', session: SessionHandler) -> bool:
+def handle_create_session_command(logria: 'Logria', session: SessionHandler) -> bool:  # type: ignore
     """
     Get user input to create a session
     """
