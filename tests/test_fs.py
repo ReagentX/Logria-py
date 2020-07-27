@@ -1,5 +1,5 @@
 """
-Unit Tests for fs moduls
+Unit Tests for fs module
 """
 
 import unittest
