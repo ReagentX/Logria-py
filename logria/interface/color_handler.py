@@ -62,6 +62,9 @@ TERMINAL_COLOR_TO_CURSES = {
 
 
 def _get_color(foreground: int, background: int):
+    """
+    Cache results of init_pair for performance
+    """
     key = (foreground, background)
     if key not in COLOR_PAIRS_CACHE:
         # Use the pairs from 101 and after, so there's less chance they'll be overwritten by the user
@@ -88,6 +91,7 @@ def _sanitize(line: str) -> str:
     """
     Sanitize null bytes from strings before we try and render them
     """
+    print(type(line))
     if '\x00' in line:
         line = line.replace('\x00', '')
     return line
