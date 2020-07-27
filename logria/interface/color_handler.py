@@ -91,7 +91,6 @@ def _sanitize(line: str) -> str:
     """
     Sanitize null bytes from strings before we try and render them
     """
-    print(type(line))
     if '\x00' in line:
         line = line.replace('\x00', '')
     return line
