@@ -74,3 +74,10 @@ class SetupValidator(unittest.TestCase):
         """
         resolved = resolve_delete_command(':r 1--3,4')
         self.assertCountEqual(resolved, [4])
+
+    def test_resolve_ranges_with_string(self):
+        """
+        Test that we correctly validate keystrokes
+        """
+        resolved = resolve_delete_command(':r a-b,4')
+        self.assertCountEqual(resolved, [4])
