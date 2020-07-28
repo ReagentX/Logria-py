@@ -3,8 +3,8 @@ Unit Tests for parser
 """
 
 import unittest
-from os import remove
 from collections import Counter
+from os import remove
 from pathlib import Path
 
 from logria.logger import parser
@@ -36,7 +36,9 @@ class TestPatternSetup(unittest.TestCase):
         Test that we correctly get the current filter name
         """
         sample_name = 'test'
-        p = parser.Parser(name=sample_name)
+        p = parser.Parser()
+        log_message = '2005-03-19 15:10:26,773 - simple_example - CRITICAL - critical message 34'
+        p.set_pattern(' - ', 'split', sample_name, log_message, {})
         self.assertEqual(p.get_name(), sample_name)
 
     def test_set_pattern(self):
@@ -51,6 +53,15 @@ class TestPatternSetup(unittest.TestCase):
         self.assertEqual(p.get_name(), 'Hyphen Separated')
         self.assertEqual(p._example, log_message)
         self.assertEqual(p._analytics_methods, {})
+
+    def test_cannot_set_invalid_pattern(self):
+        """
+        Test that we successfully init the data in the parser
+        """
+        p = parser.Parser()
+        log_message = '2005-03-19 15:10:26,773 - simple_example - CRITICAL - critical message 34'
+        with self.assertRaises(ValueError):
+            p.set_pattern('+', 'split', 'Hyphen Separated', log_message, {})
 
 
 class TestPatternAnalytics(unittest.TestCase):
@@ -337,6 +348,58 @@ class TestPatternInteraction(unittest.TestCase):
         self.assertEqual(loaded, saved)
         remove(Path(p2.folder) / name)
 
+    def test_cannot_load_twice(self):
+        """
+        Test that we can successfully save and load items
+        """
+        p = parser.Parser()
+        log_message = '2005-03-19 15:10:26,773 - simple_example - CRITICAL - critical message 22'
+        analytics_methods = {
+            "Date": "date",
+            "Caller": "count",
+            "Level": "count",
+            "Message": "sum"
+        }
+        name = 'Test Run'
+        p.set_pattern(' - ', 'split', name,
+                      log_message, analytics_methods)
+        saved = p.as_dict()
+        p.save()
+        p2 = parser.Parser()
+        p2.load(name)
+        with self.assertRaises(ValueError):
+            p2.load(name)
+        remove(Path(p2.folder) / name)
+
+    def test_remove_parser(self):
+        """
+        Test that we can write a session if we need to
+        """
+        p = parser.Parser()
+        log_message = '2005-03-19 15:10:26,773 - simple_example - CRITICAL - critical message 22'
+        analytics_methods = {
+            "Date": "date",
+            "Caller": "count",
+            "Level": "count",
+            "Message": "sum"
+        }
+        name = 'Test Run'
+        p.set_pattern(' - ', 'split', name,
+                      log_message, analytics_methods)
+        saved = p.as_dict()
+        p.save()
+        p2 = parser.Parser()
+        p2.load(name)
+        p2.remove('Test Run')
+        self.assertNotIn('Test Run', p2.patterns().values())
+
+    def test_cannot_remove_parser(self):
+        """
+        Test that we can write a session if we need to
+        """
+        p = parser.Parser()
+        self.assertFalse(p.remove('This Fake Parser Name'))
+
     def test_display_example(self):
         """
         Test that we properly format the example parsed message
@@ -359,6 +422,14 @@ class TestPatternInteraction(unittest.TestCase):
             '3: critical message 22'
         ]
         self.assertEqual(actual, expected)
+
+    def test_cannot_display_example(self):
+        """
+        Test that we properly format the example parsed message
+        """
+        p = parser.Parser()
+        with self.assertRaises(ValueError):
+            p.display_example()
 
     def test_patterns(self):
         """

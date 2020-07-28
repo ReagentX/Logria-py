@@ -8,7 +8,7 @@ from json import JSONDecodeError
 from os.path import isfile
 from typing import List
 
-from logria.commands.config import config_mode
+from logria.commands.config import config_mode, resolve_delete_command
 from logria.communication.input_handler import (CommandInputStream,
                                                 FileInputStream)
 from logria.utilities import constants
@@ -18,22 +18,28 @@ from logria.utilities.session import SessionHandler
 # from logria.communication.shell_output import Logria
 
 
-def setup_streams(logria: 'Logria') -> None:  # type: ignore
+def render_setup_messages(logria: 'Logria', session_handler: SessionHandler) -> None:  # type: ignore
     """
-    When launched without a stream, allow the user to define them for us
+    Render setup messages from session_handler
     """
-    # Setup a SessionHandler and get the existing saved sessions
-    session_handler = SessionHandler()
     # Create a new message list to see
     setup_messages: List[str] = []
     logria.messages = setup_messages
     # Tell the user what we are doing
     setup_messages.extend(constants.START_MESSAGE)
     setup_messages.extend(session_handler.show_sessions())
-    logria.render_text_in_output()
 
-    # Dump the existing status
-    logria.write_to_command_line('')
+    # Force re-render
+    logria.redraw()
+
+
+def setup_streams(logria: 'Logria') -> None:  # type: ignore
+    """
+    When launched without a stream, allow the user to define them for us
+    """
+    # Setup a SessionHandler and get the existing saved sessions
+    session_handler = SessionHandler()
+    render_setup_messages(logria, session_handler)
 
     # Create resolver class to resolve commands
     resolver = Resolver()
@@ -48,6 +54,14 @@ def setup_streams(logria: 'Logria') -> None:  # type: ignore
         if command == ':q':
             logria.stop()
             break
+        if ':r ' in command[:3]:
+            items_to_remove = resolve_delete_command(command)
+            sessions = session_handler.sessions()
+            for item in items_to_remove:
+                if item in sessions:
+                    session_handler.remove_session(sessions[item])
+            render_setup_messages(logria, session_handler)
+            continue
         try:
             chosen_item = int(command)
             session = session_handler.load_session(chosen_item)
@@ -61,12 +75,12 @@ def setup_streams(logria: 'Logria') -> None:  # type: ignore
                 elif session.get('type') == 'command':
                     logria.streams.append(CommandInputStream(stored_command))
         except KeyError as err:
-            setup_messages.append(
+            logria.messages.append(
                 f'Data missing from configuration: {err}')
             logria.render_text_in_output()
             continue
         except JSONDecodeError as err:
-            setup_messages.append(
+            logria.messages.append(
                 f'Invalid JSON: {err.msg} on line {err.lineno}, char {err.colno}')
             logria.render_text_in_output()
             continue

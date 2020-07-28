@@ -62,6 +62,9 @@ TERMINAL_COLOR_TO_CURSES = {
 
 
 def _get_color(foreground: int, background: int):
+    """
+    Cache results of init_pair for performance
+    """
     key = (foreground, background)
     if key not in COLOR_PAIRS_CACHE:
         # Use the pairs from 101 and after, so there's less chance they'll be overwritten by the user

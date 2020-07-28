@@ -3,6 +3,7 @@ Unit Tests for input_handler
 """
 
 import unittest
+
 from logria.communication import input_handler
 
 
@@ -23,6 +24,7 @@ class TestInputStream(unittest.TestCase):
         Test that parent InputStream cannot start processes
         Unit tests cannot be pickled, so this test case will never work
         """
+        # TODO: Make this test do something
         # i = input_handler.InputStream(['ls', '-l'])
         # with self.assertRaises(NotImplementedError):
         #     i.start()
@@ -62,16 +64,3 @@ class TestFileInputStream(unittest.TestCase):
         """
         i = input_handler.FileInputStream(['ls', '-l'])
         self.assertIsInstance(i, input_handler.FileInputStream)
-
-
-class TestPipeInputStream(unittest.TestCase):
-    """
-    Test cases to ensure PipeInputStream can be initialized
-    """
-
-    def test_create_pipe_input_stream(self):
-        """
-        Test that we can create a PipeInputStream
-        """
-        i = input_handler.PipeInputStream(['ls', '-l'])
-        self.assertIsInstance(i, input_handler.PipeInputStream)

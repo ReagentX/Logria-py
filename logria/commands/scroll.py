@@ -34,7 +34,7 @@ def up(logria: 'Logria') -> None:  # type: ignore
     logria.stick_to_top = False
     logria.stick_to_bottom = False
     logria.current_end = max(0, logria.current_end - 1)
-    logria.previous_render = None  # Force render
+    logria.previous_render = None  # Force render, defer draw
 
 
 def down(logria: 'Logria'):  # type: ignore
@@ -54,7 +54,7 @@ def down(logria: 'Logria'):  # type: ignore
     else:
         logria.current_end = min(
             len(logria.messages) - 1, logria.current_end + 1)
-    logria.previous_render = None  # Force render
+    logria.previous_render = None  # Force render, defer draw
 
 
 def bottom(logria: 'Logria') -> None:  # type: ignore

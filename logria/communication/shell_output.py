@@ -43,6 +43,7 @@ class Logria():
         # Wether we save command history
         self.history_tape_cache: bool = history_tape_cache
         self.poll_rate: float = poll_rate  # The rate at which we check for new messages
+        # Wehether we reduce the poll rate to the message receive speed
         self.smart_poll_rate: bool = smart_poll_rate
 
         # App state that changes as we use the app
@@ -159,7 +160,8 @@ class Logria():
                     if match:
                         start, end = match.span()
                         matched_str = item[start:end]
-                        item = item.replace(matched_str, f'\u001b[35m{matched_str}\u001b[0m')
+                        item = item.replace(
+                            matched_str, f'\u001b[35m{matched_str}\u001b[0m')
             # Find the correct start position
             current_row -= ceil(get_real_length(item) / self.width)
             if current_row < 0:
@@ -233,6 +235,13 @@ class Logria():
                         )
                     self.update_poll_rate(new_poll_rate)
 
+    def redraw(self) -> None:
+        """
+        Force re-render the content of the window as if it has never been rendered before
+        """
+        self.previous_render = None  # Force render
+        self.render_text_in_output()
+
     def resize_window(self) -> None:
         """
         Resize curses elements when window size changes
@@ -240,8 +249,7 @@ class Logria():
         self.height, self.width = self.stdscr.getmaxyx()
         curses.resizeterm(self.height, self.width)
         self.build_command_line()  # Rebuild the command line
-        self.previous_render = None  # Force render
-        self.render_text_in_output()
+        self.redraw()
 
     def start(self) -> None:
         """
@@ -293,11 +301,12 @@ class Logria():
         # Disable cursor:
         curses.curs_set(0)
 
+        # If the streams do not exist, create them
+        if not self.streams:
+            setup_streams(self)
+
         # Start the main app loop
         while True:
-            if not self.streams:
-                setup_streams(self)
-
             # Update messages from the input stream's queues, track time
             t_0 = time.perf_counter()
             new_messages: int = 0

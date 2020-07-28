@@ -7,8 +7,9 @@ import os
 import re
 from collections import Counter
 from pathlib import Path
-from typing import List, Union
+from typing import List, Union, Optional
 
+from logria.utilities import fs
 from logria.utilities.constants import ANSI_COLOR_PATTERN, SAVED_PATTERNS_PATH
 
 
@@ -17,14 +18,14 @@ class Parser():
     Handles setting up of log message parsing
     """
 
-    def __init__(self, pattern=None, type_=None, name=None, example=None, analytics_methods=None, num_to_print=5):
-        self._pattern: str = pattern  # The raw pattern
-        # The type of pattern to parse, string {'split', 'regex'}
-        self._type: str = type_
-        self._name: str = name  # The name of the pattern
-        self._example: str = example  # An example used to list on the frontend
+    def __init__(self, num_to_print=5):
+        self._pattern: Optional[str] = None  # The raw pattern
+        # The type of pattern to parse, sring {'split', 'regex'}
+        self._type: Optional[str] = None
+        self._name: Optional[str] = None  # The name of the pattern
+        self._example: Optional[str] = None  # An example used to list on the frontend
         # Analytics methods to use when parsing
-        self._analytics_methods: dict = analytics_methods
+        self._analytics_methods: Optional[dict] = None
         # Stores the map of the message index to the analytics method names
         self.num_to_print = num_to_print  # Number of items to print in analytics output
         self._analytics_map: dict = {}
@@ -51,6 +52,12 @@ class Parser():
         """
         Init the class variables when loading
         """
+        if pattern is not None:
+            try:
+                re.compile(pattern)
+            except re.error:
+                raise ValueError(
+                    f'Parser {name} has invalid regex pattern: /{pattern}/')
         self._pattern = pattern
         self._type = type_
         self._name = name
@@ -93,6 +100,8 @@ class Parser():
         """
         # Figure out what rule we want to apply
         rule_name = self.get_analytics_for_index(index)
+        if not self._analytics_methods:
+            return None
         rule = self._analytics_methods[rule_name]
         if rule == 'count':
             if not self.analytics[index]:
@@ -117,6 +126,7 @@ class Parser():
                     self.analytics[index]['count']
             except ValueError:
                 pass
+        return None
 
     def handle_analytics_for_message(self, message: str) -> None:
         """
@@ -227,7 +237,7 @@ class Parser():
         # Convert to json
         if self._pattern is not None:
             raise ValueError('Setting pattern while pattern already set!')
-        patterns = set(os.listdir(self.folder))
+        patterns = set(fs.listdir(self.folder, {'.DS_Store'}))
         if name in patterns:
             with open(self.folder / name, 'r') as f:
                 d = json.loads(f.read())
@@ -235,6 +245,18 @@ class Parser():
                                  d['name'], d['example'], d['analytics'])
                 self._analytics_map = dict(
                     zip(range(len(d['analytics'].keys())), d['analytics'].keys()))
+
+    def remove(self, parser_name: str) -> bool:
+        """
+        Remove a parser from the list of parser
+
+        parser_name is the filename of the parser
+        """
+        path = self.folder / parser_name
+        if os.path.exists(path):
+            os.remove(path)
+            return True
+        return False  # If we were not able to delete the file
 
     def display_example(self):
         """
@@ -249,12 +271,12 @@ class Parser():
         """
         Get the existing patterns as a dict
         """
-        patterns = os.listdir(self.folder)
+        patterns = fs.listdir(self.folder, {'.DS_Store'})
         return dict(zip(range(0, len(patterns)), patterns))
 
     def show_patterns(self) -> List[str]:
         """
         Get the existing patterns as a list
         """
-        patterns = os.listdir(self.folder)
+        patterns = fs.listdir(self.folder, {'.DS_Store'})
         return [f'{i}: {v}' for i, v in enumerate(patterns)]

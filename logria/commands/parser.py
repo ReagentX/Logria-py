@@ -6,18 +6,21 @@ Commands for enabling parser and analytics
 import time
 from json import JSONDecodeError
 
+from logria.commands.config import resolve_delete_command
 from logria.commands.regex import reset_regex_status
 from logria.logger.parser import Parser
 
 # from logria.communication.shell_output import Logria
 
 
-def reset_parser(logria: 'Logria'):  # type: ignore
+def reset_parser(logria: 'Logria', custom_message: str = ''):  # type: ignore
     """
     Remove the current parser, if any exists
     """
     if logria.func_handle:
         logria.current_status = f'Regex with pattern /{logria.regex_pattern}/'
+    elif custom_message:
+        logria.current_status = custom_message
     else:
         logria.current_status = 'No filter applied'  # CLI message, rendered after
     if logria.previous_messages:
@@ -58,21 +61,41 @@ def setup_parser(logria: 'Logria'):  # type: ignore
     logria.stick_to_bottom = True
     logria.stick_to_top = False
 
+    # Only set when there are no pattenrs to display so we can update the user
+    custom_message = ''
+
+    # Create parser object
+    parser = Parser()
+
     # Overwrite the messages pointer
-    logria.messages = Parser().show_patterns()
-    logria.previous_render = None
-    logria.render_text_in_output()
+    logria.messages = parser.show_patterns()
+    logria.redraw()
     while True:
+        if not parser.show_patterns():
+            parser = None  # type: ignore
+            custom_message = 'No parsers found! Enter :config to build one. Press z to cancel.'
+            break
         time.sleep(logria.poll_rate)
         logria.activate_prompt()
         command = logria.box.gather().strip()
         if command == ':q':
-            parser = None
+            logria.messages = logria.previous_messages
+            parser = None  # type: ignore
             break
+        if ':r ' in command[:3]:
+            items_to_remove = resolve_delete_command(command)
+            sessions = parser.patterns()
+            for item in items_to_remove:
+                if item in sessions:
+                    parser.remove(sessions[item])
+            logria.messages = parser.show_patterns()
+            logria.redraw()
+            continue
         try:
-            parser = Parser()
-            parser.load(Parser().patterns()[int(command)])
+            parser.load(parser.patterns()[int(command)])
             break
+        except KeyError:
+            continue
         except JSONDecodeError as err:
             logria.messages.append(
                 f'Invalid JSON: {err.msg} on line {err.lineno}, char {err.colno}')
@@ -90,8 +113,10 @@ def setup_parser(logria: 'Logria'):  # type: ignore
             logria.activate_prompt()
             command = logria.box.gather().strip()
             if command == ':q':
+                logria.messages = logria.previous_messages
+                logria.previous_render = None
                 reset_parser(logria)
-                break
+                return  # no need to do any other work
             try:
                 command = int(command)
                 assert command < len(logria.messages)
@@ -109,7 +134,8 @@ def setup_parser(logria: 'Logria'):  # type: ignore
         # Put pointer back to new list
         logria.messages = logria.parsed_messages
     else:
-        reset_parser(logria)
+        logria.messages = logria.previous_messages
+        reset_parser(logria, custom_message=custom_message)
 
     # Render immediately
     logria.previous_render = None

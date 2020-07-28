@@ -34,21 +34,22 @@ class Resolver():
         else:
             # Iterate in reverse so we resolve tools in local paths after system paths
             for path in paths.split(':')[::-1]:
+                # Resolve home dir symbols
+                full_path = self.resolve_home_dir(path)
                 # Try and remove the file from the path to include the parent dir
-                if os.path.isfile(path):
-                    path = '/'.join(path.split('/')[:-1])
-                    if os.path.isfile(path):
-                        print(
-                            f'{path} listed in PATH environment variable, refers to file!')
-                        continue
+                if os.path.isfile(full_path):
+                    print(
+                        f'{full_path} listed in PATH environment variable, refers to file!')
+                    full_path = '/'.join(full_path.split('/')[:-1])
                 try:
-                    programs = os.listdir(self.resolve_home_dir(path))
+                    # No need to use fs wrapper here
+                    programs = os.listdir(self.resolve_home_dir(full_path))
                 except FileNotFoundError:
                     print(
-                        f'{path} listed in PATH environment variable, but does not exist!')
+                        f'{full_path} listed in PATH environment variable, but does not exist!')
                     continue
                 self._paths.update(
-                    {programs: f'{path}/{programs}' for programs in programs}
+                    {programs: f'{full_path}/{programs}' for programs in programs}
                 )
 
     def get(self, program: str) -> str:
