@@ -83,7 +83,7 @@ class TestFormattingFunctions(unittest.TestCase):
         Test that we properly resolve a file to a string
         """
         r = command_parser.Resolver()
-        actual = r.resolve_command_as_string('$HOME/file.txt')
+        actual = r.resolve_file_as_str('$HOME/file.txt')
         expected = f'{Path.home()}/file.txt'
         self.assertEqual(actual, expected)
 
@@ -99,6 +99,7 @@ class TestFormattingFunctions(unittest.TestCase):
             'file.txt'
         ]
         self.assertEqual(actual, expected)
+
 
 class TestParserPathEnv(unittest.TestCase):
     """
