@@ -36,7 +36,6 @@ class Resolver():
             for path in paths.split(':')[::-1]:
                 # Resolve home dir symbols
                 full_path = self.resolve_home_dir(path)
-                print(1, full_path)
                 # Try and remove the file from the path to include the parent dir
                 if os.path.isfile(full_path):
                     print(
