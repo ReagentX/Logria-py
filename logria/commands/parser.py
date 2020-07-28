@@ -72,7 +72,7 @@ def setup_parser(logria: 'Logria'):  # type: ignore
     logria.redraw()
     while True:
         if not parser.show_patterns():
-            parser = None
+            parser = None  # type: ignore
             custom_message = 'No parsers found! Enter :config to build one. Press z to cancel.'
             break
         time.sleep(logria.poll_rate)
@@ -80,7 +80,7 @@ def setup_parser(logria: 'Logria'):  # type: ignore
         command = logria.box.gather().strip()
         if command == ':q':
             logria.messages = logria.previous_messages
-            parser = None
+            parser = None  # type: ignore
             break
         if ':r ' in command[:3]:
             items_to_remove = resolve_delete_command(command)
