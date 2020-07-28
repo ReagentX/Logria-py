@@ -9,12 +9,47 @@ from logria.commands import scroll
 from logria.communication.render import determine_position
 from logria.communication.shell_output import Logria
 from logria.utilities.keystrokes import resolve_keypress
+from logria.logger.processor import process_matches
+from logria.utilities import regex_generator
 
 
 class TestCanRenderContentRange(unittest.TestCase):
     """
     Tests scenarios with which we render content
     """
+
+    def test_can_render_matches(self):
+        """
+        Test we render properly when using matches
+        """
+        os.environ['TERM'] = 'dumb'
+        app = Logria(None, False, False)
+
+        # Fake window size: 10 x 100
+        app.height = 10
+        app.width = 100
+
+        # Set fake previous render
+        app.last_row = app.height - 3  # simulate the last row we can render to
+        app.current_end = 80  # Simulate the last message rendered
+
+        # Set fake messages
+        app.messages = [f'{x}|{x}' for x in range(20)]
+
+        # Set fake filter
+        app.func_handle = regex_generator.regex_test_generator(r'\d\|\d')
+        process_matches(app)
+
+        # Set positional booleans
+        app.manually_controlled_line = False
+        app.stick_to_top = True
+        app.stick_to_bottom = False
+
+        start, end = determine_position(app, app.matched_rows)
+        self.assertEqual(start, -1)
+        self.assertEqual(end, 6)
+        app.stop()
+
 
     def test_render_final_items(self):
         """
