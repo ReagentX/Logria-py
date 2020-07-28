@@ -100,6 +100,8 @@ class Parser():
         """
         # Figure out what rule we want to apply
         rule_name = self.get_analytics_for_index(index)
+        if not self._analytics_methods:
+            return None
         rule = self._analytics_methods[rule_name]
         if rule == 'count':
             if not self.analytics[index]:
@@ -124,6 +126,7 @@ class Parser():
                     self.analytics[index]['count']
             except ValueError:
                 pass
+        return None
 
     def handle_analytics_for_message(self, message: str) -> None:
         """
