@@ -104,6 +104,7 @@ class HistoryTape():
         """
         clean_item = item.strip()  # Sanitize extra spaces from `gather()`
         if clean_item not in HISTORY_EXCLUDES:
+            # history_tape must exist and the last stored item not be the new item
             if not self.history_tape or clean_item != self.history_tape[-1]:
                 if self.use_cache:
                     self.write_to_history_file(clean_item)
