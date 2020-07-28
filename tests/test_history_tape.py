@@ -30,6 +30,13 @@ class TestHistoryTapeFunctions(unittest.TestCase):
         self.assertIsInstance(tape, input_history.HistoryTape)
         self.assertEqual(tape.get_current_item(), unique_str)
 
+    def test_can_print_history_tape(self):
+        """
+        Test that we can create a history tape instance without a cache
+        """
+        tape = input_history.HistoryTape(use_cache=False)
+        print(tape)
+
     def test_get_current_item_empty(self):
         """
         Test that we don't crash when looking at a blank tape
