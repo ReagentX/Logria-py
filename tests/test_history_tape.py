@@ -178,6 +178,25 @@ class TestHistoryTapeFunctions(unittest.TestCase):
             tape.add_item(f'Test {item}')
         self.assertEqual(tape.size(), 10)
 
+    def test_tape_tail(self):
+        """
+        Test that we can get size of the tape
+        """
+        tape = input_history.HistoryTape(use_cache=False)
+        for item in range(10):
+            tape.add_item(f'Test {item}')
+        self.assertEqual(
+            tape.tail(4), ['Test 6', 'Test 7', 'Test 8', 'Test 9'])
+
+    def test_tape_tail_bad_index(self):
+        """
+        Test that we can get size of the tape
+        """
+        tape = input_history.HistoryTape(use_cache=False)
+        for item in range(10):
+            tape.add_item(f'Test {item}')
+        self.assertEqual(tape.tail(-1), [])
+
     def test_can_tail_default_n(self):
         """
         Test that we can get the last 5 messages
