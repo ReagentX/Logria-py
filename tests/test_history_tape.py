@@ -3,6 +3,7 @@ Unit Tests for history tape
 """
 
 import unittest
+import uuid
 
 from logria.communication import input_history
 
@@ -19,13 +20,15 @@ class TestHistoryTapeFunctions(unittest.TestCase):
         tape = input_history.HistoryTape(use_cache=False)
         self.assertIsInstance(tape, input_history.HistoryTape)
 
-    def test_cah_create_cache_history_tape(self):
+    def test_can_create_cache_history_tape(self):
         """
         Test that we can create a history tape instance with a cache
         """
+        unique_str = str(uuid.uuid4())
         tape = input_history.HistoryTape()
-        tape.add_item('Test')
+        tape.add_item(unique_str)
         self.assertIsInstance(tape, input_history.HistoryTape)
+        self.assertEqual(tape.get_current_item(), unique_str)
 
     def test_get_current_item_empty(self):
         """
@@ -40,11 +43,12 @@ class TestHistoryTapeFunctions(unittest.TestCase):
         """
         tape = input_history.HistoryTape(use_cache=False)
         tape.add_item('Test')
+        print(tape.get_current_item())
         self.assertEqual(tape.get_current_item(), 'Test')
 
     def test_cant_add_excluded_item(self):
         """
-        Test that we can add and retrieve the current item
+        Test that we don't add restricted items
         """
         tape = input_history.HistoryTape(use_cache=False)
         tape.add_item(':history')
@@ -180,7 +184,7 @@ class TestHistoryTapeFunctions(unittest.TestCase):
 
     def test_tape_tail(self):
         """
-        Test that we can get size of the tape
+        Test that we can tail the tape
         """
         tape = input_history.HistoryTape(use_cache=False)
         for item in range(10):
@@ -190,7 +194,7 @@ class TestHistoryTapeFunctions(unittest.TestCase):
 
     def test_tape_tail_bad_index(self):
         """
-        Test that we can get size of the tape
+        Test that we don't crash tail with invalid indexes
         """
         tape = input_history.HistoryTape(use_cache=False)
         for item in range(10):
