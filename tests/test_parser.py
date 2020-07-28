@@ -433,4 +433,3 @@ class TestPatternInteraction(unittest.TestCase):
         """
         p = parser.Parser()
         self.assertIsInstance(p.show_patterns(), list)
-
