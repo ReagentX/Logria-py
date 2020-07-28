@@ -96,6 +96,35 @@ class TestSessionHandler(unittest.TestCase):
         s.save_session('Test', ['ls', '-l'], 'cmd')
         remove(s.folder / 'Test')
 
+    def test_save_current_session(self):
+        """
+        Test that we can write a session after programatic creation
+        """
+        s = session.SessionHandler()
+        sessions = s.sessions()
+        first_item = list(sessions.keys())[0]
+        s.load_session(first_item)
+        s.save_current_session('Test Session')
+        self.assertIn('Test Session', s.sessions().values())
+        s.remove_session('Test Session')
+        self.assertNotIn('Test Session', s.sessions().values())
+
+    def test_remove_session(self):
+        """
+        Test that we can write a session if we need to
+        """
+        s = session.SessionHandler()
+        s.save_session('Test', ['ls', '-l'], 'cmd')
+        s.remove_session('Test')
+        self.assertNotIn('Test', s.sessions().values())
+
+    def test_cannot_remove_session(self):
+        """
+        Test that we can write a session if we need to
+        """
+        s = session.SessionHandler()
+        self.assertFalse(s.remove_session('Test'))
+
 
 class TestSessionBuilder(unittest.TestCase):
     """

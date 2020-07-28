@@ -1,9 +1,10 @@
 """
-Unit Tests for fs moduls
+Unit Tests for fs module
 """
 
 import unittest
 from pathlib import Path
+
 from logria.utilities import fs
 
 

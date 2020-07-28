@@ -3,6 +3,7 @@ Unit Tests for input_handler
 """
 
 import unittest
+
 from logria.communication import input_handler
 
 

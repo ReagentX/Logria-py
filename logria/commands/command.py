@@ -41,16 +41,16 @@ def handle_command(logria: 'Logria') -> None:  # type: ignore
     if command:
         if command == ':q':
             logria.stop()
-        elif ':poll' in command:
+        elif command[:5] == ':poll':
             try:
                 new_poll_rate = float(command.replace(':poll', ''))
             except ValueError:
                 pass
             else:
                 logria.update_poll_rate(new_poll_rate)
-        elif ':config' in command:
+        elif command[:7] == ':config':
             config_mode(logria)
-        elif ':history' in command:
+        elif command[:8] == ':history':
             if command == ':history off':
                 reset_parser(logria)
             else:
