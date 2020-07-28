@@ -36,13 +36,12 @@ class Resolver():
             for path in paths.split(':')[::-1]:
                 # Resolve home dir symbols
                 full_path = self.resolve_home_dir(path)
+                print(1, full_path)
                 # Try and remove the file from the path to include the parent dir
                 if os.path.isfile(full_path):
+                    print(
+                        f'{full_path} listed in PATH environment variable, refers to file!')
                     full_path = '/'.join(full_path.split('/')[:-1])
-                    if os.path.isfile(full_path):
-                        print(
-                            f'{full_path} listed in PATH environment variable, refers to file!')
-                        continue
                 try:
                     # No need to use fs wrapper here
                     programs = os.listdir(self.resolve_home_dir(full_path))
