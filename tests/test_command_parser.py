@@ -2,6 +2,7 @@
 Unit Tests for command parser
 """
 
+import os
 import unittest
 from pathlib import Path
 
@@ -98,3 +99,33 @@ class TestFormattingFunctions(unittest.TestCase):
             'file.txt'
         ]
         self.assertEqual(actual, expected)
+
+class TestParserPathEnv(unittest.TestCase):
+    """
+    Tests whether we correctly resolve PATH variables
+    """
+    def test_no_path(self):
+        """
+        Test we do not crash if the path varibale is missing
+        """
+        path_string = os.environ.pop("PATH")
+        r = command_parser.Resolver()
+        self.assertFalse(r._paths)
+        # Put the PATH back for other tests
+        os.environ["PATH"] = path_string
+
+    def test_path_folder_missing(self):
+        """
+        Test we do not crash if the folder does not exist
+        """
+        os.environ['PATH'] += ':/a/a/b/b/c/c/d/d'
+        r = command_parser.Resolver()
+        self.assertTrue(r._paths)
+
+    def test_file_on_path(self):
+        """
+        Test we do not crash if there is a file on the path, make sure it gets added
+        """
+        os.environ['PATH'] += ':~/.logria/sessions/.DS_Store'
+        r = command_parser.Resolver()
+        self.assertIn('.DS_Store', r._paths)
