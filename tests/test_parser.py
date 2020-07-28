@@ -36,7 +36,9 @@ class TestPatternSetup(unittest.TestCase):
         Test that we correctly get the current filter name
         """
         sample_name = 'test'
-        p = parser.Parser(name=sample_name)
+        p = parser.Parser()
+        log_message = '2005-03-19 15:10:26,773 - simple_example - CRITICAL - critical message 34'
+        p.set_pattern(' - ', 'split', sample_name, log_message, {})
         self.assertEqual(p.get_name(), sample_name)
 
     def test_set_pattern(self):
