@@ -61,7 +61,8 @@ class TestProcessors(unittest.TestCase):
         app.last_index_processed = 0
 
         # Set parser, activate
-        app.parser = Parser(
+        app.parser = Parser()
+        app.parser.set_pattern(
             pattern=r'(\d)',
             type_='regex',
             name='Test',
@@ -78,6 +79,47 @@ class TestProcessors(unittest.TestCase):
         process_parser(app)
 
         self.assertEqual(app.messages, [str(x) for x in range(10)])
+
+    def test_process_parser_invalid_index(self):
+        """
+        Test that we correctly process parsers
+        """
+        os.environ['TERM'] = 'dumb'
+        app = Logria(None, False, False)
+
+        # Fake window size: 10 x 100
+        app.height = 10
+        app.width = 100
+
+        # Set fake previous render
+        app.last_row = app.height - 3  # simulate the last row we can render to
+        app.current_end = 80  # Simulate the last message rendered
+
+        # Set fake messages
+        app.messages = [f'{x}+{x}+{x}' for x in range(10)]
+        app.parser_index = 3
+        app.last_index_processed = 0
+
+        # Set parser, activate
+        app.parser = Parser()
+        app.parser.set_pattern(
+            pattern='\+',
+            type_='split',
+            name='Test',
+            example='a-a',
+            analytics_methods={
+                'Item 1': 'count',
+                'Item 2': 'count'
+            }
+        )
+
+        # Store previous message pointer
+        app.previous_messages = app.messages
+
+        # Process parser
+        process_parser(app)
+
+        self.assertEqual(app.messages, [])
 
     def test_process_parser_analytics_average(self):
         """
@@ -101,7 +143,8 @@ class TestProcessors(unittest.TestCase):
         app.analytics_enabled = True
 
         # Set parser, activate
-        app.parser = Parser(
+        app.parser = Parser()
+        app.parser.set_pattern(
             pattern=r'(\d)',
             type_='regex',
             name='Test',
@@ -146,7 +189,8 @@ class TestProcessors(unittest.TestCase):
         app.analytics_enabled = True
 
         # Set parser, activate
-        app.parser = Parser(
+        app.parser = Parser()
+        app.parser.set_pattern(
             pattern=r'(\d)',
             type_='regex',
             name='Test',
@@ -191,7 +235,8 @@ class TestProcessors(unittest.TestCase):
         app.analytics_enabled = True
 
         # Set parser, activate
-        app.parser = Parser(
+        app.parser = Parser()
+        app.parser.set_pattern(
             pattern=r'(\d)',
             type_='regex',
             name='Test',
@@ -235,7 +280,8 @@ class TestProcessors(unittest.TestCase):
         app.analytics_enabled = True
 
         # Set parser, activate
-        app.parser = Parser(
+        app.parser = Parser()
+        app.parser.set_pattern(
             pattern=r'(\d)',
             type_='fake_type',
             name='Test',
@@ -278,7 +324,8 @@ class TestProcessors(unittest.TestCase):
         app.analytics_enabled = True
 
         # Set parser, activate
-        app.parser = Parser(
+        app.parser = Parser()
+        app.parser.set_pattern(
             pattern=r'(\d)(\d)',
             type_='regex',
             name='Test',
@@ -321,7 +368,8 @@ class TestProcessors(unittest.TestCase):
         app.last_index_processed = 0
 
         # Set parser, activate
-        app.parser = Parser(
+        app.parser = Parser()
+        app.parser.set_pattern(
             pattern=None,
             type_='regex',
             name='Test',
@@ -359,7 +407,8 @@ class TestProcessors(unittest.TestCase):
         app.last_index_processed = 0
 
         # Set parser, activate
-        app.parser = Parser(
+        app.parser = Parser()
+        app.parser.set_pattern(
             pattern=None,
             type_='split',
             name='Test',
@@ -397,7 +446,8 @@ class TestProcessors(unittest.TestCase):
         app.last_index_processed = 0
 
         # Set parser, activate
-        app.parser = Parser(
+        app.parser = Parser()
+        app.parser.set_pattern(
             pattern=r'\|',
             type_='split',
             name='Test',
@@ -438,7 +488,8 @@ class TestProcessors(unittest.TestCase):
         app.analytics_enabled = True
 
         # Set parser, activate
-        app.parser = Parser(
+        app.parser = Parser()
+        app.parser.set_pattern(
             pattern=r'(\d)',
             type_='regex',
             name='Test',
