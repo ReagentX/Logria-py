@@ -52,6 +52,15 @@ class TestPatternSetup(unittest.TestCase):
         self.assertEqual(p._example, log_message)
         self.assertEqual(p._analytics_methods, {})
 
+    def test_cannot_set_invalid_pattern(self):
+        """
+        Test that we successfully init the data in the parser
+        """
+        p = parser.Parser()
+        log_message = '2005-03-19 15:10:26,773 - simple_example - CRITICAL - critical message 34'
+        with self.assertRaises(ValueError):
+            p.set_pattern('+', 'split', 'Hyphen Separated', log_message, {})
+
 
 class TestPatternAnalytics(unittest.TestCase):
     """
