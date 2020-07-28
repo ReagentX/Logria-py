@@ -42,7 +42,7 @@ class TestProcessors(unittest.TestCase):
 
     def test_process_parser_no_analytics(self):
         """
-        Test that we correctly process parsers
+        Test that we correctly process parser with no analytics
         """
         os.environ['TERM'] = 'dumb'
         app = Logria(None, False, False)
@@ -82,7 +82,7 @@ class TestProcessors(unittest.TestCase):
 
     def test_process_parser_invalid_index(self):
         """
-        Test that we correctly process parsers
+        Test that we correctly process parser with invalid index
         """
         os.environ['TERM'] = 'dumb'
         app = Logria(None, False, False)
@@ -123,7 +123,7 @@ class TestProcessors(unittest.TestCase):
 
     def test_process_parser_analytics_average(self):
         """
-        Test that we correctly process parsers
+        Test that we correctly process parser with average metric
         """
         os.environ['TERM'] = 'dumb'
         app = Logria(None, False, False)
@@ -169,7 +169,7 @@ class TestProcessors(unittest.TestCase):
 
     def test_process_parser_analytics_count(self):
         """
-        Test that we correctly process parsers
+        Test that we correctly process parser with count metric
         """
         os.environ['TERM'] = 'dumb'
         app = Logria(None, False, False)
@@ -215,7 +215,7 @@ class TestProcessors(unittest.TestCase):
 
     def test_process_parser_analytics_sum(self):
         """
-        Test that we correctly process parsers
+        Test that we correctly process parsers with sum metric
         """
         os.environ['TERM'] = 'dumb'
         app = Logria(None, False, False)
@@ -260,7 +260,7 @@ class TestProcessors(unittest.TestCase):
 
     def test_process_parser_analytics_invalid(self):
         """
-        Test that we correctly process parsers
+        Test that we correctly process parser with invalid metric
         """
         os.environ['TERM'] = 'dumb'
         app = Logria(None, False, False)
@@ -304,7 +304,7 @@ class TestProcessors(unittest.TestCase):
 
     def test_process_parser_analytics_too_many_matches(self):
         """
-        Test that we correctly process parsers
+        Test that we correctly process parser with too many matches
         """
         os.environ['TERM'] = 'dumb'
         app = Logria(None, False, False)
@@ -349,7 +349,7 @@ class TestProcessors(unittest.TestCase):
 
     def test_process_parser_regex_no_pattern(self):
         """
-        Test that we correctly process parsers
+        Test that we correctly process regex parser with no pattern
         """
         os.environ['TERM'] = 'dumb'
         app = Logria(None, False, False)
@@ -386,9 +386,47 @@ class TestProcessors(unittest.TestCase):
         with self.assertRaises(ValueError):
             process_parser(app)
 
+    def test_process_parser_regex(self):
+        """
+        Test that we correctly process regex parser
+        """
+        os.environ['TERM'] = 'dumb'
+        app = Logria(None, False, False)
+
+        # Fake window size: 10 x 100
+        app.height = 10
+        app.width = 100
+
+        # Set fake previous render
+        app.last_row = app.height - 3  # simulate the last row we can render to
+        app.current_end = 80  # Simulate the last message rendered
+
+        # Set fake messages
+        app.messages = [str(x) for x in range(10)]
+        app.parser_index = 0
+        app.last_index_processed = 0
+
+        # Set parser, activate
+        app.parser = Parser()
+        app.parser.set_pattern(
+            pattern=r'(\d)',
+            type_='regex',
+            name='Test',
+            example='4',
+            analytics_methods={
+                'Item': 'average'
+            }
+        )
+
+        # Store previous message pointer
+        app.previous_messages = app.messages
+
+        # Process parser
+        self.assertEqual(app.messages, [str(x) for x in range(10)])
+
     def test_process_parser_split_no_pattern(self):
         """
-        Test that we correctly process parsers
+        Test that we correctly process parser with split no pattern
         """
         os.environ['TERM'] = 'dumb'
         app = Logria(None, False, False)
@@ -425,9 +463,9 @@ class TestProcessors(unittest.TestCase):
         with self.assertRaises(ValueError):
             process_parser(app)
 
-    def test_process_parser_no_analytics_split(self):
+    def test_process_parser_analytics_split(self):
         """
-        Test that we correctly process parsers
+        Test that we correctly process split parsers
         """
         os.environ['TERM'] = 'dumb'
         app = Logria(None, False, False)
@@ -468,7 +506,7 @@ class TestProcessors(unittest.TestCase):
 
     def test_process_parser_analytics_average_no_numbers(self):
         """
-        Test that we correctly process parsers
+        Test that we correctly process a parser with average metric but no source numbers
         """
         os.environ['TERM'] = 'dumb'
         app = Logria(None, False, False)
