@@ -64,11 +64,14 @@ def setup_parser(logria: 'Logria'):  # type: ignore
     # Only set when there are no pattenrs to display so we can update the user
     custom_message = ''
 
+    # Create parser object
+    parser = Parser()
+
     # Overwrite the messages pointer
-    logria.messages = Parser().show_patterns()
+    logria.messages = parser.show_patterns()
     logria.redraw()
     while True:
-        if not Parser().show_patterns():
+        if not parser.show_patterns():
             parser = None
             custom_message = 'No parsers found! Enter :config to build one. Press z to cancel.'
             break
@@ -81,16 +84,15 @@ def setup_parser(logria: 'Logria'):  # type: ignore
             break
         if ':r ' in command[:3]:
             items_to_remove = resolve_delete_command(command)
-            sessions = Parser().patterns()
+            sessions = parser.patterns()
             for item in items_to_remove:
                 if item in sessions:
-                    Parser().remove(sessions[item])
-            logria.messages = Parser().show_patterns()
+                    parser.remove(sessions[item])
+            logria.messages = parser.show_patterns()
             logria.redraw()
             continue
         try:
-            parser = Parser()
-            parser.load(Parser().patterns()[int(command)])
+            parser.load(parser.patterns()[int(command)])
             break
         except KeyError:
             continue
