@@ -52,6 +52,10 @@ class Parser():
         """
         Init the class variables when loading
         """
+        try:
+            re.compile(pattern)
+        except re.error:
+            raise ValueError(f'Parser {name} has invalid regex pattern: /{pattern}/')
         self._pattern = pattern
         self._type = type_
         self._name = name
