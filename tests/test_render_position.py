@@ -8,9 +8,9 @@ import unittest
 from logria.commands import scroll
 from logria.communication.render import determine_position
 from logria.communication.shell_output import Logria
-from logria.utilities.keystrokes import resolve_keypress
 from logria.logger.processor import process_matches
 from logria.utilities import regex_generator
+from logria.utilities.keystrokes import resolve_keypress
 
 
 class TestCanRenderContentRange(unittest.TestCase):
@@ -49,7 +49,6 @@ class TestCanRenderContentRange(unittest.TestCase):
         self.assertEqual(start, -1)
         self.assertEqual(end, 6)
         app.stop()
-
 
     def test_render_final_items(self):
         """
@@ -107,6 +106,34 @@ class TestCanRenderContentRange(unittest.TestCase):
         self.assertEqual(end, 6)
         app.stop()
 
+    def test_render_few_items_from_middle(self):
+        """
+        Test we render properly when stuck to the top
+        """
+        os.environ['TERM'] = 'dumb'
+        app = Logria(None, False, False)
+
+        # Fake window size: 10 x 100
+        app.height = 10
+        app.width = 100
+
+        # Set fake previous render
+        app.last_row = app.height - 3  # simulate the last row we can render to
+        app.current_end = 2  # Simulate the last message rendered
+
+        # Set fake messages
+        app.messages = [str(x) for x in range(4)]
+
+        # Set positional booleans
+        app.manually_controlled_line = True
+        app.stick_to_top = False
+        app.stick_to_bottom = False
+
+        start, end = determine_position(app, app.messages)
+        self.assertEqual(start, -1)
+        self.assertEqual(end, 3)
+        app.stop()
+
     def test_render_middle_items(self):
         """
         Test we render properly when stuck to the top
@@ -133,6 +160,34 @@ class TestCanRenderContentRange(unittest.TestCase):
         start, end = determine_position(app, app.messages)
         self.assertEqual(start, 72)
         self.assertEqual(end, 80)
+        app.stop()
+
+    def test_render_middle_items_early(self):
+        """
+        Test we render properly when stuck to the top
+        """
+        os.environ['TERM'] = 'dumb'
+        app = Logria(None, False, False)
+
+        # Fake window size: 10 x 100
+        app.height = 10
+        app.width = 100
+
+        # Set fake previous render
+        app.last_row = app.height - 3  # simulate the last row we can render to
+        app.current_end = 5  # Simulate the last message rendered
+
+        # Set fake messages
+        app.messages = [str(x) for x in range(100)]
+
+        # Set positional booleans
+        app.manually_controlled_line = True
+        app.stick_to_top = False
+        app.stick_to_bottom = False
+
+        start, end = determine_position(app, app.messages)
+        self.assertEqual(start, -1)
+        self.assertEqual(end, 5)
         app.stop()
 
     def test_render_small_list_from_top(self):
@@ -314,6 +369,62 @@ class TestCanRenderContentRange(unittest.TestCase):
         start, end = determine_position(app, app.messages)
         self.assertEqual(start, 91)
         self.assertEqual(end, 99)
+        app.stop()
+
+    def test_render_scroll_past_end(self):
+        """
+        Test we render properly when stuck to the bottom
+        """
+        os.environ['TERM'] = 'dumb'
+        app = Logria(None, False, False)
+
+        # Fake window size: 10 x 100
+        app.height = 10
+        app.width = 100
+
+        # Set fake previous render
+        app.last_row = app.height - 3  # simulate the last row we can render to
+        app.current_end = 101  # Simulate the last message rendered
+
+        # Set fake messages
+        app.messages = [str(x) for x in range(100)]
+
+        # Set positional booleans
+        app.manually_controlled_line = True
+        app.stick_to_top = False
+        app.stick_to_bottom = False
+
+        start, end = determine_position(app, app.messages)
+        self.assertEqual(start, 92)
+        self.assertEqual(end, 100)
+        app.stop()
+
+    def test_render_everything_unset(self):
+        """
+        Test we render properly when stuck to the bottom
+        """
+        os.environ['TERM'] = 'dumb'
+        app = Logria(None, False, False)
+
+        # Fake window size: 10 x 100
+        app.height = 10
+        app.width = 100
+
+        # Set fake previous render
+        app.last_row = app.height - 3  # simulate the last row we can render to
+        app.current_end = 101  # Simulate the last message rendered
+
+        # Set fake messages
+        app.messages = [str(x) for x in range(100)]
+
+        # Set positional booleans
+        app.manually_controlled_line = False
+        app.stick_to_top = False
+        app.stick_to_bottom = False
+
+        start, end = determine_position(app, app.messages)
+        self.assertEqual(start, 92)
+        self.assertEqual(end, 100)
         app.stop()
 
     def test_render_stick_top(self):
