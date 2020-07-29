@@ -6,6 +6,7 @@ import curses
 from logria.commands.parser import reset_parser
 from logria.utilities import constants
 from logria.commands.config import config_mode
+from logria.communication.setup import setup_streams
 
 # from logria.communication.shell_output import Logria
 
@@ -59,5 +60,12 @@ def handle_command(logria: 'Logria') -> None:  # type: ignore
                 except ValueError:
                     num_to_get = logria.height  # Default to screen height if no info given
                 start_history_mode(logria, num_to_get)
+        elif command[:8] == ':restart':
+            # Kill all streams
+            for stream in logria.streams:
+                stream.exit()
+            # Remove them from Logria
+            logria.streams = []
+            setup_streams(logria)
     logria.reset_command_line()
     logria.write_to_command_line(logria.current_status)
