@@ -247,8 +247,13 @@ class Logria():
         Resize curses elements when window size changes
         """
         self.height, self.width = self.stdscr.getmaxyx()
-        curses.resizeterm(self.height, self.width)
+        self.width -= 1  # Leave space for padding on the right
+        self.last_row = self.height - 3  # The last row we can write to
+        curses.resizeterm(self.height, self.width + 1)
         self.build_command_line()  # Rebuild the command line
+        # Re-reate the window with these sizes
+        self.outwin = curses.newwin(
+            self.height - 3, self.width, 0, 0)
         self.redraw()
 
     def start(self) -> None:
