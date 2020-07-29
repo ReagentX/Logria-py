@@ -2,4 +2,4 @@
 App name and version
 """
 APP_NAME = 'Logria'
-VERSION = '0.9.9'
+VERSION = '0.9.10'

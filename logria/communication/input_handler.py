@@ -46,7 +46,8 @@ class InputStream():
         """
         Kills the process
         """
-        self.process.terminate()
+        if self.process:
+            self.process.terminate()
 
 
 class CommandInputStream(InputStream):
@@ -107,7 +108,8 @@ class CommandInputStream(InputStream):
             # Proc may be dead already when we get here
             self.proc.kill()  # Kill piped process
             self.proc.communicate()  # Make sure any final data is not left in the pipe
-        self.process.terminate()  # Kill Python process
+        if self.process:
+            self.process.terminate()  # Kill Python process
 
 
 class FileInputStream(InputStream):
