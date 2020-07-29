@@ -9,7 +9,8 @@
 | `:history` | view and search the history tape |
 | `:history #` | view and search the history tape's last # (integer) items |
 | `:history off` | go back to the main app from history mode |
-| `:r #` | When launching logria or viewing sessions, this will delete item # |
+| `:r #` | when launching logria or viewing sessions, this will delete item # |
+| `:restart` | go back to the setup screen to change sessions |
 
 ## Notes
 
