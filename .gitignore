@@ -14,3 +14,5 @@ logria.egg-info/*
 # Build
 dist/*
 logria_ReagentX.egg-info/*
+build/src/dependant
+build/src/standalone
