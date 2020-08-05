@@ -32,7 +32,7 @@ jobs:
         mypy . --ignore-missing-imports
     - name: Security Analysis with Bandit
       run: |
-        bandit -rllq logria
+        bandit -rll logria
     - name: Test with stdlib unittest
       run: |
         echo 'Setting up directory structure'
