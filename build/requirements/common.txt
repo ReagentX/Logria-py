@@ -1,0 +1,2 @@
+# Required for development only		
+# Run `python setup.py develop` to install without dev reqs		
