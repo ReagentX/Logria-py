@@ -12,6 +12,7 @@ logria.egg-info/*
 .coverage
 
 # Build
-build/*
 dist/*
 logria_ReagentX.egg-info/*
+build/src/dependant
+build/src/standalone
