@@ -28,7 +28,7 @@ This folder contains the documentation on how to interact with Logria programmat
   - `source venv/bin/activate`
 - (Optional) install requirements
   - These are only for some development tools and are not needed to run the app
-  - `pip install -r requirements.txt`
+  - `pip install -r build/requirements/dev.txt`
 - Install self
   - (Optional) `deactivate` if we want to install globally, otherwise leave your `venv` active
   - `python setup.py develop` or `python setup.py install` depending on whether you are actively developing this app
