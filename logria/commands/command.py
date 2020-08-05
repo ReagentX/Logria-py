@@ -66,6 +66,12 @@ def handle_command(logria: 'Logria') -> None:  # type: ignore
                 stream.exit()
             # Remove them from Logria
             logria.streams = []
+            # Reset messages buffers
+            logria.stderr_messages = []
+            logria.stdout_messages = []
+            logria.parsed_messages = []
+            logria.matched_rows = []
+            # Setup new streams
             setup_streams(logria)
     logria.reset_command_line()
     logria.write_to_command_line(logria.current_status)
