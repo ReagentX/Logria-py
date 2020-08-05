@@ -18,4 +18,9 @@ python-build: use zlib from xcode sdk
 Installed Python-3.8.5 to /Users/chris/.pyenv/versions/3.8.5
 ```
 
-These folders are zipped so that they do not generate large diffs in git.
+## Notes
+
+- These folders are zipped so that they do not generate large diffs in git.
+- The standalone build probably does not yet work
+  - Nuitka does not yet fully support the multiprocessing setup Logria uses to connect to to streams
+  - When it does, we will be ready!
