@@ -1,5 +1,7 @@
 echo 'Building standalone Logria...'
-python -m nuitka --plugin-enable=pylint-warnings --follow-imports --standalone --python-flag=no_site,no_docstrings --output-dir=build/src/standalone logria/__main__.py
+python -m nuitka --plugin-enable=pylint-warnings --follow-imports --standalone --python-flag=no_site,no_docstrings --output-dir=build/src/standalone --include-package logria logria/__main__.py
+echo 'Compressing standalone Logria module files...'
+cp -R logria/ build/src/standalone/__main__.dist
 echo 'Compressing standalone Logria build...'
 zip -r build/logria-standalone.zip build/src/standalone/__main__.dist > /dev/null
 echo 'Compressing standalone Logria source...'
