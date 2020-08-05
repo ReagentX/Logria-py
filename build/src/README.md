@@ -17,3 +17,5 @@ python-build: use readline from homebrew
 python-build: use zlib from xcode sdk
 Installed Python-3.8.5 to /Users/chris/.pyenv/versions/3.8.5
 ```
+
+These folders are zipped so that they do not generate large diffs in git.
