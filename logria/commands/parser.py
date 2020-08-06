@@ -119,7 +119,8 @@ def setup_parser(logria: 'Logria'):  # type: ignore
                 return  # no need to do any other work
             try:
                 command = int(command)
-                assert command < len(logria.messages)
+                if command > len(logria.messages):
+                    raise ValueError(f'Invalid index {command} not in range 0..{len(logria.messages)}')
                 logria.parser_index = int(command)
                 logria.current_status = f'Parsing with {parser.get_name()}, field {parser.get_analytics_for_index(command)}'
                 logria.write_to_command_line(logria.current_status)

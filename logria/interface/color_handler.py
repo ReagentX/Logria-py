@@ -125,8 +125,8 @@ def _add_line(y_coord: int, x_coord: int, window, line: str):
 
 
 def _inner_addstr(window, string: str, y_coord=-1, x_coord=-1):
-    assert curses.has_colors(
-    ), "Curses wasn't configured to support colors. Call curses.start_color()"
+    if not curses.has_colors:
+        raise ValueError('Curses was not configured to support colors. Call `curses.start_color()`')
 
     cur_y, cur_x = window.getyx()
     if y_coord == -1:
