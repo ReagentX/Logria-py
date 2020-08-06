@@ -70,6 +70,7 @@ def _get_color(foreground: int, background: int):
         try:
             curses.init_pair(pair_num, foreground, background)
         except curses.error:
+            # If colors were never enabled, this call does not matter anyway
             pass
         COLOR_PAIRS_CACHE[key] = pair_num
 
