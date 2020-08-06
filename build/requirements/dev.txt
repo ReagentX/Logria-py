@@ -1,0 +1,7 @@
+autopep8		
+mypy		
+pylint		
+rope		
+coverage
+nuitka
+bandit

@@ -13,77 +13,77 @@ COLOR_PAIRS_CACHE: Dict[Tuple[int, int], int] = {}
 DEFAULT_COLOR = -1
 
 
-class TerminalColors():
-    """
-    Dataclass to store the replacement colors
-    """
-    WHITE = '[37'
-    CYAN = '[36'
-    MAGENTA = '[35'
-    BLUE = '[34'
-    GREEN = '[32'
-    YELLOW = '[33'
-    RED = '[31'
-    BLACK = '[30'
-    BRIGHT_WHITE = '[97'
-    BRIGHT_CYAN = '[96'
-    BRIGHT_MAGENTA = '[95'
-    BRIGHT_BLUE = '[94'
-    BRIGHT_GREEN = '[92'
-    BRIGHT_YELLOW = '[93'
-    BRIGHT_RED = '[91'
-    BRIGHT_BLACK = '[97'
-    END = '[0'
-    DEFAULT_FOREGROUND = '[39'
-    DEFAULT_BACKGROUND = '[49'
-
-
-TERMINAL_COLOR_TO_CURSES = {
-    TerminalColors.WHITE: curses.COLOR_WHITE,
-    TerminalColors.CYAN: curses.COLOR_CYAN,
-    TerminalColors.MAGENTA: curses.COLOR_MAGENTA,
-    TerminalColors.BLUE: curses.COLOR_BLUE,
-    TerminalColors.GREEN: curses.COLOR_GREEN,
-    TerminalColors.YELLOW: curses.COLOR_YELLOW,
-    TerminalColors.RED: curses.COLOR_RED,
-    TerminalColors.BLACK: curses.COLOR_BLACK,
-    TerminalColors.BRIGHT_WHITE: curses.COLOR_WHITE,
-    TerminalColors.BRIGHT_CYAN: curses.COLOR_CYAN,
-    TerminalColors.BRIGHT_MAGENTA: curses.COLOR_MAGENTA,
-    TerminalColors.BRIGHT_BLUE: curses.COLOR_BLUE,
-    TerminalColors.BRIGHT_GREEN: curses.COLOR_GREEN,
-    TerminalColors.BRIGHT_YELLOW: curses.COLOR_YELLOW,
-    TerminalColors.BRIGHT_RED: curses.COLOR_RED,
-    TerminalColors.BRIGHT_BLACK: curses.COLOR_BLACK,
-    TerminalColors.END: DEFAULT_COLOR,
-    TerminalColors.DEFAULT_FOREGROUND: DEFAULT_COLOR,
-    TerminalColors.DEFAULT_BACKGROUND: DEFAULT_COLOR
+# Source: https://en.wikipedia.org/wiki/ANSI_escape_code#3/4_bit
+FOREGROUND = {
+    # Normal
+    '[37': curses.COLOR_WHITE,
+    '[36': curses.COLOR_CYAN,
+    '[35': curses.COLOR_MAGENTA,
+    '[34': curses.COLOR_BLUE,
+    '[33': curses.COLOR_YELLOW,
+    '[32': curses.COLOR_GREEN,
+    '[31': curses.COLOR_RED,
+    '[30': curses.COLOR_BLACK,
+    # Bright
+    '[97': curses.COLOR_WHITE,
+    '[96': curses.COLOR_CYAN,
+    '[95': curses.COLOR_MAGENTA,
+    '[94': curses.COLOR_BLUE,
+    '[93': curses.COLOR_YELLOW,
+    '[92': curses.COLOR_GREEN,
+    '[91': curses.COLOR_RED,
+    '[90': curses.COLOR_BLACK,
+}
+BACKGROUND = {
+    # Normal
+    '[47': curses.COLOR_WHITE,
+    '[46': curses.COLOR_CYAN,
+    '[45': curses.COLOR_MAGENTA,
+    '[44': curses.COLOR_BLUE,
+    '[43': curses.COLOR_YELLOW,
+    '[42': curses.COLOR_GREEN,
+    '[41': curses.COLOR_RED,
+    '[40': curses.COLOR_BLACK,
+    # Bright
+    '[107': curses.COLOR_WHITE,
+    '[106': curses.COLOR_CYAN,
+    '[105': curses.COLOR_MAGENTA,
+    '[104': curses.COLOR_BLUE,
+    '[103': curses.COLOR_YELLOW,
+    '[102': curses.COLOR_GREEN,
+    '[101': curses.COLOR_RED,
+    '[100': curses.COLOR_BLACK,
 }
 
 
 def _get_color(foreground: int, background: int):
     """
-    Cache results of init_pair for performance
+    Memoize init_pair wrapper; store an index of previously used color combinations
+
+    init_color creates an integer and stores it as the primary key to a color pair,
+    so here we cache the results so we do not overwrite old pairs
     """
     key = (foreground, background)
     if key not in COLOR_PAIRS_CACHE:
         # Use the pairs from 101 and after, so there's less chance they'll be overwritten by the user
         pair_num = len(COLOR_PAIRS_CACHE) + 101
-        curses.init_pair(pair_num, foreground, background)
+        try:
+            curses.init_pair(pair_num, foreground, background)
+        except curses.error:
+            # If colors were never enabled, this call does not matter anyway
+            pass
         COLOR_PAIRS_CACHE[key] = pair_num
 
     return COLOR_PAIRS_CACHE[key]
 
 
 def _color_str_to_color_pair(color: str):
-    if color == TerminalColors.END:
-        foreground = DEFAULT_COLOR
-    else:
-        try:
-            foreground = TERMINAL_COLOR_TO_CURSES[color]
-        except KeyError:
-            raise ValueError(f'`{color}` not loaded to colors!')
-    color_pair = _get_color(foreground, DEFAULT_COLOR)
+    """
+    Convert the escape code color to the curses color binding
+    """
+    foreground = FOREGROUND.get(color, DEFAULT_COLOR)
+    background = BACKGROUND.get(color, DEFAULT_COLOR)
+    color_pair = _get_color(foreground, background)
     return color_pair
 
 
@@ -105,7 +105,8 @@ def _add_line(y_coord: int, x_coord: int, window, line: str):
     # Print the first part of the line without color change
     default_color_pair = _get_color(DEFAULT_COLOR, DEFAULT_COLOR)
     try:
-        window.addstr(y_coord, x_coord, color_split[0], curses.color_pair(default_color_pair))
+        window.addstr(y_coord, x_coord,
+                      color_split[0], curses.color_pair(default_color_pair))
         window.noutrefresh()
         y_coord, x_coord = curses.getsyx()
     except curses.error:
@@ -117,7 +118,8 @@ def _add_line(y_coord: int, x_coord: int, window, line: str):
         substring = substring[len(color_str)+1:]
         color_pair = _color_str_to_color_pair(color_str)
         try:
-            window.addstr(y_coord, x_coord, substring, curses.color_pair(color_pair))
+            window.addstr(y_coord, x_coord, substring,
+                          curses.color_pair(color_pair))
             window.noutrefresh()
             y_coord, x_coord = curses.getsyx()
         except curses.error:
@@ -125,8 +127,9 @@ def _add_line(y_coord: int, x_coord: int, window, line: str):
 
 
 def _inner_addstr(window, string: str, y_coord=-1, x_coord=-1):
-    assert curses.has_colors(
-    ), "Curses wasn't configured to support colors. Call curses.start_color()"
+    if not curses.has_colors:
+        raise ValueError(
+            'Curses was not configured to support colors. Call `curses.start_color()`')
 
     cur_y, cur_x = window.getyx()
     if y_coord == -1:
