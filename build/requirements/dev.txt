@@ -4,3 +4,4 @@ pylint
 rope		
 coverage
 nuitka
+bandit
