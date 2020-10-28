@@ -55,9 +55,9 @@ class Parser():
         if pattern is not None:
             try:
                 re.compile(pattern)
-            except re.error:
+            except re.error as err:
                 raise ValueError(
-                    f'Parser {name} has invalid regex pattern: /{pattern}/')
+                    f'Parser {name} has invalid regex pattern: /{pattern}/') from err
         self._pattern = pattern
         self._type = type_
         self._name = name
