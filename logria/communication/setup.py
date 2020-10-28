@@ -94,7 +94,7 @@ def setup_streams(logria: 'Logria') -> None:  # type: ignore
                 logria.streams.append(
                     FileInputStream(command.split('/')))
                 session_handler.save_session(
-                    'File - ' + command.replace('/', '|'), command.split('/'), 'file')
+                    'File - ' + command.replace('/', '|'), [command.split('/')], 'file')
             else:
                 cmd = resolver.resolve_command_as_list(command)
                 logria.streams.append(CommandInputStream(cmd))
