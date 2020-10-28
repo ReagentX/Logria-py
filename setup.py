@@ -11,7 +11,7 @@ setup(
     long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
     author='Christopher Sardegna',
-    author_email='github@reagentx.net',
+    author_email='logria@reagentx.net',
     url='https://github.com/ReagentX/Logria',
     packages=find_packages(),
     entry_points={
