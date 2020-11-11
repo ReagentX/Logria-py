@@ -12,7 +12,7 @@ setup(
     long_description_content_type="text/markdown",
     author='Christopher Sardegna',
     author_email='logria@reagentx.net',
-    url='https://github.com/ReagentX/Logria',
+    url='https://github.com/ReagentX/Logria-py',
     packages=find_packages(),
     entry_points={
         'console_scripts': [
