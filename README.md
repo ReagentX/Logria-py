@@ -1,8 +1,8 @@
 ![Logria Logo](/resources/branding/logria.svg)
 
-# Logria
+# Logria Python Proof of Concept
 
-A powerful CLI tool that puts log analytics at your fingertips.
+A powerful CLI tool that puts log analytics at your fingertips. This is the Python Proof of Concept repository; the [main version](https://github.com/ReagentX/Logria/) is written in Rust.
 
 ## tl;dr
 
